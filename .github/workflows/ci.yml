@@ -24,10 +24,10 @@ env:
 
 jobs:
   # ==========================================================================
-  # vexa Workflow Audit
+  # vexa Application Context + Workflow Audit
   # ==========================================================================
-  vexa-audit:
-    name: vexa Workflow Audit
+  vexa-context-check:
+    name: vexa Application Context Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,24 +35,102 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run vexa audit script
-        run: |
-          cd /home/ubuntu/projects/vexa
-          ./scripts/audit-vexa.sh
-        continue-on-error: false
+      - name: Run application-level audit
+        run: bash scripts/audit-vexa.sh
 
-      - name: Check agent compliance files
+      - name: Verify application context files
         run: |
-          test -f /home/ubuntu/projects/vexa/AGENTS.md
-          test -f /home/ubuntu/projects/vexa/00-meta/claude-response-schema.json
-          test -f /home/ubuntu/projects/vexa/scripts/claude-compliance-check.sh
+          test -f CLAUDE.md
+          test -f README.md
+          test -f .claude/settings.json
+          test -f .claude/rules/hermes-skills.md
+          test -f docker-compose.prod.yml
+          grep -q "/backups:/backups" docker-compose.prod.yml
+          grep -q "vexa-backup" docker-compose.prod.yml
+          test -f scripts/backup.sh
+          test -f scripts/backup.crontab
+          test -f Dockerfile.backup
+
+  # ==========================================================================
+  # Claude Code Response Schema Validation (bot/agent PRs)
+  # ==========================================================================
+  agent-response-validation:
+    name: Claude Code Response Schema Validation
+    needs: vexa-context-check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Fetch response schema from root orchestrator
+        run: |
+          curl -sL https://raw.githubusercontent.com/soumabali/vexa-root/main/00-meta/claude-response-schema.json -o /tmp/claude-response-schema.json
+          test -s /tmp/claude-response-schema.json
+
+      - name: Validate any in-repo Claude Code response files
+        run: |
+          SCHEMA=/tmp/claude-response-schema.json
+          FOUND=0
+          FAILED=0
+          for f in $(find . -type f \( -name '*.claude.json' -o -name 'claude-response*.json' -o -path '*/.claude/responses/*.json' \) 2>/dev/null); do
+            FOUND=1
+            echo "Validating $f ..."
+            python3 - <<PY
+          import json, sys
+          from jsonschema import validate, ValidationError
+          with open('${SCHEMA}') as s:
+              schema = json.load(s)
+          with open('${f}') as r:
+              data = json.load(r)
+          if isinstance(data, dict) and 'result' in data and isinstance(data['result'], str):
+              try:
+                  data = json.loads(data['result'])
+              except json.JSONDecodeError:
+                  print(f"ERROR: {f} has non-JSON 'result' field")
+                  sys.exit(1)
+          try:
+              validate(instance=data, schema=schema)
+          except ValidationError as e:
+              print(f"ERROR: {f} schema validation failed: {e.message}")
+              sys.exit(1)
+          confirmation = data.get('compliance', {}).get('confirmation', [])
+          if not all(confirmation):
+              missing = [i+1 for i, v in enumerate(confirmation) if not v]
+              print(f"ERROR: {f} compliance confirmation missing at points: {missing}")
+              sys.exit(1)
+          scope = data.get('scope', {})
+          if not scope.get('only_02_application') or not scope.get('no_push') or not scope.get('no_root_edit'):
+              print(f"ERROR: {f} scope constraints not satisfied")
+              sys.exit(1)
+          print(f"OK: {f} is compliant")
+          PY
+            if [ $? -ne 0 ]; then
+              FAILED=1
+            fi
+          done
+          if [ "$FOUND" -eq 0 ]; then
+            echo "No Claude Code response files found in this PR — schema validation skipped."
+          fi
+          if [ "$FAILED" -ne 0 ]; then
+            echo "One or more Claude Code response files failed schema validation."
+            exit 1
+          fi
 
   # ==========================================================================
   # Lint & Format
   # ==========================================================================
   lint:
     name: Lint & Format
-    needs: vexa-audit
+    needs: vexa-context-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

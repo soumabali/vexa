@@ -137,18 +137,22 @@ Ini adalah stack standard project vexa dan **bukan optional**.
 
 When Ame dispatches a task to Claude Code, the prompt must include:
 
-> "Use superpowers, caveman, and graphify. If E2E changes are needed, also use the playwright MCP."
+> "Use superpowers, caveman, and graphify. If E2E changes are needed, also use the playwright MCP. After execution, respond ONLY with valid JSON according to `/home/ubuntu/projects/vexa/00-meta/claude-response-schema.json`."
 
-### Compliance Check (Do This First)
+### Dispatch Method
 
-Before writing any code, confirm in your response:
+Use the orchestrator wrapper:
 
-1. I have read `AGENTS.md`, root `CLAUDE.md`, `00-meta/skills.md`, `00-meta/git-structure.md`, and this file.
-2. I have verified `superpowers`, `caveman`, `graphify` are installed and `playwright` MCP is configured.
-3. I will only edit files inside `02-application/`.
-4. I will not push to GitHub or commit from this directory.
+```bash
+/home/ubuntu/projects/vexa/scripts/dispatch-claude.sh \
+  /home/ubuntu/projects/vexa/06-temp/plans/<PLAN>.md \
+  <SLUG>
+```
 
-If you cannot confirm all four, stop and report to Ame.
+Claude Code runs with restricted permissions:
+> `--allowedTools "Read,Write,Edit,Bash(go test),Bash(go build),Bash(npm run build),Bash(make),Bash(cp),Bash(rm -f),Bash(mkdir),Bash(ls),Bash(grep),Bash(cd)"`
+
+For any Bash command outside this allowlist, use `/home/ubuntu/projects/vexa/scripts/safe-exec.sh` or ask Ame to run it manually.
 
 ### Verification
 
@@ -161,10 +165,11 @@ If any skill/MCP is missing, stop and report to Ame before coding.
 
 ## Interaction Rules
 
-- All coding activity in this project is done via Claude Code (`ollama launch claude`).
-- Use `--dangerously-skip-permissions` only for approved automated workflows.
+- All coding activity in this project is done via Claude Code (`ollama launch claude`) through the `scripts/dispatch-claude.sh` wrapper.
+- Do not use `--dangerously-skip-permissions` or `--allow-dangerously-skip-permissions` unless explicitly approved by Ame.
+- Permissions are restricted by allowlist; for Bash outside the allowlist, ask Ame or use `scripts/safe-exec.sh`.
 - Limit max-turns to task complexity (default 10–20).
-- When finished, report a concise summary to Hermes/Ame.
+- When finished, respond with valid JSON according to `00-meta/claude-response-schema.json` and report a concise summary to Hermes/Ame.
 
 ## Documentation
 
