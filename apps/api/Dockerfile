@@ -5,7 +5,7 @@
 #############################################
 # STAGE 1: Dependencies
 #############################################
-FROM golang:1.22-alpine AS deps
+FROM golang:1.25-alpine AS deps
 
 # Security: Install ca-certificates for TLS verification
 RUN apk add --no-cache ca-certificates git
@@ -21,7 +21,7 @@ RUN go mod download && go mod verify
 #############################################
 # STAGE 2: Builder
 #############################################
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache ca-certificates git build-base
@@ -62,7 +62,7 @@ RUN go test -v -race -coverprofile=coverage.out ./...
 #############################################
 # STAGE 3: Security Scanner
 #############################################
-FROM golang:1.22-alpine AS security
+FROM golang:1.25-alpine AS security
 
 WORKDIR /app
 
@@ -75,37 +75,41 @@ COPY --from=builder /app /app
 RUN gosec -fmt sarif -out /app/gosec-report.sarif ./... || true
 
 #############################################
-# STAGE 4: Production Image
+# STAGE 4: WireGuard tools builder
 #############################################
-FROM gcr.io/distroless/static-debian12:latest
-
-# Install wireguard-tools + networking deps (for WG support)
-# Distroless: copy from debian12 builder
 FROM debian:12-slim AS wg-tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wireguard-tools iproute2 iptables ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Production image with WG support
-FROM gcr.io/distroless/static-debian12:latest
+#############################################
+# STAGE 5: Production Image
+#############################################
+FROM debian:12-slim AS production
 
-# Copy wireguard-tools + deps
-COPY --from=wg-tools /usr/bin/wg /usr/bin/wg
-COPY --from=wg-tools /usr/bin/wg-quick /usr/bin/wg-quick
-COPY --from=wg-tools /usr/share/wireguard-tools /usr/share/wireguard-tools
-COPY --from=wg-tools /sbin/ip /sbin/ip
-COPY --from=wg-tools /usr/sbin/iptables /usr/sbin/iptables
-COPY --from=wg-tools /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+# Install runtime dependencies (setpriv from util-linux replaces su-exec)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wireguard-tools iproute2 iptables ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
 
-# Security: Non-root user (but privileged needed for WG)
-USER nonroot:nonroot
+# Create non-root user
+RUN groupadd -r vexa && useradd -r -g vexa -d /app -s /sbin/nologin vexa
 
-# Copy binary from builder
-COPY --from=builder --chown=nonroot:nonroot /app/server /server
+# Create writable directories
+RUN mkdir -p /app/logs /etc/wireguard /var/lib/vexa/secrets && \
+    chown -R vexa:vexa /app /etc/wireguard /var/lib/vexa
+
+# Copy binary and entrypoint
+COPY --from=builder --chown=vexa:vexa /app/server /app/server
+COPY --from=builder --chown=vexa:vexa /app/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+USER root
+WORKDIR /app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD ["/server", "healthcheck"]
+    CMD wget -qO- http://127.0.0.1:8080/health/live > /dev/null || exit 1
 
 # Expose ports
 EXPOSE 8080 51820/udp
@@ -116,5 +120,6 @@ ENV ENV=production
 ENV WG_ENABLED=true
 ENV WG_MOCK_FALLBACK=true
 
-# Run the server
-ENTRYPOINT ["/server"]
+# Run the server via entrypoint (drops privileges)
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD []

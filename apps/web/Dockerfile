@@ -5,7 +5,7 @@
 #############################################
 # STAGE 1: Dependencies
 #############################################
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 # Security: Install dumb-init for proper signal handling
 RUN apk add --no-cache libc6-compat dumb-init
@@ -13,23 +13,17 @@ RUN apk add --no-cache libc6-compat dumb-init
 WORKDIR /app
 
 # Copy package files for layer caching
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json package-lock.json* ./
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Install dependencies
-RUN pnpm install --frozen-lockfile --prod
+# Install dependencies with npm (repo uses package-lock.json)
+RUN npm ci --legacy-peer-deps --omit=dev
 
 #############################################
 # STAGE 2: Builder
 #############################################
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -49,12 +43,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Build the application
-RUN pnpm build
+RUN npm run build
 
 #############################################
 # STAGE 3: Production Image
 #############################################
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 # Security: Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init ca-certificates
@@ -78,9 +72,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copy necessary files
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-
-# Switch to non-root user
-USER nextjs
 
 # Expose port
 EXPOSE 3000
