@@ -1,0 +1,31 @@
+# vexa Orchestrator — .gitignore
+
+# Secrets
+.env
+.env.local
+.env.production
+*.pem
+*.key
+*.crt
+*.p12
+05-config/secrets/
+
+# Build artifacts
+.next/
+out/
+dist/
+build/
+node_modules/
+*.log
+
+# Claude / agent logs
+claude-*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+02-application/
