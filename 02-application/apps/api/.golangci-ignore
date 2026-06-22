@@ -1,0 +1,32 @@
+# golangci-lint ignore patterns
+# Files and directories to skip during linting
+
+# Build artifacts
+build/
+data/
+logs/
+vendor/
+
+# Database migrations (generated SQL)
+internal/db/migrations/
+internal/db/seeds/
+
+# Generated files
+*.pb.go
+*_mock.go
+*_gen.go
+
+# Test data
+tests/data/
+tests/fixtures/
+
+# Configuration files
+config/*.yaml
+config/*.yml
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# Documentation
+*.md

@@ -1,0 +1,14 @@
+{
+  "name": "@vexa/config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./index.js",
+  "scripts": {
+    "clean": "rm -rf .turbo"
+  },
+  "files": [
+    "eslint-preset.js",
+    "tailwind-preset.js",
+    "tsconfig.base.json"
+  ]
+}

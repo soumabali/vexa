@@ -1,0 +1,16 @@
+# Auto-updater + Installers Status
+# Generated: 2026-05-28T19:42:00+08:00
+agent: updater
+status: done
+current_task: Auto-updater + Installers implementation
+output_files:
+  - apps/desktop/src-tauri/src/updater/mod.rs
+  - apps/desktop/src-tauri/src/updater/check.rs
+  - apps/desktop/src-tauri/src/updater/download.rs
+  - apps/desktop/src-tauri/src/updater/install.rs
+  - apps/desktop/src-tauri/src/updater/notify.rs
+  - apps/desktop/src/components/UpdateDialog.tsx
+  - apps/desktop/src/components/UpdateProgress.tsx
+blockers: []
+timestamp: "2026-05-28T19:42:00+08:00"
+version: "0.1.0"

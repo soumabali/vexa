@@ -1,0 +1,17 @@
+# File Manager Status
+# Generated: 2026-05-28T20:15:00+08:00
+agent: file_manager
+status: done
+current_task: File Manager (SFTP Browser) implementation
+output_files:
+  - apps/web/src/app/files/page.tsx
+  - apps/web/src/components/file-manager/file-manager.tsx
+  - apps/web/src/components/file-manager/file-list.tsx
+  - apps/web/src/components/file-manager/file-grid.tsx
+  - apps/web/src/components/file-manager/file-tree.tsx
+  - apps/web/src/components/file-manager/file-preview.tsx
+  - apps/web/src/components/file-manager/file-upload.tsx
+  - apps/web/src/components/file-manager/file-toolbar.tsx
+blockers: []
+timestamp: "2026-05-28T20:15:00+08:00"
+version: "0.1.0"

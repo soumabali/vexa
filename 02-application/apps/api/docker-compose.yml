@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8443:8443"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/vexa?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production-min-32-bytes-long!!}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-refresh-change-me-in-production-min-32-bytes!!}
+      - ENVIRONMENT=production
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-default-32-byte-encryption-key!!}
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - vexa
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vexa
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./internal/db/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - vexa
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - vexa
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  vexa:
+    driver: bridge

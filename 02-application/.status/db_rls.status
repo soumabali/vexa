@@ -1,0 +1,63 @@
+# Database RLS + Connection Pooling Status
+# Generated: 2026-05-28
+# Version: 1.0.0
+
+status: done
+agent: db_rls
+
+## Deliverables
+
+### 1. Row-Level Security ✅
+- `apps/api/internal/db/migrations/010_rls_policies.sql` — 8 tables with RLS policies
+- Functions: `current_tenant_id()`, `current_user_id()`, `current_user_is_admin()`
+- Role: `bypass_rls` with BYPASSRLS privilege
+- Policies: SELECT, INSERT, UPDATE, DELETE per table
+- Indexes for RLS performance
+
+### 2. Connection Pooling ✅
+- `apps/api/internal/db/pool.go` — Full pool implementation
+- Config: MaxOpen=25, MaxIdle=10, MaxLifetime=30min
+- Health checks every 5 minutes
+- Prometheus metrics: open, in-use, idle connections
+- User context setter for RLS
+- Transaction wrapper
+
+### 3. Seed Data ✅
+- `apps/api/internal/db/seeds/seed_004_test_data.sql`
+- 50 users, 200 hosts, 500 credentials, 1000 sessions, 10000 audit logs
+- 20 host groups, 50 shared credentials, 100 user devices
+- Realistic data with proper distributions
+
+### 4. Input Validation ✅
+- `apps/api/internal/api/validators/validators.go`
+- Email, IP, Port, Hostname, SSH key, Password strength
+- Sanitization: SQL injection, XSS, command injection
+- UUID, Tag validation
+
+### 5. Rate Limiting ✅
+- `apps/api/internal/middleware/rate_limit.go`
+- Token bucket algorithm
+- Per-endpoint, per-user, per-IP limits
+- Strict auth rate limiting (5/min)
+- Prometheus metrics
+- Cleanup for stale entries
+
+### 6. Tests ✅
+- `apps/api/tests/rls_test.go` — 5 test cases
+- `apps/api/tests/validation_test.go` — 10 test cases
+- `apps/api/tests/rate_limit_test.go` — 8 test cases
+
+## Files Generated
+1. `apps/api/internal/db/migrations/010_rls_policies.sql` (10.9KB)
+2. `apps/api/internal/db/pool.go` (5.4KB)
+3. `apps/api/internal/db/seeds/seed_004_test_data.sql` (11.2KB)
+4. `apps/api/internal/api/validators/validators.go` (11.5KB)
+5. `apps/api/internal/middleware/rate_limit.go` (8.7KB)
+6. `apps/api/tests/rls_test.go` (4.1KB)
+7. `apps/api/tests/validation_test.go` (8.1KB)
+8. `apps/api/tests/rate_limit_test.go` (6.2KB)
+
+## Next Steps
+- Run `make migrate-up` to apply RLS policies
+- Run `make migrate-seed` to load test data
+- Run `make test` to verify all tests pass

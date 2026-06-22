@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — SSH Manager</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">SSH Manager</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/docs.html">Docs</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/download.html">Download</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding: 80px 0; max-width: 600px">
+    <h1>Contact</h1>
+    
+    <form style="margin-top: 48px" action="#" method="POST">
+      <div style="margin-bottom: 16px">
+        <label style="display: block; margin-bottom: 8px">Name</label>
+        <input type="text" name="name" required style="width: 100%; padding: 12px; background: var(--bg-light); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text)">
+      </div>
+      
+      <div style="margin-bottom: 16px">
+        <label style="display: block; margin-bottom: 8px">Email</label>
+        <input type="email" name="email" required style="width: 100%; padding: 12px; background: var(--bg-light); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text)">
+      </div>
+      
+      <div style="margin-bottom: 16px">
+        <label style="display: block; margin-bottom: 8px">Message</label>
+        <textarea name="message" rows="5" required style="width: 100%; padding: 12px; background: var(--bg-light); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); resize: vertical"></textarea>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>SSH Manager. Open source under AGPL-3.0.</p>
+    </div>
+  </footer>
+</body>
+</html>

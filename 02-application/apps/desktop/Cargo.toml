@@ -1,0 +1,17 @@
+[package]
+name = "vexa-desktop"
+version = "0.1.0"
+description = "vexa desktop app (roadmap)"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", default-features = false , features = ["wry"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

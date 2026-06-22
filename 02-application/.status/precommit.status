@@ -1,0 +1,91 @@
+# Pre-commit Hooks Status
+# Generated: 2026-05-28T08:49:00Z
+status: configured
+pending_installation: true
+
+tools_configured:
+  - name: pre-commit
+    version: v4.6.0
+    source: https://github.com/pre-commit/pre-commit-hooks
+  
+  - name: gitleaks
+    version: v8.18.2
+    purpose: secret scanning
+    source: https://github.com/gitleaks/gitleaks
+  
+  - name: trufflehog
+    version: v3.76.2
+    purpose: secret scanning (verified)
+    source: https://github.com/trufflesecurity/trufflehog
+  
+  - name: semgrep
+    version: v1.74.0
+    purpose: SAST
+    source: https://github.com/returntocorp/semgrep
+  
+  - name: gosec
+    version: v2.20.0
+    purpose: Go security scanning
+    source: https://github.com/securego/gosec
+  
+  - name: eslint-plugin-security
+    version: 3.x
+    purpose: JS/TS security linting
+    source: npm
+  
+  - name: rustfmt
+    version: v1.7.0
+    purpose: Rust formatting
+    source: https://github.com/rust-lang/rustfmt
+
+hooks_enabled:
+  general:
+    - check-added-large-files
+    - check-case-conflict
+    - check-executables-have-shebangs
+    - check-merge-conflict
+    - check-symlinks
+    - detect-private-key
+    - end-of-file-fixer
+    - mixed-line-ending
+    - trailing-whitespace
+    - check-json
+    - check-toml
+    - check-yaml
+  
+  secret_scanning:
+    - gitleaks
+    - trufflehog
+  
+  sast:
+    - semgrep
+    - check-suspicious-patterns
+  
+  go:
+    - gofmt
+    - goimports
+    - gosec
+  
+  typescript:
+    - eslint-security
+  
+  rust:
+    - rustfmt
+  
+  dart:
+    - dart-analyze
+    - dart-format
+
+performance:
+  target_total_time: "< 30 seconds"
+  max_file_size: "1 MB"
+  network_required: false
+  parallel_jobs: 4
+
+requirements_satisfied:
+  - go: true
+  - typescript_tsx: true
+  - rust: true
+  - dart: true
+
+install_command: ./scripts/setup-hooks.sh
