@@ -21,6 +21,7 @@ node_modules/
 # Claude / agent logs
 claude-*.log
 logs/
+03-history/sessions/run-logs/
 
 # IDE
 .vscode/

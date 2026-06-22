@@ -63,8 +63,10 @@ Plan → Dispatch → Verify → Review → Commit/Push → Document
 
 ## Permission Mode
 
-- Workflow otomatis (print mode) menggunakan `ollama launch claude --model kimi-k2.7-code:cloud -- ... --dangerously-skip-permissions`.
-- `--dangerously-skip-permissions` mempercepat eksekusi tetapi **tidak menghilangkan verification gates**.
+- Workflow otomatis (print mode) menggunakan `scripts/dispatch-claude.sh` yang memanggil `ollama launch claude ... --print`.
+- Permission default untuk Claude Code: `--allowedTools "Read,Write,Edit,Bash(go test),Bash(go build),Bash(npm run build),Bash(make),Bash(cp),Bash(rm -f),Bash(mkdir),Bash(ls),Bash(grep),Bash(cd)"`.
+- Untuk command Bash di luar allowlist, gunakan `scripts/safe-exec.sh` atau jalankan manual oleh Ame.
+- `--dangerously-skip-permissions` atau `--allow-dangerously-skip-permissions` tidak lagi digunakan secara otomatis; setiap permission harus melalui allowlist eksplisit.
 - Pekerjaan interaktif berisiko tinggi boleh pakai plan/ask mode.
 
 ---
@@ -72,18 +74,11 @@ Plan → Dispatch → Verify → Review → Commit/Push → Document
 ## Claude Code Skills/MCP (WAJIB)
 
 Claude Code **wajib** memuat skill/MCP ini **pada setiap sesi coding** di `02-application/`.
-Ini adalah stack standard project vexa dan **bukan optional**.
-
-| Skill/MCP | Lokasi | Fungsi | Kapan digunakan |
-|-----------|--------|--------|-----------------|
-| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers | Setiap sesi coding |
-| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks dan workflows | Setiap sesi coding |
-| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding | Saat eksplorasi, refactoring, audit arsitektur |
-| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation | Saat membuat/mengubah test E2E atau verifikasi UI |
+Detail lengkap ada di `00-meta/skills.md`. Ini adalah stack standard project vexa dan **bukan optional**.
 
 **Prompt dispatch harus menyertakan:**
 
-> "Gunakan skill superpowers, caveman, dan graphify. Jika ada perubahan E2E, gunakan playwright MCP."
+> "Gunakan skill superpowers, caveman, dan graphify. Jika ada perubahan E2E, gunakan playwright MCP. Setelah selesai, respond ONLY dengan valid JSON sesuai `00-meta/claude-response-schema.json`."
 
 Ame mengecek ketersediaan via `scripts/audit-vexa.sh` sebelum dispatch.
 

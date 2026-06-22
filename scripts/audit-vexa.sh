@@ -88,7 +88,12 @@ done
 # 8. Check Claude skills exist
 for skill in superpowers caveman graphify; do
   if [ -d "${HOME}/.claude/skills/${skill}" ]; then
-    log "OK: skill ${skill} installed"
+    # also check it's not a broken symlink
+    if [ -e "${HOME}/.claude/skills/${skill}" ]; then
+      log "OK: skill ${skill} installed"
+    else
+      warn "Claude skill ${skill} is a broken symlink"
+    fi
   else
     warn "Missing Claude skill: ${skill}"
   fi
@@ -100,6 +105,32 @@ if grep -q "playwright" "${HOME}/.claude/settings.json"; then
 else
   warn "playwright MCP not found in ~/.claude/settings.json"
 fi
+
+# 9b. Check required tooling exists
+for cmd in ollama git docker python3; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    log "OK: command ${cmd} available"
+  else
+    warn "Missing required command: ${cmd}"
+  fi
+done
+
+# 9c. Check latest backup file exists (if backup automation configured)
+LATEST_DB_BACKUP=$(find /backups/vexa/db -maxdepth 1 -type f \( -name "*.dump" -o -name "*.dummy" \) 2>/dev/null | sort | tail -1)
+if [ -n "$LATEST_DB_BACKUP" ]; then
+  log "OK: latest DB backup found: $(basename "$LATEST_DB_BACKUP")"
+else
+  warn "No DB backup file found in /backups/vexa/db yet — run backup automation or verify path"
+fi
+
+# 9d. Check new scripts exist
+for f in "${ROOT_DIR}/scripts/dispatch-claude.sh" "${ROOT_DIR}/scripts/safe-exec.sh" "${ROOT_DIR}/scripts/log-workflow-step.sh" "${ROOT_DIR}/scripts/rollback-last.sh"; do
+  if [ -f "$f" ]; then
+    log "OK: $(basename "$f") exists"
+  else
+    warn "Missing script: $f"
+  fi
+done
 
 # 10. Check no K8s/Terraform refs in active docs
 if grep -R "kubernetes\|terraform\|helm\|k8s" "${APP_DIR}/docs" 2>/dev/null | grep -v "_archive" | grep -v "\.md:" | head -1; then

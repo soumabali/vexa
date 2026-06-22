@@ -146,10 +146,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: "no"
-    # This service is intended to be triggered by an external scheduler (cron/systemd timer).
-    # Example cron on host:
-    # 0 2 * * * cd /home/ubuntu/projects/vexa/02-application && docker compose -f docker-compose.prod.yml run --rm backup
+    restart: unless-stopped
+    # Backup runs daily at 02:00 via crond inside the container.
 
 volumes:
   postgres_data:

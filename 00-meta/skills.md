@@ -59,19 +59,26 @@ Sebelum commit/push:
 
 ---
 
-## Dispatch Template
+### Dispatch Template
 
 ```bash
-cd /home/ubuntu/projects/vexa/02-application
-ollama launch claude --model kimi-k2.7-code:cloud -- \
-  -p "AGENT COMPLIANCE CHECK: Read AGENTS.md, root CLAUDE.md, 00-meta/skills.md, 00-meta/git-structure.md, and 02-application/CLAUDE.md before doing anything. Then read the plan at /home/ubuntu/projects/vexa/06-temp/plans/<PLAN>.md and execute. Use superpowers, caveman, and graphify. If E2E changes are needed, also use the playwright MCP. Do not push to GitHub. Do not edit files outside 02-application/. Report back compliance confirmation and verification results." \
-  --dangerously-skip-permissions \
-  --allowedTools "Read,Write,Edit,Bash"
+/home/ubuntu/projects/vexa/scripts/dispatch-claude.sh \
+  /home/ubuntu/projects/vexa/06-temp/plans/<PLAN>.md \
+  <SLUG>
 ```
+
+Template prompt di dalam plan harus menyertakan:
+
+> "Gunakan skill superpowers, caveman, dan graphify. Jika ada perubahan E2E, gunakan playwright MCP. Setelah selesai, respond ONLY dengan valid JSON sesuai `/home/ubuntu/projects/vexa/00-meta/claude-response-schema.json`."
+
+Claude Code akan dijalankan dengan permission terbatas:
+> `--allowedTools "Read,Write,Edit,Bash(go test),Bash(go build),Bash(npm run build),Bash(make),Bash(cp),Bash(rm -f),Bash(mkdir),Bash(ls),Bash(grep),Bash(cd)"`
+
+Untuk command Bash di luar allowlist, gunakan `scripts/safe-exec.sh` atau jalankan manual oleh Ame.
 
 ### Expected First Response from Claude Code
 
-Claude Code harus membalas dengan konfirmasi:
+Claude Code harus membalas dengan JSON yang valid terhadap schema. Konten minimal harus mengonfirmasi:
 
 1. ✅ `AGENTS.md` dibaca
 2. ✅ Root `CLAUDE.md` dibaca
@@ -80,7 +87,7 @@ Claude Code harus membalas dengan konfirmasi:
 5. ✅ `02-application/CLAUDE.md` dibaca
 6. ✅ Plan dibaca
 7. ✅ `superpowers`, `caveman`, `graphify` tersedia
-8. ✅ `playwright` MCP tersedia (jika E2E)
+8. ✅ `playwright` MCP tersedia untuk E2E/UI jika diperlukan
 9. ✅ Hanya akan edit file di `02-application/`
 10. ✅ Tidak akan push/commit dari `02-application/`
 
