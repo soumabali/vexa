@@ -110,16 +110,32 @@ Before declaring a task complete:
 - Before merge: test + lint + review.
 - **Do not** commit `.env`, binaries, or `node_modules`.
 
-## Skills / MCP
+## Skills / MCP (WAJIB)
 
-Claude Code must load these skills/MCPs:
+Claude Code **wajib** memuat skill/MCP ini **pada setiap sesi coding** di `02-application/`.
+Ini adalah stack standard project vexa dan **bukan optional**.
 
-| Skill/MCP | Location | Purpose |
-|-----------|----------|---------|
-| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers |
-| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks and workflows |
-| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding |
-| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation |
+| Skill/MCP | Location | Purpose | When to use |
+|-----------|----------|---------|-------------|
+| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers | Every coding session |
+| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks and workflows | Every coding session |
+| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding | Exploration, refactoring, architecture audit |
+| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation | E2E tests or UI verification |
+
+### Required Prompt Phrase
+
+When Ame dispatches a task to Claude Code, the prompt must include:
+
+> "Use superpowers, caveman, and graphify. If E2E changes are needed, also use the playwright MCP."
+
+### Verification
+
+```bash
+ls -d ~/.claude/skills/{superpowers,caveman,graphify}
+grep -A3 '"playwright"' ~/.claude/settings.json
+```
+
+If any skill/MCP is missing, stop and report to Ame before coding.
 
 ## Interaction Rules
 

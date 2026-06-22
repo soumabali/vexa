@@ -56,16 +56,23 @@ Plan → Dispatch → Verify → Review → Commit/Push → Document
 
 ---
 
-## Claude Code Skills/MCP
+## Claude Code Skills/MCP (WAJIB)
 
-Claude Code wajib memuat skill/MCP ini untuk project vexa:
+Claude Code **wajib** memuat skill/MCP ini **pada setiap sesi coding** di `02-application/`.
+Ini adalah stack standard project vexa dan **bukan optional**.
 
-| Skill/MCP | Lokasi | Fungsi |
-|-----------|--------|--------|
-| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers |
-| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks dan workflows |
-| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding |
-| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation |
+| Skill/MCP | Lokasi | Fungsi | Kapan digunakan |
+|-----------|--------|--------|-----------------|
+| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers | Setiap sesi coding |
+| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks dan workflows | Setiap sesi coding |
+| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding | Saat eksplorasi, refactoring, audit arsitektur |
+| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation | Saat membuat/mengubah test E2E atau verifikasi UI |
+
+**Prompt dispatch harus menyertakan:**
+
+> "Gunakan skill superpowers, caveman, dan graphify. Jika ada perubahan E2E, gunakan playwright MCP."
+
+Ame mengecek ketersediaan via `scripts/audit-vexa.sh` sebelum dispatch.
 
 ---
 
