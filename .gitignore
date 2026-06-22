@@ -28,3 +28,15 @@ logs/
 *.swp
 *.swo
 .DS_Store
+
+# Subtree (managed from root git)
+02-application/
+
+# Backup data (host-side only)
+backups/
+/backups
+
+# Keep these even if backup/audit names match
+!/00-meta/audit-checklist.md
+!/00-meta/pre-push-checklist.md
+!/scripts/audit-vexa.sh
