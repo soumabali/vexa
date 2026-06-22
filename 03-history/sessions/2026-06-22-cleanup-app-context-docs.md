@@ -49,6 +49,7 @@ Rapikan `02-application/` sebagai repo open-source self-hosted yang jelas, tidak
 
 - `.env`, `next-env.d.ts`, dan `tests/e2e/playwright/.auth/user.json` tidak di-commit.
 - GitHub push via `git subtree push` setelah setup `~/.netrc` dengan token dari `gh` CLI.
+- **Lesson learned:** `02-application/` adalah git subtree, bukan repo terpisah. Ame harusnya sudah mendokumentasikan struktur ini sejak awal. Dokumentasi sekarang sudah diperbarui di `00-meta/git-structure.md`, `README.md`, `02-application/CLAUDE.md`, dan Obsidian Vault.
 
 ## Links
 
