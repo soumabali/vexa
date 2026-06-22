@@ -1,51 +1,30 @@
-# Credentials - NEVER commit
-CREDENTIALS.md
+# vexa Orchestrator — .gitignore
+
+# Secrets
 .env
 .env.local
 .env.production
 *.pem
 *.key
-id_rsa*
-known_hosts
+*.crt
+*.p12
+05-config/secrets/
 
 # Build artifacts
-*.exe
-*.dll
-*.so
-*.dylib
-/target/
-/dist/
-/build/
-/.next/
-/out/
-
-# Dependencies
+.next/
+out/
+dist/
+build/
 node_modules/
-vendor/
-
-# Logs
 *.log
-npm-debug.log*
 
-# OS
-.DS_Store
-Thumbs.db
+# Claude / agent logs
+claude-*.log
+logs/
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
-
-# Binary backups
-apps/api/server
-apps/api/server-*
-
-# Test results
-test-results/
-playwright-report/
-playwright/.auth/
-*.zip
-
-# Local agent config
-.claude/
+.DS_Store

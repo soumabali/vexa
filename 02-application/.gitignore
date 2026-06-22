@@ -1,0 +1,51 @@
+# Credentials - NEVER commit
+CREDENTIALS.md
+.env
+.env.local
+.env.production
+*.pem
+*.key
+id_rsa*
+known_hosts
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+/target/
+/dist/
+/build/
+/.next/
+/out/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Binary backups
+apps/api/server
+apps/api/server-*
+
+# Test results
+test-results/
+playwright-report/
+playwright/.auth/
+*.zip
+
+# Local agent config
+.claude/

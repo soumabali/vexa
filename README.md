@@ -1,98 +1,31 @@
-# vexa — Complete SSH Manager
+# vexa — Orchestrator Root
 
-Self-hosted SSH access management with a security-first architecture.
+> Private orchestration workspace for Hermes Agent and Claude Code.
+> Application code lives in `02-application/` (subtree → https://github.com/soumabali/vexa).
 
-- **Web app** (Next.js) — manage hosts, credentials, tunnels, and browser-based SSH terminal
-- **API** (Go + Gin + PostgreSQL + Redis) — REST, WebSocket terminal, WireGuard tunnels, vault encryption, audit logging
-- **Desktop app** (Tauri) — planned / experimental
-- **Mobile app** (Android) — planned / experimental
+## Directory Map
 
-## Quick Start (Docker)
+| Folder | Purpose |
+|--------|---------|
+| `00-meta/` | Links to credentials, URLs, ports, contacts |
+| `01-documents/` | Architecture, roadmap, decisions, standards |
+| `02-application/` | Production application code (git subtree) |
+| `03-history/sessions/` | Per-session notes and reports |
+| `04-data/` | Reference data, exports |
+| `05-config/` | Local config and secrets (gitignored) |
+| `06-temp/plans/` | Active Claude Code execution plans |
+| `.claude/` | Root-level Claude Code context |
 
-```bash
-git clone https://github.com/soumabali/vexa.git
-cd vexa
-cp .env.example .env
-# edit .env with strong secrets
-docker compose up -d
-```
+## Claude Code Rule
 
-Open http://localhost:3000 and register the first admin account.
+1. Do **not** edit code in this root directory.
+2. All coding work happens inside `02-application/`.
+3. Load `02-application/CLAUDE.md` and `02-application/.claude/rules/hermes-skills.md` before coding.
+4. Ame writes plans here; Claude Code executes inside `02-application/`.
 
-## Development
+## Links
 
-```bash
-# Start database and cache
-docker compose up -d postgres redis
-
-# Run API
-cd apps/api
-go run cmd/server/main.go
-
-# Run Web (another terminal)
-cd apps/web
-npm run dev
-```
-
-See `docs/dev/getting-started.md` for the full setup guide.
-
-## Features
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Host management | ✅ Ready | SSH hosts, labels, inventory |
-| Credential vault | ✅ Ready | AES-GCM encrypted, unlockable master vault |
-| SSH terminal | ✅ Ready | xterm.js via WebSocket, host selector, multi-tab |
-| SFTP file manager | ✅ Ready | Upload, download, navigate remote files |
-| WireGuard tunnels | ✅ Ready | Per-user tunnels, enable/disable/rotate |
-| WebAuthn / passkeys | ✅ Ready | FIDO2 security keys |
-| TOTP MFA | 🚧 Planned | Backend scaffold exists, UI placeholder |
-| Audit logging | ✅ Ready | All critical actions logged |
-| Desktop app | 🚧 Roadmap | Tauri scaffolding present |
-| Mobile app | 🚧 Roadmap | Flutter scaffolding present |
-
-## Architecture
-
-```
-vexa/
-├── apps/
-│   ├── web/          # Next.js frontend
-│   ├── api/          # Go backend
-│   ├── desktop/      # Tauri desktop app (roadmap)
-│   └── mobile/       # Flutter mobile app (roadmap)
-├── packages/
-│   ├── ssh-core/     # Rust SSH/SFTP core (roadmap)
-│   ├── ui/           # Shared React components
-│   ├── types/        # Shared TypeScript types
-│   └── config/       # Shared eslint/tailwind/tsconfig
-├── docs/             # Documentation
-├── docker-compose.yml
-└── Makefile
-```
-
-## Security
-
-- Argon2 password hashing
-- AES-GCM credential encryption
-- JWT access + refresh tokens
-- WebAuthn / passkey support
-- Rate limiting and audit logging
-- CORS enforced via `ALLOWED_ORIGINS`
-- TLS support in production
-
-## Roadmap
-
-1. TOTP MFA real backend + QR setup flow
-2. Desktop app (Tauri) MVP
-3. Mobile app (Flutter) MVP
-4. Credential team sharing / rotation
-5. SSH terminal mobile integration
-6. Public SDK / CLI
-
-## License
-
-MIT — see `LICENSE`.
-
-## Support
-
-For bugs and feature requests, please open a GitHub issue.
+- **Public application repo:** https://github.com/soumabali/vexa
+- **Private root repo:** https://github.com/soumabali/vexa-root
+- **Obsidian vault:** `Documents/Obsidian Vault/infra/vexa.md`
+- **Credentials:** `Documents/Obsidian Vault/credentials/vexa Credentials.md`
