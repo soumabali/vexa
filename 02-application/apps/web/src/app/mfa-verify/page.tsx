@@ -34,10 +34,9 @@ function MFAVerifyContent() {
 
   const onTOTPSubmit = async (data: TwoFactorCodeInput) => {
     try {
-      const result = await authApi.verifyMFA({ mfa_token: mfaToken, code: data.code });
+      const result = await authApi.verifyMFA({ mfa_token: mfaToken, totp_code: data.code });
       // Store token and redirect
-      sessionStorage.setItem("ssh_access_token", result.token);
-      sessionStorage.setItem("ssh_user", JSON.stringify(result.user));
+      sessionStorage.setItem("ssh_access_token", result.access_token);
       router.push(returnTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid verification code");

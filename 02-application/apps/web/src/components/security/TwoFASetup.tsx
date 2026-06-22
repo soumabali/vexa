@@ -12,18 +12,21 @@ import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "../auth/LoadingSpinner";
 import { ErrorDisplay } from "../auth/ErrorDisplay";
 import { Copy, RefreshCw, CheckCircle2, ShieldCheck } from "lucide-react";
-import Image from "next/image";
 
-export function TwoFASetup() {
+interface TwoFASetupProps {
+  onSuccess?: () => void;
+}
+
+export function TwoFASetup({ onSuccess }: TwoFASetupProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [setupData, setSetupData] = useState<{
     secret: string;
+    uri: string;
     qrCode: string; // base64 PNG data URL
     backupCodes: string[];
   } | null>(null);
   const [isVerified, setIsVerified] = useState(false);
-  const [showBackupCodes, setShowBackupCodes] = useState(false);
 
   const {
     register,
@@ -38,7 +41,15 @@ export function TwoFASetup() {
     setError("");
     try {
       const data = await authApi.setup2FA();
-      setSetupData(data);
+      const qrSrc = data.qrCode.startsWith("data:image")
+        ? data.qrCode
+        : `data:image/png;base64,${data.qrCode}`;
+      setSetupData({
+        secret: data.secret,
+        uri: data.uri,
+        qrCode: qrSrc,
+        backupCodes: data.backupCodes,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to setup 2FA");
     } finally {
@@ -82,30 +93,28 @@ export function TwoFASetup() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowBackupCodes(!showBackupCodes)} variant="outline" className="w-full">
-            {showBackupCodes ? "Hide" : "Show"} Backup Codes
-          </Button>
-          {showBackupCodes && setupData && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Save these backup codes in a secure location:</p>
-              <p className="text-xs text-muted-foreground">
-                Each code can only be used once. Store them somewhere safe.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {setupData.backupCodes.map((code, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-2 bg-muted rounded text-sm font-mono"
-                  >
-                    <span>{code}</span>
-                    <Button size="sm" variant="ghost" onClick={() => copyToClipboard(code)}>
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Save these backup codes in a secure location:</p>
+            <p className="text-xs text-muted-foreground">
+              Each code can only be used once. Store them somewhere safe.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {setupData?.backupCodes.map((code, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 bg-muted rounded text-sm font-mono"
+                >
+                  <span>{code}</span>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(code)}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+          <Button onClick={onSuccess} className="w-full">
+            I have saved the backup codes
+          </Button>
         </CardContent>
       </Card>
     );
@@ -153,15 +162,14 @@ export function TwoFASetup() {
       <CardHeader>
         <CardTitle>Scan QR Code</CardTitle>
         <CardDescription>
-          Scan this QR code with your authenticator app
+          Scan this QR code with your authenticator app, or enter the key manually
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && <ErrorDisplay message={error} />}
         <div className="flex flex-col items-center space-y-4">
-          {/* QR Code image — display base64 data URL */}
           <div className="p-4 bg-white rounded-lg border shadow-sm">
-            {setupData.qrCode.startsWith("data:image") ? (
+            {setupData.qrCode ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={setupData.qrCode}
@@ -187,6 +195,7 @@ export function TwoFASetup() {
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground text-center break-all">{setupData.uri}</p>
           </div>
 
           <form onSubmit={handleSubmit(onVerify)} className="w-full space-y-3">

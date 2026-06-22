@@ -48,17 +48,20 @@ $PLAN_CONTENT
 EOF
 )
 
+# Default Claude Code model for coding tasks
+DEFAULT_CLAUDE_MODEL="deepseek-v4-pro:cloud"
+
 # Run Claude Code with timeout, capturing all output
 # First attempt
-echo "[dispatch] $(date) Attempt 1/2..." | tee -a "$LOG_FILE"
-if ! timeout 1200 ollama launch claude --model kimi-k2.7-code:cloud -- \
+echo "[dispatch] $(date) Attempt 1/2 using model: $DEFAULT_CLAUDE_MODEL..." | tee -a "$LOG_FILE"
+if ! timeout 1200 ollama launch claude --model "$DEFAULT_CLAUDE_MODEL" -- \
   -p "$PROMPT" \
   --print \
   --allowedTools "Read,Write,Edit,Bash(go test),Bash(go build),Bash(npm run build),Bash(make),Bash(cp),Bash(rm -f),Bash(mkdir),Bash(ls),Bash(grep),Bash(cd)" \
   > "$RESPONSE_FILE" 2>> "$LOG_FILE"; then
   echo "[dispatch] $(date) Attempt 1 failed or timed out." | tee -a "$LOG_FILE"
-  echo "[dispatch] $(date) Attempt 2/2..." | tee -a "$LOG_FILE"
-  if ! timeout 1200 ollama launch claude --model kimi-k2.7-code:cloud -- \
+  echo "[dispatch] $(date) Attempt 2/2 using model: $DEFAULT_CLAUDE_MODEL..." | tee -a "$LOG_FILE"
+  if ! timeout 1200 ollama launch claude --model "$DEFAULT_CLAUDE_MODEL" -- \
     -p "$PROMPT" \
     --print \
     --allowedTools "Read,Write,Edit,Bash(go test),Bash(go build),Bash(npm run build),Bash(make),Bash(cp),Bash(rm -f),Bash(mkdir),Bash(ls),Bash(grep),Bash(cd)" \

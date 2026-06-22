@@ -92,11 +92,13 @@ export function LoginForm() {
     setIsLoading(true);
     setError("");
     try {
-      await authApi.verifyMFA({
+      const result = await authApi.verifyMFA({
         mfa_token: mfaChallenge.mfa_token,
-        code,
-        challenge: mfaChallenge.webauthn_challenge,
+        totp_code: code,
       });
+      if (result.access_token) {
+        saveAuthToken(result.access_token);
+      }
       router.push("/hosts");
     } catch (err) {
       setError(err instanceof Error ? err.message : "MFA verification failed");

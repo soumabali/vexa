@@ -53,7 +53,7 @@ test.describe("Host CRUD Operations", () => {
   });
 
   test('creates a new host', async ({ page }) => {
-    await page.getByRole('button', { name: /add host/i }).click();
+    await page.getByRole('button', { name: /add host/i }).nth(1).click();
 
     await page.getByLabel('Name *').fill('E2E Test Host');
     await page.getByLabel('Host / IP *').fill('test.example.com');

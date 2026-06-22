@@ -344,7 +344,7 @@ func (h *AuthHandler) SetupMFA(c *gin.Context) {
 		return
 	}
 
-	if err := h.userService.StoreMFASetupSession(c.Request.Context(), id, setup.Secret, setup.BackupCodes); err != nil {
+	if err := h.userService.StoreMFASetupSession(c.Request.Context(), id, setup.EncryptedSecret, setup.BackupCodes); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to store MFA setup session"})
 		return
 	}
@@ -354,6 +354,7 @@ func (h *AuthHandler) SetupMFA(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, gin.H{
+		"secret":       setup.Secret,
 		"qr_code":      setup.QRCode,
 		"uri":          setup.URI,
 		"backup_codes": setup.BackupCodes,
@@ -370,7 +371,12 @@ func (h *AuthHandler) VerifyMFAEnable(c *gin.Context) {
 		return
 	}
 
-	userIDVal, _ := c.Get("user_id"); userID := userIDVal.(uuid.UUID)
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		return
+	}
+	userID := userIDVal.(uuid.UUID)
 
 	pending, err := h.userService.GetMFASetupSession(c.Request.Context(), userID)
 	if err != nil {

@@ -37,10 +37,11 @@ func NewMFAService(issuer string, encKey []byte) *MFAService {
 }
 
 type TOTPSetup struct {
-	Secret   string `json:"secret"`
-	QRCode   string `json:"qr_code"`
-	URI      string `json:"uri"`
-	BackupCodes []string `json:"backup_codes"`
+	Secret          string   `json:"secret"`
+	EncryptedSecret string   `json:"encrypted_secret"`
+	QRCode          string   `json:"qr_code"`
+	URI             string   `json:"uri"`
+	BackupCodes     []string `json:"backup_codes"`
 }
 
 func (s *MFAService) GenerateTOTPSecret(accountName string) (*TOTPSetup, error) {
@@ -72,10 +73,11 @@ func (s *MFAService) GenerateTOTPSecret(accountName string) (*TOTPSetup, error) 
 		return nil, fmt.Errorf("failed to encrypt TOTP secret: %w", err)
 	}
 	return &TOTPSetup{
-		Secret:      encSecret,
-		QRCode:      base64.StdEncoding.EncodeToString(buf.Bytes()),
-		URI:         key.URL(),
-		BackupCodes: backupCodes,
+		Secret:          key.Secret(),
+		EncryptedSecret: encSecret,
+		QRCode:          base64.StdEncoding.EncodeToString(buf.Bytes()),
+		URI:             key.URL(),
+		BackupCodes:     backupCodes,
 	}, nil
 }
 

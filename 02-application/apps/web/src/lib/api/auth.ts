@@ -41,9 +41,16 @@ export interface LoginStep1Response {
   token_type?: string;
 }
 
+export interface TokenPairResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in?: number;
+  token_type?: string;
+}
+
 export interface MFAToken {
   mfa_token: string;
-  code?: string;
+  totp_code: string;
   challenge?: string;
 }
 
@@ -56,8 +63,8 @@ export const authApi = {
     }),
 
   // Step 2: verify TOTP code
-  verifyMFA: (data: { mfa_token: string; code: string; challenge?: string }) =>
-    apiRequest<{ token: string; user: { id: string; email: string; name: string } }>("/api/v1/auth/mfa/verify", {
+  verifyMFA: (data: { mfa_token: string; totp_code: string; challenge?: string }) =>
+    apiRequest<TokenPairResponse>("/api/v1/auth/mfa/verify", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -153,7 +160,7 @@ export const authApi = {
 
   // ─── User profile API ─────────────────────────────────────────────────
   getUserProfile: () =>
-    apiRequest<{ id: string; email: string; role: string; mfa_verified: boolean }>("/api/v1/users/me", {
+    apiRequest<{ id: string; email: string; role: string; mfa_enabled: boolean; totp_enabled: boolean }>("/api/v1/users/me", {
       method: "GET",
     }),
 
@@ -181,20 +188,19 @@ export const authApi = {
   // ─── MFA / 2FA ────────────────────────────────────────────────────────────────
 
   setup2FA: () =>
-    apiRequest<{ secret: string; qrCode: string; backupCodes: string[] }>("/api/v1/auth/2fa/setup", {
+    apiRequest<{ secret: string; qrCode: string; uri: string; backupCodes: string[] }>("/api/v1/auth/mfa/setup", {
       method: "POST",
     }),
 
-  verify2FASetup: (code: string) =>
-    apiRequest<{ message: string }>("/api/v1/auth/2fa/verify", {
+  verify2FASetup: (totp_code: string) =>
+    apiRequest<{ message: string }>("/api/v1/auth/mfa/enable", {
       method: "POST",
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ totp_code }),
     }),
 
-  disable2FA: (code: string) =>
-    apiRequest<{ message: string }>("/api/v1/auth/2fa/disable", {
-      method: "POST",
-      body: JSON.stringify({ code }),
+  disable2FA: () =>
+    apiRequest<{ message: string }>("/api/v1/auth/mfa/disable", {
+      method: "DELETE",
     }),
 
   // ─── WebAuthn (security key) ──────────────────────────────────────────────────

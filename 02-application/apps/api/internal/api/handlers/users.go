@@ -7,31 +7,44 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/soumabali/vexa/internal/audit"
+	"github.com/soumabali/vexa/internal/auth"
 	"github.com/soumabali/vexa/internal/models"
 )
 
 type UserHandler struct {
+	userService *auth.UserService
 	auditLogger *audit.Logger
-	// In production, inject a user repository service here
 }
 
-func NewUserHandler(auditLogger *audit.Logger) *UserHandler {
-	return &UserHandler{auditLogger: auditLogger}
+func NewUserHandler(userService *auth.UserService, auditLogger *audit.Logger) *UserHandler {
+	return &UserHandler{userService: userService, auditLogger: auditLogger}
 }
 
 // GetProfile returns the authenticated user's profile.
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	userID, _ := c.Get("user_id")
-	email, _ := c.Get("email")
-	role, _ := c.Get("role")
-	mfaVerified, _ := c.Get("mfa_verified")
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		return
+	}
+	userID := userIDVal.(uuid.UUID)
+
+	user, err := h.userService.GetUserByID(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load profile"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":           userID.(uuid.UUID).String(),
-		"email":        email,
-		"role":         role,
-		"mfa_verified": mfaVerified,
-		"message":      "profile endpoint - implement user service lookup",
+		"id":           user.ID.String(),
+		"email":        user.Email,
+		"role":         user.Role,
+		"mfa_enabled":  user.MFAEnabled,
+		"totp_enabled": user.TOTPEnabled,
+		"is_active":    user.IsActive,
+		"last_login":   user.LastLogin,
+		"created_at":   user.CreatedAt,
+		"updated_at":   user.UpdatedAt,
 	})
 }
 

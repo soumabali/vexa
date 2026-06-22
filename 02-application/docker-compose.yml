@@ -34,6 +34,7 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile.dev
+      target: dev
     environment:
       - DATABASE_URL=postgres://${DB_USER:-vexa}:${DB_PASSWORD:-changeme}@postgres:5432/${DB_NAME:-vexa}?sslmode=disable
       - DB_HOST=postgres
@@ -41,21 +42,22 @@ services:
       - DB_USER=${DB_USER:-vexa}
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
       - DB_NAME=${DB_NAME:-vexa}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_ADDR=redis:6379
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
       - ENV=${ENV:-development}
+      - SERVER_PORT=8080
+      - ALLOWED_ORIGINS=http://localhost:3000
     ports:
       - "8080:8080"
     volumes:
       - ./apps/api:/app
       - go_mod_cache:/go/pkg/mod
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: air
 
   web:
     build:

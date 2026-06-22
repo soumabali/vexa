@@ -7,6 +7,7 @@ interface User {
   email: string;
   role: string;
   mfaEnabled: boolean;
+  totpEnabled: boolean;
 }
 
 export function useAuth() {
@@ -16,10 +17,16 @@ export function useAuth() {
   useEffect(() => {
     async function fetchMe() {
       try {
-        const res = await fetch("/api/v1/auth/me", { credentials: "include" });
+        const res = await fetch("/api/v1/users/me", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user ?? data);
+          setUser({
+            id: data.id,
+            email: data.email,
+            role: data.role,
+            mfaEnabled: data.mfa_enabled ?? false,
+            totpEnabled: data.totp_enabled ?? false,
+          });
         } else {
           setUser(null);
         }
