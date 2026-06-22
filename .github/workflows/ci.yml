@@ -24,10 +24,35 @@ env:
 
 jobs:
   # ==========================================================================
+  # vexa Workflow Audit
+  # ==========================================================================
+  vexa-audit:
+    name: vexa Workflow Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run vexa audit script
+        run: |
+          cd /home/ubuntu/projects/vexa
+          ./scripts/audit-vexa.sh
+        continue-on-error: false
+
+      - name: Check agent compliance files
+        run: |
+          test -f /home/ubuntu/projects/vexa/AGENTS.md
+          test -f /home/ubuntu/projects/vexa/00-meta/claude-response-schema.json
+          test -f /home/ubuntu/projects/vexa/scripts/claude-compliance-check.sh
+
+  # ==========================================================================
   # Lint & Format
   # ==========================================================================
   lint:
     name: Lint & Format
+    needs: vexa-audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
