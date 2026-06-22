@@ -7,11 +7,13 @@
 - **Type:** Open-source, self-hosted monorepo (web + API + desktop + mobile + shared packages)
 - **Project location:** `/home/ubuntu/projects/vexa/02-application/`
 - **Root orchestrator:** `../CLAUDE.md`
+- **Git structure:** `02-application/` is a git subtree of the root repo (no `.git` directory inside).  
+  Commit/push are handled by Ame from the root workspace.
 - **Obsidian SSOT:** `infra/vexa — Project Index.md`
 
 ## Role Split
 
-- **Ame (Hermes):** plans, dispatches, verifies, commits, pushes, writes session notes.
+- **Ame (Hermes):** plans, dispatches, verifies, commits from root, pushes root + subtree, writes session notes.
 - **Claude Code:** executes code **inside `02-application/`** only.
 
 When starting work in this directory, load:
@@ -19,6 +21,14 @@ When starting work in this directory, load:
 - `02-application/CLAUDE.md` (this file)
 - `02-application/.claude/settings.json`
 - `02-application/.claude/rules/hermes-skills.md`
+
+## Push Rules
+
+- Do not create a `.git` directory inside `02-application/`.
+- Do not push from inside `02-application/` (it has no git context).
+- Ame commits all changes from root and runs:
+  - `git push origin main` for root orchestrator
+  - `git subtree push --prefix=02-application https://github.com/soumabali/vexa.git main` for application repo
 
 ## Architecture
 
