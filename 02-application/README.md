@@ -38,6 +38,11 @@ npm run dev
 
 See `docs/dev/getting-started.md` for the full setup guide.
 
+## Documentation
+
+> **Orchestrator-level documentation** (workflow, roadmap, credentials, runbook) is maintained privately in the root orchestrator repo: `https://github.com/soumabali/vexa-root`.  
+> This application repo contains only **open-source contributor docs** (`docs/`) and **operational scripts** (`scripts/`).
+
 ## Features
 
 | Feature | Status | Notes |
@@ -67,7 +72,8 @@ vexa/
 │   ├── ui/           # Shared React components
 │   ├── types/        # Shared TypeScript types
 │   └── config/       # Shared eslint/tailwind/tsconfig
-├── docs/             # Documentation
+├── docs/             # Contributor & deployment docs
+├── scripts/          # Operational scripts
 ├── docker-compose.yml
 └── Makefile
 ```

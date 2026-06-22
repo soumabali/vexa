@@ -31,6 +31,19 @@
 
 ---
 
+## Single Source of Truth Boundaries
+
+| Layer | SSOT For | Location |
+|-------|----------|----------|
+| Production code | Application code | `02-application/` → `https://github.com/soumabali/vexa` |
+| Workflow, plans, session notes, decisions | Orchestrator context | Root (`/home/ubuntu/projects/vexa`) → `https://github.com/soumabali/vexa-root` |
+| Credentials, secrets | Private vault | `/home/ubuntu/Documents/Obsidian Vault/credentials/` |
+| URLs, ports, runbook | Obsidian Vault + root `00-meta/` | `00-meta/urls.md` + Obsidian `infra/` |
+
+**Do not create `.status/`, `00-meta/`, or `03-history/` inside `02-application/`**. Those folders belong to the root orchestrator only.
+
+---
+
 ## Workflow
 
 ```text
@@ -141,3 +154,4 @@ See `03-history/sessions/` for examples.
 - [[vexa Rules]]
 - [[vexa Claude Code Setup]]
 - [[vexa Workflow Runbook]]
+- [[vexa Error Recovery Playbook]]
