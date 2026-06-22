@@ -168,11 +168,17 @@ If any skill/MCP is missing, stop and report to Ame before coding.
 
 ## Documentation
 
-- `README.md` — open-source contributor overview.
-- `docs/dev/getting-started.md` — development setup.
-- `docs/devops/docker-guide.md` — Docker operations.
-- `docs/devops/self-hosted-deployment.md` — self-hosted deployment.
-- `docs/devops/wireguard-deployment.md` — WireGuard tunnel setup.
-- `docs/architecture/` — architecture and security.
-- `docs/api/` — API contract.
-- Root orchestrator: `../CLAUDE.md`.
+- **Application repo docs** (this repo) contain contributor and deployment docs in `docs/`.
+- **Orchestrator-level docs** (workflow, roadmap, credentials, runbook, session notes) are SSOT in the private root orchestrator repo: `https://github.com/soumabali/vexa-root`.
+- Do not create `.status/`, `00-meta/`, or `03-history/` here. They belong to the orchestrator root and are already ignored by `.gitignore`.
+
+---
+
+## SSOT Boundary Summary
+
+| Concern | SSOT Location | Notes |
+|---------|---------------|-------|
+| Production code | This repo (`02-application/`) | Public open-source |
+| Workflow, plans, session notes, decisions | Root orchestrator (`/home/ubuntu/projects/vexa`) | Private |
+| Credentials, secrets | Obsidian Vault | Never in repo |
+| URLs, ports, runbook | Obsidian Vault + root `00-meta/urls.md` | Private |
