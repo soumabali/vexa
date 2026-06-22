@@ -7,11 +7,7 @@
 
 | File | Topik | Status | Session Note |
 |------|-------|--------|--------------|
-| `20260622-fix-api-dockerfile.md` | Fix API Dockerfile log permission | ✅ Done | `2026-06-22-vault-restructure-roadmap-rules.md` |
-| `20260622-redeploy-and-e2e.md` | Redeploy production + E2E | ✅ Done | `2026-06-22-vault-restructure-roadmap-rules.md` |
-| `20260622-verify-claude-skills.md` | Verifikasi Claude skills/MCP | ✅ Done | `2026-06-22-vault-restructure-roadmap-rules.md` |
-| `20260622-cleanup-app-context-docs.md` | Cleanup app context, docs, CI/CD untuk open source | ✅ Done | `2026-06-22-cleanup-app-context-docs.md` |
-| `20260622-workflow-audit-fixes.md` | Workflow audit: fix Progress, plans index, git remote, backup volume, prevention | ✅ Done | `2026-06-22-workflow-audit-fixes.md` |
+| `20260622-workflow-improvement-10of10.md` | Workflow improvement plan: target rating 10/10 | 🚧 In Progress | `2026-06-22-workflow-dryrun-test.md` |
 
 ## Arsip Plans (selesai/sukses)
 
@@ -22,6 +18,8 @@
 | `20260622-verify-claude-skills.md` | Verifikasi Claude skills/MCP |
 | `20260622-cleanup-app-context-docs.md` | Cleanup app context, docs, CI/CD untuk open source |
 | `20260622-workflow-audit-fixes.md` | Workflow audit fixes dan prevention mechanisms |
+| `20260622-make-claude-skills-mandatory.md` | Perjelas skill/MCP wajib di semua layer |
+| `20260622-agent-compliance-enforcement.md` | Enforcement aturan/flow untuk semua agent/subagent |
 
 ## Template
 

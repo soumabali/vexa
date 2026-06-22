@@ -11,6 +11,7 @@
 | 2026-06-22 | `2026-06-22-workflow-audit-fixes.md` | Workflow audit fixes: Progress, plans index, git remote, backup volume, prevention | ✅ Done |
 | 2026-06-22 | `2026-06-22-make-claude-skills-mandatory.md` | Perjelas skill/MCP wajib di semua layer | ✅ Done |
 | 2026-06-22 | `2026-06-22-agent-compliance-enforcement.md` | Enforcement aturan/flow untuk semua agent/subagent | ✅ Done |
+| 2026-06-22 | `2026-06-22-workflow-dryrun-test.md` | Dry-run test workflow compliance, rating 8/10, plan menuju 10/10 | ✅ Done |
 
 ## Template
 
