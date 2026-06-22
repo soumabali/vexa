@@ -1,14 +1,20 @@
-# vexa — Session Notes
+# vexa — Session Notes Index
 
-> Log of orchestrator sessions. Mirror of Obsidian Vault.
+> Index kronologis session notes. Mirror dari Obsidian Vault.
 
-## 2026-06-22 — Rebuild root + application separation
+## 2026
 
-- Rebuild `/home/ubuntu/projects/vexa` as orchestrator root.
-- Create `/home/ubuntu/projects/vexa/application` as production-ready app repo.
-- Push blocked: GitHub PAT lacks `repo` scope. New token needed.
-- Verification: app repo committed, root orchestrator files created.
+| Tanggal | File | Topik | Status |
+|---------|------|-------|--------|
+| 2026-06-22 | `2026-06-22-vault-restructure-roadmap-rules.md` | Vault restructure, roadmap P1-P12, rules baja | ✅ Done |
 
-## Older Sessions
+## Template
 
-See `03-history/sessions/` for individual session files.
+Nama file: `YYYY-MM-DD-<topic>.md`.
+
+Isi wajib:
+- Goal
+- Changes
+- Verification
+- Notes
+- Links ke Obsidian SSOT

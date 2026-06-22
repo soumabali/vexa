@@ -1,50 +1,58 @@
-# Vexa / SSH Manager — Claude Code Context
+# vexa — Complete SSH Manager / Claude Code Context
 
 ## Project Identity
 
 - **Name:** vexa
-- **Type:** Monorepo (web + API + desktop + mobile + shared packages)
-- **Server:** 43.156.128.55 (Tencent Cloud)
-- **Model default untuk Claude Code:** `kimi-k2.7-code:cloud` via Ollama launcher
-- **Permission mode:** `--dangerously-skip-permissions` (gunakan dengan hati-hati)
-- **Lokasi project:** `/home/ubuntu/projects/vexa/02-application/`
-- **Obsidian note:** `infra/vexa.md`
-- **Credentials:** `credentials/vexa Credentials.md`
+- **Tagline:** Complete SSH Manager
+- **Type:** Open-source, self-hosted monorepo (web + API + desktop + mobile + shared packages)
+- **Project location:** `/home/ubuntu/projects/vexa/02-application/`
+- **Root orchestrator:** `../CLAUDE.md`
+- **Obsidian SSOT:** `infra/vexa — Project Index.md`
 
-## Arsitektur
+## Role Split
+
+- **Ame (Hermes):** plans, dispatches, verifies, commits, pushes, writes session notes.
+- **Claude Code:** executes code **inside `02-application/`** only.
+
+When starting work in this directory, load:
+
+- `02-application/CLAUDE.md` (this file)
+- `02-application/.claude/settings.json`
+- `02-application/.claude/rules/hermes-skills.md`
+
+## Architecture
 
 ```
 apps/
-  api/          Go backend (Gin, JWT, MFA, WebAuthn)
+  api/          Go backend (Gin, JWT, WebAuthn, audit logging)
   web/          Next.js 16 + React 19 + TypeScript
-  desktop/      Tauri v2 + Rust
-  mobile/       Flutter
+  desktop/      Tauri v2 + Rust (roadmap / experimental)
+  mobile/       Flutter (roadmap / experimental)
 packages/
-  ssh-core/     Rust SSH/SFTP/tunnel library + FFI
+  ssh-core/     Rust SSH/SFTP/tunnel library + FFI (roadmap)
   ui/           Shared UI components
   types/        Shared TypeScript types
   config/       Shared eslint/tailwind/tsconfig
-deploy/         Helm charts + K8s manifests
-infra/          Terraform + K8s + docker scripts
-security/       Compliance + pentest + fuzz tests
 tests/          Playwright E2E + integration tests
 docs/           Documentation
+docker-compose.yml
+docker-compose.prod.yml
+Makefile
 ```
 
-## Ports & URLs
+## Ports & URLs (development)
 
-| Port | Service | Catatan |
-|------|---------|---------|
+| Port | Service | Notes |
+|------|---------|-------|
 | 3000 | web (Next.js dev) | http://localhost:3000 |
 | 8080 | api (Go/Gin dev) | http://localhost:8080 |
 | 5432 | PostgreSQL | localhost |
 | 6379 | Redis | localhost |
 
-## Commands Penting
+## Important Commands
 
 ```bash
-# Jalankan dev stack
-cd /home/ubuntu/projects/vexa/02-application
+# Run the dev stack
 make dev
 
 # Backend only
@@ -53,65 +61,70 @@ cd apps/api && go run cmd/server/main.go
 # Frontend only
 cd apps/web && npm run dev
 
-# Tests
-cd apps/api && go test ./...
-cd apps/web && npm test
-cd tests/e2e && npx playwright test
-
-# Build production
-cd apps/api && go build -o server cmd/server/main.go
-cd apps/web && npm run build
+# Verification gates
+make verify
 ```
 
-## Standar yang Harus Dijaga
+## Verification Gates
 
-### Keamanan (P1)
+Before declaring a task complete:
 
-- **JANGAN** hardcode secret/credential di source code.
-- **JANGAN** set `AllowedOrigins: []string{"*"}` untuk production.
-- **JANGAN** simpan secret di `/tmp`.
-- Selalu gunakan env vars atau Docker secrets.
-- Semua input user wajib divalidasi.
-- Audit log wajib ditulis untuk setiap aksi kritis.
+1. `cd apps/api && go test ./...`
+2. `cd apps/api && go build ./...`
+3. `cd apps/web && npm run build`
+4. `cp -r apps/web/.next/static apps/web/.next/standalone/.next/static`
+5. E2E production 19/19 passing (run by Ame/Hermes)
+
+## Standards
+
+### Security (P1)
+
+- **DO NOT** hardcode secrets/credentials in source code.
+- **DO NOT** set `AllowedOrigins: []string{"*"}` in production.
+- **DO NOT** store secrets in `/tmp`.
+- Always use env vars or Docker secrets.
+- All user input must be validated.
+- Audit logs must be written for every critical action.
 
 ### Code Style
 
-- **Go:** `gofmt`, konvensi Go standard, layered architecture `internal/`.
-- **TypeScript/React:** ESLint + Prettier, Radix UI + Tailwind, vitest untuk unit test.
+- **Go:** `gofmt`, standard Go conventions, layered `internal/` architecture.
+- **TypeScript/React:** ESLint + Prettier, Radix UI + Tailwind, vitest for unit tests.
 - **Rust:** `cargo fmt`, `cargo clippy`.
 - **Flutter:** `dart format`.
 
 ### Git Workflow
 
-- Semua perubahan lewat branch baru: `feature/<nama>`.
-- Commit message dalam bahasa Inggris, gunakan conventional commits.
-- Sebelum merge: test + lint + review.
-- **Jangan** commit `.env`, binary, atau node_modules.
+- All changes through a new branch: `feature/<name>`.
+- Commit messages in English, conventional commits.
+- Before merge: test + lint + review.
+- **Do not** commit `.env`, binaries, or `node_modules`.
 
-## Skill yang Aktif
+## Skills / MCP
 
-Claude Code akan memuat skill-skill ini:
+Claude Code must load these skills/MCPs:
 
-1. **superpowers** — coding superpowers dari obra/superpowers
-2. **caveman** — caveman hooks dan workflows dari juliusbrussee/caveman
-3. **graphify** — codebase graph understanding dari safishamsi/graphify
-4. **playwright** — browser automation MCP (@executeautomation/playwright-mcp-server)
+| Skill/MCP | Location | Purpose |
+|-----------|----------|---------|
+| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers |
+| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks and workflows |
+| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding |
+| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation |
 
-## Aturan Interaksi
+## Interaction Rules
 
-- Setiap aktivitas di project ini harus dilakukan via Claude Code (`ollama launch claude`).
-- Gunakan `--dangerously-skip-permissions` untuk workflow otomatis.
-- Batasi max-turns sesuai kompleksitas task (default 10-20).
-- Setelah selesai, laporkan ringkasan ke Hermes/Ame.
+- All coding activity in this project is done via Claude Code (`ollama launch claude`).
+- Use `--dangerously-skip-permissions` only for approved automated workflows.
+- Limit max-turns to task complexity (default 10–20).
+- When finished, report a concise summary to Hermes/Ame.
 
-## Dokumentasi
+## Documentation
 
-- `01-documents/review-2026-06-19.md` — hasil review awal.
-- `02-application/docs/` — dokumentasi asli upstream.
-- `00-meta/` — ports, urls, credentials mapping.
-
-## Notes
-
-- Go belum terinstall di server; install terlebih dahulu sebelum build backend.
-- Node deps `apps/web` memiliki conflict `react-simple-maps` vs React 19; perlu fix sebelum `npm install`.
-- Rust/Flutter belum terinstall untuk desktop/mobile.
+- `README.md` — open-source contributor overview.
+- `docs/dev/getting-started.md` — development setup.
+- `docs/devops/docker-guide.md` — Docker operations.
+- `docs/devops/self-hosted-deployment.md` — self-hosted deployment.
+- `docs/devops/wireguard-deployment.md` — WireGuard tunnel setup.
+- `docs/architecture/` — architecture and security.
+- `docs/api/` — API contract.
+- Root orchestrator: `../CLAUDE.md`.

@@ -1,16 +1,20 @@
 # Hermes Skills Integration (Root)
 
-> Root-level skill mapping for vexa orchestration.
+> Root-level skill mapping for vexa orchestration.  
+> SSOT lengkap ada di `00-meta/skills.md` dan Obsidian Vault `infra/vexa — Project Index.md`.
 
 ## Mandatory Hermes Skills
 
 | Skill | When to use |
 |-------|-------------|
-| `open-source-project-cleanup` | Rebrand, remove legacy infra, rename identifiers |
-| `production-e2e-regression` | Run E2E suite against production |
 | `claude-code` | Dispatch coding tasks to Claude Code CLI |
+| `production-e2e-regression` | Run E2E suite against production |
+| `open-source-project-cleanup` | Rebrand, remove legacy infra, rename identifiers |
 | `requesting-code-review` | Independent pre-commit review |
 | `plan` | Write detailed plan for medium+ tasks |
+| `graphify` | Analisis struktur codebase |
+| `project-directory-structure` | Struktur project |
+| `hermes-agent` | Hermes config/troubleshooting |
 
 ## Dispatch Command
 
@@ -28,3 +32,11 @@ Claude Code inside `02-application/` must load:
 - `02-application/CLAUDE.md`
 - `02-application/.claude/settings.json`
 - `02-application/.claude/rules/hermes-skills.md`
+
+## Verification Gates
+
+1. `go test ./...`
+2. `go build ./...`
+3. `npm run build`
+4. Copy `.next/static` → `.next/standalone/.next/static`
+5. E2E production 19/19 passing
