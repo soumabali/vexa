@@ -108,6 +108,31 @@ else
   log "OK: no K8s/Terraform/Helm refs in active docs"
 fi
 
+# 11. Check AGENTS.md exists
+if [ -f "${ROOT_DIR}/AGENTS.md" ]; then
+  log "OK: AGENTS.md exists"
+else
+  warn "Missing AGENTS.md — all agents must read this file"
+fi
+
+# 12. Check agent compliance phrases in context files
+COMPLIANCE_FILES=(
+  "${ROOT_DIR}/AGENTS.md"
+  "${ROOT_DIR}/CLAUDE.md"
+  "${ROOT_DIR}/00-meta/skills.md"
+  "${APP_DIR}/CLAUDE.md"
+  "${APP_DIR}/.claude/rules/hermes-skills.md"
+)
+for f in "${COMPLIANCE_FILES[@]}"; do
+  if [ -f "$f" ]; then
+    if grep -qi "AGENT COMPLIANCE\|wajib\|mandatory\|must read" "$f"; then
+      log "OK: ${f} contains agent compliance clause"
+    else
+      warn "${f} missing agent compliance clause"
+    fi
+  fi
+done
+
 # Summary
 if [ $FAIL -eq 0 ]; then
   log "AUDIT PASSED ✅"

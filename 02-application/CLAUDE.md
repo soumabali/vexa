@@ -1,5 +1,16 @@
 # vexa — Complete SSH Manager / Claude Code Context
 
+> **AGENT COMPLIANCE NOTICE:**  
+003e Before doing anything in this project, you **must** read:
+003e 1. `AGENTS.md` in the root workspace
+003e 2. `CLAUDE.md` (root)
+003e 3. `00-meta/skills.md`
+003e 4. `00-meta/git-structure.md`
+003e 5. This file (`02-application/CLAUDE.md`)
+003e 6. The active plan in `06-temp/plans/` (if assigned)
+003e  
+003e Failure to read and follow these files is a compliance violation.
+
 ## Project Identity
 
 - **Name:** vexa
@@ -127,6 +138,17 @@ Ini adalah stack standard project vexa dan **bukan optional**.
 When Ame dispatches a task to Claude Code, the prompt must include:
 
 > "Use superpowers, caveman, and graphify. If E2E changes are needed, also use the playwright MCP."
+
+### Compliance Check (Do This First)
+
+Before writing any code, confirm in your response:
+
+1. I have read `AGENTS.md`, root `CLAUDE.md`, `00-meta/skills.md`, `00-meta/git-structure.md`, and this file.
+2. I have verified `superpowers`, `caveman`, `graphify` are installed and `playwright` MCP is configured.
+3. I will only edit files inside `02-application/`.
+4. I will not push to GitHub or commit from this directory.
+
+If you cannot confirm all four, stop and report to Ame.
 
 ### Verification
 

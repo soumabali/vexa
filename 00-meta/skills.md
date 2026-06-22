@@ -64,7 +64,24 @@ Sebelum commit/push:
 ```bash
 cd /home/ubuntu/projects/vexa/02-application
 ollama launch claude --model kimi-k2.7-code:cloud -- \
-  -p "Read the plan at /home/ubuntu/projects/vexa/06-temp/plans/<PLAN>.md and execute. Gunakan skill superpowers, caveman, dan graphify. Jika ada perubahan E2E, gunakan playwright MCP." \
+  -p "AGENT COMPLIANCE CHECK: Read AGENTS.md, root CLAUDE.md, 00-meta/skills.md, 00-meta/git-structure.md, and 02-application/CLAUDE.md before doing anything. Then read the plan at /home/ubuntu/projects/vexa/06-temp/plans/<PLAN>.md and execute. Use superpowers, caveman, and graphify. If E2E changes are needed, also use the playwright MCP. Do not push to GitHub. Do not edit files outside 02-application/. Report back compliance confirmation and verification results." \
   --dangerously-skip-permissions \
   --allowedTools "Read,Write,Edit,Bash"
 ```
+
+### Expected First Response from Claude Code
+
+Claude Code harus membalas dengan konfirmasi:
+
+1. ✅ `AGENTS.md` dibaca
+2. ✅ Root `CLAUDE.md` dibaca
+3. ✅ `00-meta/skills.md` dibaca
+4. ✅ `00-meta/git-structure.md` dibaca
+5. ✅ `02-application/CLAUDE.md` dibaca
+6. ✅ Plan dibaca
+7. ✅ `superpowers`, `caveman`, `graphify` tersedia
+8. ✅ `playwright` MCP tersedia (jika E2E)
+9. ✅ Hanya akan edit file di `02-application/`
+10. ✅ Tidak akan push/commit dari `02-application/`
+
+Jika tidak, Ame hentikan task dan perbaiki compliance dulu.
