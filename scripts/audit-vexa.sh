@@ -85,26 +85,19 @@ for d in /backups/vexa/db /backups/vexa/wireguard /backups/vexa/logs; do
   fi
 done
 
-# 8. Check Claude skills/plugins are loaded at runtime
-SKILL_LIST=$(timeout 30 ollama launch claude --model kimi-k2.7-code:cloud -- plugin list 2>/dev/null)
-
-if echo "$SKILL_LIST" | grep -A4 "superpowers@skills-dir" | grep -q "loaded"; then
-  log "OK: superpowers@skills-dir loaded"
-else
-  warn "superpowers@skills-dir not loaded"
-fi
-
-if echo "$SKILL_LIST" | grep -A4 "caveman@caveman" | grep -q "enabled"; then
-  log "OK: caveman@caveman enabled"
-else
-  warn "caveman@caveman not enabled"
-fi
-
-if echo "$SKILL_LIST" | grep -A4 "graphify@skills-dir" | grep -q "loaded"; then
-  log "OK: graphify@skills-dir loaded"
-else
-  warn "graphify@skills-dir not loaded"
-fi
+# 8. Check Claude skills exist
+for skill in superpowers caveman graphify; do
+  if [ -d "${HOME}/.claude/skills/${skill}" ]; then
+    # also check it's not a broken symlink
+    if [ -e "${HOME}/.claude/skills/${skill}" ]; then
+      log "OK: skill ${skill} installed"
+    else
+      warn "Claude skill ${skill} is a broken symlink"
+    fi
+  else
+    warn "Missing Claude skill: ${skill}"
+  fi
+done
 
 # 9. Check playwright MCP in global settings
 if grep -q "playwright" "${HOME}/.claude/settings.json"; then

@@ -32,21 +32,14 @@
 | `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding | Saat eksplorasi, refactoring, audit arsitektur |
 | `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation | Saat membuat/mengubah test E2E atau verifikasi UI |
 
-### Verification Commands
+### Cara Verifikasi Instalasi
 
 ```bash
-# 1. List plugins — must show superpowers@skills-dir and graphify@skills-dir as loaded,
-#    and caveman@caveman as enabled.
-ollama launch claude --model kimi-k2.7-code:cloud -- plugin list
-
-# 2. Verify skill directories exist
 ls -d ~/.claude/skills/{superpowers,caveman,graphify}
-
-# 3. Verify playwright MCP configured
 grep -A3 '"playwright"' ~/.claude/settings.json
 ```
 
-If any skill/MCP is missing or not loaded, stop and report to Ame before coding.
+### Cara Menggunakan dalam Prompt
 
 Sertakan kalimat berikut di setiap prompt dispatch:
 

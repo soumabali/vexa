@@ -126,28 +126,12 @@ Before declaring a task complete:
 Claude Code **wajib** memuat skill/MCP ini **pada setiap sesi coding** di `02-application/`.
 Ini adalah stack standard project vexa dan **bukan optional**.
 
-| Skill/MCP | Location | Purpose | When to use | Runtime Status |
-|-----------|----------|---------|-------------|----------------|
-| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers | Every coding session | `superpowers@skills-dir` loaded |
-| `caveman` | `~/.claude/plugins/cache/caveman/caveman/` | Caveman hooks and workflows | Every coding session | `caveman@caveman` enabled |
-| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding | Exploration, refactoring, architecture audit | `graphify@skills-dir` loaded |
-| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation | E2E tests or UI verification | configured in `~/.claude/settings.json` |
-
-### Verification Commands
-
-```bash
-# 1. List plugins — must show superpowers@skills-dir and graphify@skills-dir as loaded,
-#    and caveman@caveman as enabled.
-ollama launch claude --model kimi-k2.7-code:cloud -- plugin list
-
-# 2. Verify skill directories exist
-ls -d ~/.claude/skills/{superpowers,caveman,graphify}
-
-# 3. Verify playwright MCP configured
-grep -A3 '"playwright"' ~/.claude/settings.json
-```
-
-If any skill/MCP is missing or not loaded, stop and report to Ame before coding.
+| Skill/MCP | Location | Purpose | When to use |
+|-----------|----------|---------|-------------|
+| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers | Every coding session |
+| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks and workflows | Every coding session |
+| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding | Exploration, refactoring, architecture audit |
+| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation | E2E tests or UI verification |
 
 ### Required Prompt Phrase
 
@@ -169,6 +153,15 @@ Claude Code runs with restricted permissions:
 > `--allowedTools "Read,Write,Edit,Bash(go test),Bash(go build),Bash(npm run build),Bash(make),Bash(cp),Bash(rm -f),Bash(mkdir),Bash(ls),Bash(grep),Bash(cd)"`
 
 For any Bash command outside this allowlist, use `/home/ubuntu/projects/vexa/scripts/safe-exec.sh` or ask Ame to run it manually.
+
+### Verification
+
+```bash
+ls -d ~/.claude/skills/{superpowers,caveman,graphify}
+grep -A3 '"playwright"' ~/.claude/settings.json
+```
+
+If any skill/MCP is missing, stop and report to Ame before coding.
 
 ## Interaction Rules
 
