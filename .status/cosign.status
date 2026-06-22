@@ -1,0 +1,102 @@
+# Cosign Container Signing — Status
+
+> Status: ✅ COMPLETE
+> Date: 2026-05-28
+> Version: 0.1.0
+
+---
+
+## Deliverables
+
+### 1. Cosign Setup ✅
+
+| File | Description |
+|------|-------------|
+| `.github/workflows/sign-images.yml` | GitHub Actions workflow for keyless signing |
+| `scripts/sign-image.sh` | Manual signing script (keyless) |
+| `scripts/verify-image.sh` | Verification script with attestation support |
+
+**Workflow jobs:**
+- `build-sign-sbom` — Build multi-platform image
+- `cosign-sign` — Keyless sign with Fulcio + Rekor
+- `sbom-generation` — Syft SPDX SBOM generation + signing
+- `slsa-provenance` — SLSA provenance attestation
+- `github-attestation` — GitHub Actions attestation
+- `verify-deployment-ready` — Pre-deployment verification gate
+
+### 2. SBOM Generation ✅
+
+| File | Description |
+|------|-------------|
+| `scripts/generate-sbom.sh` | Syft-based SBOM generation script |
+| `.github/workflows/sign-images.yml` | SBOM upload to release artifacts |
+
+**Features:**
+- SPDX JSON format (default)
+- CycloneDX support (optional)
+- Automatic validation
+- Cosign signature for SBOM artifacts
+- Release artifact upload (on tags)
+
+### 3. Attestation ✅
+
+| Type | Implementation |
+|------|----------------|
+| SLSA Provenance | `slsa-github-generator` container workflow |
+| GitHub Attestation | `actions/attest-build-provenance@v1` |
+| Cosign Attestation | `cosign verify-attestation` support |
+
+### 4. Documentation ✅
+
+| File | Status |
+|------|--------|
+| `docs/devops/deployment.md` | Updated with signing procedures |
+
+**Sections added:**
+- Container Image Signing (architecture, manual signing, verification)
+- SBOM Generation (commands, outputs, formats)
+- GitHub Actions Workflow (jobs, triggers, permissions)
+- Deployment Policy (pre-deployment verification, never deploy unsigned)
+- Pre-Deployment Checklist (staging + production)
+- Quick Reference (commands, identity patterns)
+- Troubleshooting (signature verification, SBOM issues)
+
+---
+
+## Requirements Checklist
+
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| Keyless signing (Fulcio + Rekor) | ✅ | `COSIGN_EXPERIMENTAL=1` + OIDC |
+| SBOM in SPDX format | ✅ | `syft -o spdx-json` default |
+| Verify before deploy | ✅ | `verify-deployment-ready` job + scripts |
+| No private keys in CI | ✅ | Keyless signing only, no keys stored |
+| SLSA provenance | ✅ | `slsa-github-generator` |
+| GitHub attestation | ✅ | `actions/attest-build-provenance` |
+| Multi-platform builds | ✅ | `linux/amd64,linux/arm64` |
+| Release artifact SBOM | ✅ | Auto-upload on tag push |
+
+---
+
+## Usage
+
+```bash
+# Manual signing
+./scripts/sign-image.sh ghcr.io/user/ssh-manager:latest
+
+# Verification (before deploy!)
+./scripts/verify-image.sh ghcr.io/user/ssh-manager:v1.0.0
+
+# SBOM generation
+./scripts/generate-sbom.sh ghcr.io/user/ssh-manager:latest
+```
+
+---
+
+## Security Notes
+
+- All signing is keyless via OIDC (no private keys in CI)
+- Signatures are recorded in Rekor transparency log
+- Every deployment must verify image signature
+- SBOMs are signed and uploaded as release artifacts
+- SLSA provenance provides build traceability

@@ -1,0 +1,456 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly on Monday 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Scan type to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - sast-only
+          - sca-only
+          - container-only
+
+env:
+  GO_VERSION: '1.25'
+  NODE_VERSION: '22'
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+  pull-requests: write
+  checks: write
+
+jobs:
+  # ============ SAST JOBS ============
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == 'full' ||
+      github.event.inputs.scan_type == 'sast-only' ||
+      github.event_name != 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/owasp-top-ten
+            p/cwe-top-25
+            p/golang
+            p/javascript
+            p/rust
+            p/typescript
+            p/react
+          generateSarif: '1'
+          sarifOutput: semgrep-results.sarif
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep-results.sarif
+          category: semgrep
+
+      - name: Check critical findings
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f semgrep-results.sarif ]; then
+            CRITICAL=$(jq '[.runs[].results[] | select(.level == "error")] | length' semgrep-results.sarif || echo "0")
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::Semgrep found $CRITICAL critical issue(s)."
+              exit 1
+            fi
+          fi
+
+  gosec:
+    name: GoSec Scan
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == 'full' ||
+      github.event.inputs.scan_type == 'sast-only' ||
+      github.event_name != 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run GoSec
+        uses: securego/gosec@master
+        with:
+          args: >-
+            -no-fail
+            -fmt sarif
+            -out gosec-results.sarif
+            -exclude-dir=tests
+            -exclude-dir=vendor
+            ./apps/api/...
+
+      - name: Upload GoSec SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: gosec-results.sarif
+          category: gosec
+
+      - name: Check critical findings
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f gosec-results.sarif ]; then
+            CRITICAL=$(jq '[.runs[].results[] | select(.level == "error")] | length' gosec-results.sarif || echo "0")
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::GoSec found $CRITICAL critical issue(s)."
+              exit 1
+            fi
+          fi
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == 'full' ||
+      github.event.inputs.scan_type == 'sast-only' ||
+      github.event_name != 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [go, javascript, rust]
+        include:
+          - language: go
+            paths: apps/api
+          - language: javascript
+            paths: apps/web
+          - language: rust
+            paths: packages/ssh-core
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Setup Go
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Setup Rust
+        if: matrix.language == 'rust'
+        uses: dtolnay/rust-action@stable
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          upload: true
+
+  # ============ SCA JOBS ============
+  snyk:
+    name: Snyk Dependency Scan
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == 'full' ||
+      github.event.inputs.scan_type == 'sca-only' ||
+      github.event_name != 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      - name: Snyk Auth
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Test - Go
+        run: |
+          cd apps/api
+          snyk test --file=go.mod --sarif-file-output=snyk-go.sarif --severity-threshold=high || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Test - Node.js
+        run: |
+          cd apps/web
+          snyk test --file=package-lock.json --sarif-file-output=snyk-node.sarif --severity-threshold=high || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Test - Rust
+        run: |
+          cd packages/ssh-core
+          snyk test --file=Cargo.toml --sarif-file-output=snyk-rust.sarif --severity-threshold=high || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Snyk SARIFs
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: apps/api/snyk-go.sarif
+          category: snyk-go
+
+      - name: Upload Snyk Node SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('apps/web/snyk-node.sarif') != ''
+        with:
+          sarif_file: apps/web/snyk-node.sarif
+          category: snyk-node
+
+      - name: Upload Snyk Rust SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('packages/ssh-core/snyk-rust.sarif') != ''
+        with:
+          sarif_file: packages/ssh-core/snyk-rust.sarif
+          category: snyk-rust
+
+      - name: Check critical findings
+        if: github.event_name == 'pull_request'
+        run: |
+          TOTAL=0
+          for f in apps/api/snyk-go.sarif apps/web/snyk-node.sarif packages/ssh-core/snyk-rust.sarif; do
+            if [ -f "$f" ]; then
+              COUNT=$(jq '[.runs[].results[] | select(.level == "error")] | length' "$f" 2>/dev/null || echo "0")
+              TOTAL=$((TOTAL + COUNT))
+            fi
+          done
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "::error::Snyk found $TOTAL critical issue(s)."
+            exit 1
+          fi
+
+  trivy-fs:
+    name: Trivy Filesystem Scan
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == 'full' ||
+      github.event.inputs.scan_type == 'sca-only' ||
+      github.event_name != 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy FS Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Upload Trivy FS SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-fs
+
+      - name: Check critical findings
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f trivy-fs-results.sarif ]; then
+            CRITICAL=$(jq '[.runs[].results[] | select(.level == "error")] | length' trivy-fs-results.sarif || echo "0")
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::Trivy FS found $CRITICAL critical issue(s)."
+              exit 1
+            fi
+          fi
+
+  # ============ CONTAINER JOBS ============
+  trivy-image:
+    name: Trivy Container Image Scan
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == 'full' ||
+      github.event.inputs.scan_type == 'container-only' ||
+      github.event_name != 'workflow_dispatch'
+    strategy:
+      matrix:
+        image:
+          - context: ./apps/api
+            name: vexa-api
+            dockerfile: Dockerfile
+          - context: ./apps/web
+            name: vexa-web
+            dockerfile: Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.context }}/${{ matrix.image.dockerfile }}
+          push: false
+          load: true
+          tags: ${{ matrix.image.name }}:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ matrix.image.name }}:scan'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Upload Trivy Image SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-image-results.sarif
+          category: trivy-image-${{ matrix.image.name }}
+
+      - name: Check critical findings
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f trivy-image-results.sarif ]; then
+            CRITICAL=$(jq '[.runs[].results[] | select(.level == "error")] | length' trivy-image-results.sarif || echo "0")
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::Trivy image scan found $CRITICAL critical issue(s) in ${{ matrix.image.name }}."
+              exit 1
+            fi
+          fi
+
+  # ============ SECRET SCANNING ============
+  gitleaks:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  # ============ SUMMARY ============
+  security-summary:
+    name: Security Audit Summary
+    needs: [semgrep, gosec, codeql, snyk, trivy-fs, trivy-image, gitleaks]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Security Report
+        run: |
+          echo "# 🔒 Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Ref:** ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## SAST Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Scanner | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Semgrep | ${{ needs.semgrep.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GoSec   | ${{ needs.gosec.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL  | ${{ needs.codeql.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## SCA Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Scanner | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Snyk        | ${{ needs.snyk.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy FS    | ${{ needs.trivy-fs.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy Image | ${{ needs.trivy-image.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Secret Scanning" >> $GITHUB_STEP_SUMMARY
+          echo "| Scanner | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Gitleaks | ${{ needs.gitleaks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          FAILED=0
+          for job in semgrep gosec codeql snyk trivy-fs trivy-image gitleaks; do
+            RESULT=$(eval echo "\${needs.${job}.result}")
+            if [ "$RESULT" == "failure" ]; then
+              FAILED=$((FAILED + 1))
+            fi
+          done
+
+          echo "## Overall Result" >> $GITHUB_STEP_SUMMARY
+          if [ "$FAILED" -eq 0 ]; then
+            echo "✅ All security checks passed." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ $FAILED security check(s) failed." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Block PR on critical failures
+        if: >
+          github.event_name == 'pull_request' &&
+          (needs.semgrep.result == 'failure' ||
+           needs.gosec.result == 'failure' ||
+           needs.codeql.result == 'failure' ||
+           needs.snyk.result == 'failure' ||
+           needs.trivy-fs.result == 'failure' ||
+           needs.trivy-image.result == 'failure' ||
+           needs.gitleaks.result == 'failure')
+        run: |
+          echo "::error::Security audit detected critical issues. PR is blocked."
+          exit 1

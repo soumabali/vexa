@@ -1,0 +1,140 @@
+# docker-compose.prod.yml — Production deployment with Traefik + WireGuard support
+# Run together with docker-compose.traefik.yml:
+#   docker compose -f docker-compose.traefik.yml -f docker-compose.prod.yml up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vexa-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-vexa}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_DB: ${DB_NAME:-vexa}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/internal/db/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - vexa_public
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vexa}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: vexa-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - vexa_public
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: vexa-api
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    networks:
+      - vexa_public
+    ports:
+      - "8080"                          # Exposed only inside docker network for Traefik
+      - "51820-51830:51820-51830/udp"  # WireGuard endpoints (exposed on host directly)
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-vexa}?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      - ENVIRONMENT=production
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?ENCRYPTION_KEY is required}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://vexa.nexigo.my.id}
+      - LOG_LEVEL=info
+      - SERVER_PORT=8080
+      - WG_ENABLED=true
+      - WG_SUBNET=${WG_SUBNET:-10.200.200.0/24}
+      - WG_PORT_RANGE=${WG_PORT_RANGE:-51820-51830}
+      - WG_ROTATION_DAYS=${WG_ROTATION_DAYS:-90}
+      - WG_MAX_TUNNELS_PER_USER=${WG_MAX_TUNNELS_PER_USER:-10}
+      - WG_MAX_TOTAL_TUNNELS=${WG_MAX_TOTAL_TUNNELS:-1000}
+      - WG_MOCK_FALLBACK=${WG_MOCK_FALLBACK:-false}
+      # Hostname for API internal
+      - SERVER_HOST=0.0.0.0
+    volumes:
+      - wg_config:/etc/wireguard
+      - vexa_secrets:/var/lib/vexa/secrets
+      - vexa_logs:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health/live > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vexa-api.rule=Host(`${API_DOMAIN:-api-vexa.nexigo.my.id}`)"
+      - "traefik.http.routers.vexa-api.entrypoints=websecure"
+      - "traefik.http.routers.vexa-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.vexa-api.tls.domains[0].main=${API_DOMAIN:-api-vexa.nexigo.my.id}"
+      - "traefik.http.services.vexa-api.loadbalancer.server.port=8080"
+      - "traefik.http.routers.vexa-api.middlewares=secure-headers@file,rate-limit@file"
+      # WebSocket route for SSH terminal
+      - "traefik.http.routers.vexa-api-ws.rule=Host(`${API_DOMAIN:-api-vexa.nexigo.my.id}`) && PathPrefix(`/ws`)"
+      - "traefik.http.routers.vexa-api-ws.entrypoints=websecure"
+      - "traefik.http.routers.vexa-api-ws.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.vexa-api-ws.service=vexa-api"
+      - "traefik.http.routers.vexa-api-ws.middlewares=ws-headers@file"
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://${API_DOMAIN:-api-vexa.nexigo.my.id}
+        NEXT_PUBLIC_WS_URL: wss://${API_DOMAIN:-api-vexa.nexigo.my.id}
+    container_name: vexa-web
+    networks:
+      - vexa_public
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vexa-web.rule=Host(`${WEB_DOMAIN:-vexa.nexigo.my.id}`)"
+      - "traefik.http.routers.vexa-web.entrypoints=websecure"
+      - "traefik.http.routers.vexa-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.vexa-web.tls.domains[0].main=${WEB_DOMAIN:-vexa.nexigo.my.id}"
+      - "traefik.http.services.vexa-web.loadbalancer.server.port=3000"
+      - "traefik.http.routers.vexa-web.middlewares=secure-headers@file,rate-limit@file"
+
+volumes:
+  postgres_data:
+  redis_data:
+  wg_config:
+  vexa_secrets:
+  vexa_logs:
+
+networks:
+  vexa_public:
+    external: true
+    name: vexa_public

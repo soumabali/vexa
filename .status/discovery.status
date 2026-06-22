@@ -1,0 +1,47 @@
+# Discovery Scanner Status
+# Generated: 2026-05-28
+# Version: 0.1.0
+
+status: COMPLETE
+
+## Deliverables
+
+### Backend (Go)
+- [x] `apps/api/internal/discovery/scanner.go` — Scanner engine (11KB)
+- [x] `apps/api/internal/discovery/tcp_probe.go` — TCP port scanning
+- [x] `apps/api/internal/discovery/icmp_probe.go` — ICMP ping sweep
+- [x] `apps/api/internal/discovery/os_fingerprint.go` — OS detection
+- [x] `apps/api/internal/discovery/handlers.go` — HTTP API handlers (8 endpoints)
+
+### API Endpoints
+- [x] POST /api/discovery/scan — Start network scan
+- [x] GET /api/discovery/scan — List all scans
+- [x] GET /api/discovery/scan/{id} — Get scan details
+- [x] GET /api/discovery/scan/{id}/status — Scan progress
+- [x] GET /api/discovery/scan/{id}/results — Scan results (paginated)
+- [x] POST /api/discovery/scan/{id}/cancel — Cancel scan
+- [x] POST /api/discovery/scan/{id}/import — Import to hosts
+
+### Frontend (Next.js)
+- [x] `apps/web/src/app/discovery/page.tsx` — Scanner UI (18KB)
+  - Network range input, port selection, progress bar
+  - Real-time status polling
+  - Results table with import
+  - Scan history
+
+### Tests
+- [x] `apps/api/tests/discovery_test.go` — Unit tests (scanner, prober, fingerprint)
+- [x] `apps/api/tests/discovery_handlers_test.go` — HTTP handler tests (8 endpoints)
+
+### Features Implemented
+- Configurable scan rate (default: 100ms)
+- Parallel goroutines (default: 50 concurrent, max 200)
+- Port fingerprinting (SSH:22, RDP:3389, VNC:5900, HTTP:80, HTTPS:443, +6 more)
+- OS detection via banner + port pattern + hostname analysis
+- Results: IP, hostname, open ports, OS guess, response time
+- Import results to hosts table (all or selected)
+- Rate limiting to prevent abuse
+- Skip loopback/link-local IPs
+- CIDR validation (max /16)
+- Pagination on results
+

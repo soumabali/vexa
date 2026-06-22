@@ -1,0 +1,80 @@
+FROM golang:1.25-alpine AS dev
+
+RUN apk add --no-cache git ca-certificates curl wget
+
+RUN go install github.com/air-verse/air@latest
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin v1.57.2
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY .air.toml ./
+
+EXPOSE 8080 2345
+
+CMD ["air", "-c", ".air.toml"]
+
+FROM golang:1.25-alpine AS builder
+
+RUN apk add --no-cache ca-certificates git build-base
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+ARG VERSION=dev
+ARG BUILD_TIME
+ARG GIT_COMMIT
+ARG GIT_BRANCH
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-s -w \
+    -X main.Version=${VERSION} \
+    -X main.BuildTime=${BUILD_TIME} \
+    -X main.GitCommit=${GIT_COMMIT} \
+    -X main.GitBranch=${GIT_BRANCH} \
+    -extldflags '-static'" \
+    -a -installsuffix cgo \
+    -o /app/server \
+    ./cmd/server
+
+FROM golang:1.25-alpine AS test-runner
+
+RUN apk add --no-cache ca-certificates
+
+WORKDIR /app
+
+COPY --from=builder /app/server /app/server
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+RUN mkdir -p /app/data /app/logs && chmod 777 /app/data /app/logs
+
+EXPOSE 8080
+
+ENV PORT=8080
+ENV ENV=development
+
+ENTRYPOINT ["/app/server"]
+
+FROM gcr.io/distroless/static-debian12:latest AS prod
+
+USER nonroot:nonroot
+
+COPY --from=builder --chown=nonroot:nonroot /app/server /server
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD ["/server", "healthcheck"]
+
+EXPOSE 8080
+
+ENV PORT=8080
+ENV ENV=production
+
+ENTRYPOINT ["/server"]

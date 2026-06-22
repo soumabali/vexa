@@ -1,0 +1,40 @@
+# Trivy Ignore File
+# Format: CVE-ID or vulnerability ID per line
+# Comments start with #
+# Each line can optionally include a justification after a space
+
+# ============================================
+# FALSE POSITIVES & ACCEPTED RISKS
+# ============================================
+
+# --- Go standard library ---
+# CVE-2024-34156  # Go encoding/gzip - Not applicable, we don't use gzip for untrusted input
+# CVE-2024-34155  # Go net/textproto - Not applicable, we use custom rate limiter
+# CVE-2024-34158  # Go archive/tar - Not applicable, no tar extraction from untrusted sources
+
+# --- Node.js / Next.js ---
+# CVE-2024-34397  # Next.js image optimization - Not applicable, images are from internal CDN
+# CVE-2024-35255  # Azure Identity - Not used in our project (transitive dev dependency)
+
+# --- Rust / Cargo ---
+# CVE-2024-XXXX  # Placeholder for future Rust-specific false positives
+
+# --- Container base images ---
+# CVE-2023-XXXX  # Alpine Linux busybox - Not applicable in our network context
+
+# ============================================
+# ACCEPTED RISK: DEVELOPMENT-ONLY DEPENDENCIES
+# ============================================
+# Dependencies only used in development/test environments
+# GHSA-XXXX-XXXX-XXXX  # dev-only tooling vulnerability
+
+# ============================================
+# ACCEPTED RISK: LOW EXPLOITABILITY
+# ============================================
+# Vulnerabilities that require specific conditions not present in our architecture
+# e.g., requires specific reverse proxy config, local file access, etc.
+
+# ============================================
+# ACCEPTED RISK: MITIGATED ELSEWHERE
+# ============================================
+# Vulnerabilities mitigated by other controls (WAF, network policies, etc.)

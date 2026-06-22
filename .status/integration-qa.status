@@ -1,0 +1,39 @@
+STATUS: IN_PROGRESS
+DATE: 2026-05-28
+ASSIGNEE: integration-qa-subagent
+
+## Completed
+
+- [x] Analysed existing test infrastructure (docker-compose.dev.yml, vitest.config.ts, fixtures)
+- [x] Identified protocol mismatch: frontend `websocket.ts` defines binary constants (0x01-0x06) but the Go backend uses JSON text messages
+- [x] Rewrote `tests/integration/terminal-ws.spec.ts` with correct JSON protocol, improved helpers, and comprehensive suites:
+  - Backend Startup & Health
+  - WebSocket Auth Handshake (missing, expired, invalid, valid via query param & header)
+  - Terminal Session Lifecycle (open, input/output, resize, close, reconnect, heartbeat, rapid cycles)
+  - Concurrent Sessions (3+ sessions, data isolation)
+  - Auth Failure Scenarios (empty, malformed, missing claims, REST 401)
+  - Edge Cases & Error Handling (invalid host ID, missing host_id, oversized input, large output)
+- [x] Updated `tests/integration/fixtures/backend-orchestrator.ts`:
+  - Real JWT generation via openssl HMAC-SHA256
+  - Proper health polling with `fetch` instead of `execSync curl`
+  - Native API startup with correct env vars
+- [x] Wrote `tests/integration/README.md` with setup instructions, env vars, troubleshooting
+
+## Findings
+
+1. **Protocol Gap**: `apps/desktop/src-frontend/lib/websocket.ts` documents a binary WebSocket protocol, but `apps/api/internal/terminal/session.go` only parses JSON text messages. The two are out of sync. Recommendation: either implement binary parsing in the Go backend or remove unused binary constants from the frontend library.
+2. **Test SSH Server Fragility**: `ssh-server.ts` tries three different Docker images with different port mappings. In CI this may fail if Docker is unavailable. Tests are written to tolerate missing SSH output (asserting stability rather than shell echoes).
+3. **Backend Auth**: The backend authenticates WebSockets via `?token=` query parameter (primary) and `Authorization` header (fallback). The `Sec-WebSocket-Protocol: jwt.<token>` approach used in `Terminal.tsx` is not explicitly handled in `terminal.go`.
+
+## Next / Blockers
+
+- [ ] **Run tests** against a live backend to verify all assertions pass (requires Docker + Go on runner)
+- [ ] **Wire SSH host** into database seeding so "echo hello" tests can assert real PTY output
+- [ ] **Add Playwright E2E** for the desktop frontend (Tauri) once build pipeline is ready
+- [ ] **Sync binary protocol** between frontend `websocket.ts` and Go `terminal/session.go`
+
+## Files Changed
+
+- `tests/integration/terminal-ws.spec.ts`
+- `tests/integration/fixtures/backend-orchestrator.ts`
+- `tests/integration/README.md`

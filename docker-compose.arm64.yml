@@ -1,0 +1,196 @@
+# vexa - ARM64 Docker Compose
+# Production-ready ARM64 deployment
+
+version: "3.9"
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: vexa-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-vexa}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-vexa}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - vexa-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vexa}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: vexa-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - vexa-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: vexa-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-changeme}
+    volumes:
+      - minio_data:/data
+    networks:
+      - vexa-net
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # SSH Manager API (ARM64)
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.arm64
+      args:
+        VERSION: ${VERSION:-latest}
+        BUILD_TIME: ${BUILD_TIME}
+        GIT_COMMIT: ${GIT_COMMIT}
+    container_name: vexa-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      - CONFIG_PATH=/etc/vexa/config.yaml
+      - DATABASE_URL=postgres://${DB_USER:-vexa}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-vexa}?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_USER:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_PASSWORD:-changeme}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - WEBAUTHN_ORIGIN=${WEBAUTHN_ORIGIN:-https://localhost}
+      - RUST_LOG=info
+    volumes:
+      - ./apps/api/config.yaml:/etc/vexa/config.yaml:ro
+      - ssh_logs:/var/log/vexa
+    networks:
+      - vexa-net
+    ports:
+      - "8080:8080"
+      - "2222:2222"
+      - "5900:5900"
+      - "3389:3389"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # SSH Manager Web (ARM64)
+  web:
+    build:
+      context: apps/web
+      dockerfile: Dockerfile.arm64
+    container_name: vexa-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - vexa-net
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: vexa-nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+      - web
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - vexa-net
+    ports:
+      - "443:443"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Prometheus Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vexa-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - vexa-net
+    ports:
+      - "9090:9090"
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vexa-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - vexa-net
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  ssh_logs:
+  nginx_cache:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  vexa-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

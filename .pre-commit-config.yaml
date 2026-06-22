@@ -1,0 +1,197 @@
+# Pre-commit hooks configuration for vexa
+# Security-focused hooks for Go, TypeScript/TSX, Rust, Dart
+# Fast execution (< 30s total), skips large files (> 1MB)
+# Local execution - no network required during commit
+
+minimum_pre_commit_version: 3.0.0
+default_stages: [pre-commit]
+default_install_hook_types: [pre-commit]
+
+exclude: >
+  (?x)^(
+    vendor/|
+    node_modules/|
+    dist/|
+    build/|
+    \.git/|
+    \.idea/|
+    \.vscode/|
+    \.next/|
+    target/debug/|
+    target/release/|
+    \.dart_tool/|
+    \.flutter-plugins.*|
+    .*\.lock|
+    .*\.min\.(js|css|map)$|
+    .*\.generated\.(go|dart)$|
+    coverage/|
+    __snapshots__/|
+    \.env\.
+  )
+
+repos:
+  # ─── General ───────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+        stages: [pre-commit]
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        args: ["--markdown-linebreak-ext=md"]
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+
+  # ─── Secret Scanning ───────────────────────────────────────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.2
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secret scan)
+        description: Detect hardcoded secrets using gitleaks
+        entry: gitleaks
+        args: ["detect", "--source", ".", "--no-git", "--verbose", "--redact"]
+        language: golang
+        pass_filenames: false
+        stages: [pre-commit]
+        types: [text]
+
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.76.2
+    hooks:
+      - id: trufflehog
+        name: trufflehog (secret scan)
+        description: Find credentials with TruffleHog
+        entry: trufflehog
+        args: ["git", "HEAD", "--only-verified", "--fail"]
+        language: golang
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # ─── Go Security ───────────────────────────────────────────────────
+  - repo: https://github.com/securego/gosec
+    rev: v2.20.0
+    hooks:
+      - id: gosec
+        name: gosec (Go security scan)
+        description: Golang security checker
+        entry: gosec
+        args: ["-fmt", "text", "-no-fail", "-severity", "medium", "-confidence", "medium", "./..."]
+        language: golang
+        pass_filenames: false
+        files: '.*\.go$'
+        types: [go]
+        stages: [pre-commit]
+
+  # ─── Go Formatting & Linting ──────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt (Go formatter)
+        entry: gofmt
+        args: ["-w"]
+        language: system
+        files: '.*\.go$'
+        types: [go]
+
+      - id: goimports
+        name: goimports (Go import organizer)
+        entry: goimports
+        args: ["-w"]
+        language: system
+        files: '.*\.go$'
+        types: [go]
+
+  # ─── TypeScript / JavaScript Security ──────────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.5.0
+    hooks:
+      - id: eslint
+        name: eslint-security (JS/TS security lint)
+        description: ESLint with security plugins
+        entry: eslint
+        args: ["--config", ".eslintrc.security.js", "--quiet", "--max-warnings=0"]
+        language: node
+        additional_dependencies:
+          - eslint@9.x
+          - eslint-plugin-security@3.x
+          - @typescript-eslint/parser@7.x
+          - @typescript-eslint/eslint-plugin@7.x
+        files: '.*\.(js|jsx|ts|tsx)$'
+        types: [file]
+        stages: [pre-commit]
+
+  # ─── Semgrep (SAST) ─────────────────────────────────────────────
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.74.0
+    hooks:
+      - id: semgrep
+        name: semgrep (SAST scan)
+        description: Static analysis security testing
+        entry: semgrep
+        args:
+          - "--config=auto"
+          - "--error"
+          - "--skip-unknown-extensions"
+          - "--max-target-bytes=1048576"
+          - "--jobs=4"
+          - "--timeout=10"
+          - "--timeout-threshold=3"
+        language: python
+        types: [text]
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # ─── Rust Security ─────────────────────────────────────────────────
+  - repo: https://github.com/rust-lang/rustfmt
+    rev: v1.7.0
+    hooks:
+      - id: rustfmt
+        name: rustfmt (Rust formatter)
+        entry: rustfmt
+        args: ["--check", "--"]
+        language: system
+        files: '.*\.rs$'
+        types: [rust]
+
+  # ─── Dart/Flutter ────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: dart-analyze
+        name: dart analyze (Dart static analysis)
+        entry: dart
+        args: ["analyze", "--fatal-infos"]
+        language: system
+        files: '.*\.(dart)$'
+        types: [dart]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: dart-format
+        name: dart format (Dart formatter)
+        entry: dart
+        args: ["format", "--set-exit-if-changed", "-l", "80"]
+        language: system
+        files: '.*\.(dart)$'
+        types: [dart]
+
+  # ─── Custom Security Checks ──────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: check-suspicious-patterns
+        name: check suspicious patterns
+        description: Check for suspicious code patterns
+        entry: scripts/check-suspicious.sh
+        language: script
+        pass_filenames: false
+        types: [text]
+        stages: [pre-commit]

@@ -1,0 +1,32 @@
+name: Beta Release
+on:
+  push:
+    branches: [beta]
+  workflow_dispatch:
+
+jobs:
+  beta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      - name: Build Beta
+        run: |
+          VERSION=$(git describe --tags --always)-beta
+          ./scripts/build-all.sh --version $VERSION
+      - name: Sign Beta
+        run: |
+          ./scripts/sign-release.sh --beta
+      - name: Upload Beta
+        uses: actions/upload-artifact@v4
+        with:
+          name: beta-build
+          path: dist/*
+      - name: Notify Beta
+        run: |
+          curl -X POST ${{ secrets.DISCORD_WEBHOOK }} \
+            -H 'Content-Type: application/json' \
+            -d '{"content":"🔥 Beta build ready! Download: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

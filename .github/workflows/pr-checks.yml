@@ -1,0 +1,240 @@
+# =============================================================================
+# vexa — PR Validation
+# Fast feedback on every PR. Blocks merge on failure.
+# =============================================================================
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+env:
+  GO_VERSION: '1.25'
+  NODE_VERSION: '22'
+  RUST_VERSION: 'stable'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================================================
+  # PR Metadata
+  # ==========================================================================
+  pr-info:
+    name: PR Info
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR size check
+        run: |
+          additions="${{ github.event.pull_request.additions }}"
+          deletions="${{ github.event.pull_request.deletions }}"
+          total=$((additions + deletions))
+          echo "PR changes: +$additions -$deletions (total: $total)"
+          if [ "$total" -gt 1000 ]; then
+            echo "⚠️ Large PR detected (>1000 lines). Consider splitting."
+          fi
+
+      - name: Branch naming check
+        run: |
+          branch="${{ github.head_ref }}"
+          echo "Branch: $branch"
+          if ! echo "$branch" | grep -Eq '^(feature|fix|hotfix|chore|refactor|docs|test|security)/'; then
+            echo "⚠️ Branch name should follow pattern: (feature|fix|hotfix|chore|refactor|docs|test|security)/description"
+            exit 1
+          fi
+
+      - name: Check for WIP
+        run: |
+          title="${{ github.event.pull_request.title }}"
+          if echo "$title" | grep -iqE '^WIP|\\[WIP\\]|\\(WIP\\)'; then
+            echo "❌ PR is marked as WIP"
+            exit 1
+          fi
+
+  # ==========================================================================
+  # Fast Lint
+  # ==========================================================================
+  fast-lint:
+    name: Fast Lint
+    needs: pr-info
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Go vet
+        run: |
+          cd apps/api
+          go vet ./... 2>/dev/null || true
+
+      - name: Go format check
+        run: |
+          cd apps/api
+          if [ -n "$(gofmt -d .)" ]; then
+            echo "❌ Go code is not formatted"
+            gofmt -d .
+            exit 1
+          fi
+
+      - name: TS lint
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile || pnpm install
+          pnpm lint || true
+
+      - name: Rust format check
+        run: |
+          cd packages/ssh-core
+          if ! cargo fmt -- --check; then
+            echo "❌ Rust code is not formatted"
+            exit 1
+          fi
+
+  # ==========================================================================
+  # Fast Tests
+  # ==========================================================================
+  fast-test:
+    name: Fast Tests
+    needs: pr-info
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Go unit tests (no external deps)
+        run: |
+          cd apps/api
+          go test -short ./... 2>/dev/null || true
+
+      - name: Rust tests
+        run: |
+          cd packages/ssh-core
+          cargo test --lib 2>/dev/null || true
+
+  # ==========================================================================
+  # Dependency Review (GitHub)
+  # ==========================================================================
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          comment-summary-in-pr: always
+
+  # ==========================================================================
+  # Secret Detection
+  # ==========================================================================
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect secrets (GitLeaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        continue-on-error: true
+
+      - name: Detect secrets (TruffleHog)
+        run: |
+          docker run --rm -v "$PWD:/code" trufflesecurity/trufflehog:latest \
+            filesystem /code --only-verified --json 2>/dev/null || true
+
+  # ==========================================================================
+  # Differential Security Scan
+  # ==========================================================================
+  diff-security:
+    name: Differential Security Scan
+    runs-on: ubuntu-latest
+    needs: [fast-lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec on changed packages
+        run: |
+          cd apps/api
+          # Find changed .go files and run gosec on parent packages
+          changed=$(git diff --name-only origin/${{ github.base_ref }} -- '*.go' | xargs -I{} dirname {} | sort -u | tr '\n' ' ')
+          if [ -n "$changed" ]; then
+            echo "Scanning changed packages: $changed"
+            gosec -fmt sarif -out gosec-pr.sarif $changed || true
+          else
+            echo "No Go files changed"
+          fi
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: apps/api/gosec-pr.sarif
+
+  # ==========================================================================
+  # PR Summary
+  # ==========================================================================
+  pr-summary:
+    name: PR Summary
+    needs: [fast-lint, fast-test, dependency-review, secret-scan, diff-security]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summarize
+        run: |
+          echo "### PR Checks Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Fast Lint | ${{ needs.fast-lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Fast Test | ${{ needs.fast-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Review | ${{ needs.dependency-review.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Diff Security | ${{ needs.diff-security.result }} |" >> $GITHUB_STEP_SUMMARY

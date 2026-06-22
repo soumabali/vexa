@@ -1,0 +1,20 @@
+{
+  "name": "@vexa/integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
+    "test:debug": "vitest run --reporter=verbose"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "@vitest/ui": "^1.6.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "ws": "^8.17.0"
+  }
+}
