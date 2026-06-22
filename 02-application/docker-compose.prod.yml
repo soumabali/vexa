@@ -129,6 +129,28 @@ services:
       - "traefik.http.services.vexa-web.loadbalancer.server.port=3000"
       - "traefik.http.routers.vexa-web.middlewares=secure-headers@file,rate-limit@file"
 
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: vexa-backup
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:***@postgres:5432/${DB_NAME:-vexa}?sslmode=disable
+      - RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+    volumes:
+      - /backups:/backups
+      - wg_config:/etc/wireguard:ro
+      - vexa_logs:/var/log/vexa:ro
+    networks:
+      - vexa_public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    # This service is intended to be triggered by an external scheduler (cron/systemd timer).
+    # Example cron on host:
+    # 0 2 * * * cd /home/ubuntu/projects/vexa/02-application && docker compose -f docker-compose.prod.yml run --rm backup
+
 volumes:
   postgres_data:
   redis_data:

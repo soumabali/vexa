@@ -48,3 +48,18 @@
 | `/home/ubuntu/projects/vexa` | Root orchestrator workspace |
 | `/home/ubuntu/projects/vexa/02-application` | Application working copy (git subtree) |
 | `/home/ubuntu/projects/vexa-backup-20260622-112822` | Backup state lama (dipertahankan sementara) |
+| `/backups/vexa/db` | Backup harian PostgreSQL |
+| `/backups/vexa/wireguard` | Backup harian WireGuard configs |
+| `/backups/vexa/logs` | Backup harian API logs |
+
+## Automation Scripts
+
+| Script | Fungsi |
+|--------|--------|
+| `scripts/audit-vexa.sh` | Audit workflow, context, skills, backup |
+| `scripts/claude-compliance-check.sh` | Validasi structured response Claude Code |
+| `scripts/pre-push.sh` | Git pre-push hook |
+| `scripts/vexa-status.sh` | Dashboard status snapshot |
+| `scripts/new-session.sh` | Generator session note |
+| `02-application/scripts/backup.sh` | Backup runner DB, WG, logs |
+| `02-application/scripts/install-backup-cron.sh` | Install cron backup harian |
