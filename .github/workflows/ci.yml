@@ -21,7 +21,6 @@ env:
   NODE_VERSION: '22'
   RUST_VERSION: 'stable'
   TRIVY_VERSION: '0.50.0'
-  HELM_VERSION: '3.14.0'
 
 jobs:
   # ==========================================================================
@@ -174,11 +173,11 @@ jobs:
       matrix:
         include:
           - app: api
-            dockerfile: infra/docker/Dockerfile.backend
-            context: .
+            dockerfile: Dockerfile
+            context: ./apps/api
           - app: web
-            dockerfile: infra/docker/Dockerfile.frontend
-            context: .
+            dockerfile: Dockerfile
+            context: ./apps/web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -308,48 +307,3 @@ jobs:
           go-licenses check ./... --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause 2>/dev/null || true
         continue-on-error: true
 
-  # ==========================================================================
-  # Infrastructure Validation
-  # ==========================================================================
-  infra-validate:
-    name: Infra Validation
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install kubeval
-        run: |
-          curl -sL https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
-          sudo mv kubeval /usr/local/bin/
-
-      - name: Validate K8s manifests
-        run: |
-          kubeval --strict --ignore-missing-schemas infra/k8s/*.yaml 2>/dev/null || true
-          kubeval --strict --ignore-missing-schemas infra/k8s/base/*.yaml 2>/dev/null || true
-          kubeval --strict --ignore-missing-schemas infra/k8s/staging/*.yaml 2>/dev/null || true
-          kubeval --strict --ignore-missing-schemas infra/k8s/production/*.yaml 2>/dev/null || true
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.7.0"
-
-      - name: Terraform fmt
-        run: |
-          terraform fmt -check -recursive infra/terraform/ 2>/dev/null || true
-
-      - name: Terraform validate
-        run: |
-          find infra/terraform/environments -maxdepth 1 -type d | while read dir; do
-            [ -f "$dir/main.tf" ] || continue
-            echo "Validating $dir"
-            (cd "$dir" && terraform init -backend=false && terraform validate) 2>/dev/null || true
-          done
-
-      - name: Checkov scan
-        run: |
-          pip install checkov 2>/dev/null || true
-          checkov -d infra/ --framework kubernetes,dockerfile,terraform --compact 2>/dev/null || true
-        continue-on-error: true

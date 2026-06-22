@@ -5,7 +5,7 @@ Self-hosted SSH access management with a security-first architecture.
 - **Web app** (Next.js) — manage hosts, credentials, tunnels, and browser-based SSH terminal
 - **API** (Go + Gin + PostgreSQL + Redis) — REST, WebSocket terminal, WireGuard tunnels, vault encryption, audit logging
 - **Desktop app** (Tauri) — planned / experimental
-- **Mobile app** (Android) — planned / experimental
+- **Mobile app** (Flutter) — planned / experimental
 
 ## Quick Start (Docker)
 
@@ -18,6 +18,8 @@ docker compose up -d
 ```
 
 Open http://localhost:3000 and register the first admin account.
+
+For production self-hosting, see [`docs/devops/self-hosted-deployment.md`](docs/devops/self-hosted-deployment.md).
 
 ## Development
 
@@ -88,6 +90,14 @@ vexa/
 4. Credential team sharing / rotation
 5. SSH terminal mobile integration
 6. Public SDK / CLI
+
+## Contributing
+
+1. Fork the repository and create a branch: `feature/<description>`.
+2. Follow the verification gates (`make verify`).
+3. Open a PR against `main`.
+
+See `docs/dev/getting-started.md` for the development setup.
 
 ## License
 

@@ -1,34 +1,32 @@
-# vexa Desktop
+# vexa Desktop (Roadmap / Experimental)
 
-Tauri v2 desktop application for vexa — Complete SSH Manager (roadmap).
+Tauri v2 desktop application for **vexa — Complete SSH Manager**.
 
-## Architecture
+## Status
 
-- **Backend**: Rust (Tauri v2)
-  - Clipboard bridge with secure copy
-  - Window state management (encrypted at rest)
+- **Phase:** Roadmap / experimental scaffolding
+- **Milestone:** MVP planned after core web + API features stabilize
+- **Current contents:** Rust + Tauri v2 skeleton and a placeholder Next.js frontend
+
+## Planned Architecture
+
+- **Backend:** Rust (Tauri v2)
+  - Secure clipboard bridge
+  - Encrypted window state
   - System tray integration
   - Global shortcuts
   - Auto-updater
 
-- **Frontend**: Next.js 14 (static export)
+- **Frontend:** Next.js static export
   - xterm.js terminal with WebGL renderer
-  - WebSocket connection to Go backend
+  - WebSocket connection to the Go backend
   - Custom dark theme
   - Resizable panels
-
-## Security
-
-- Strict CSP headers
-- AES-256-GCM encrypted window state
-- Clipboard auto-wipe after timeout
-- No DevTools in production
-- No inline scripts
 
 ## Development
 
 ```bash
-# Install dependencies
+# Install dependencies (when Rust/Node are available)
 cd src-frontend && pnpm install
 cd .. && pnpm install
 
@@ -39,36 +37,14 @@ pnpm tauri dev
 pnpm tauri build
 ```
 
-## Global Shortcuts
+## Roadmap
 
-- `Ctrl+Shift+T` - Quick Connect
-- `Ctrl+Shift+H` - Toggle Window
-- `Ctrl+Shift+C` - Copy to clipboard
-- `Ctrl+Shift+V` - Paste from clipboard
+1. Native SSH terminal window
+2. Secure credential copy/paste bridge
+3. System tray quick-connect
+4. Packaged installers (Windows, macOS, Linux)
 
-## File Structure
+## Notes
 
-```
-apps/desktop/
-├── src/
-│   ├── main.rs              # Tauri entry point
-│   ├── lib.rs               # Library exports
-│   ├── commands/
-│   │   ├── clipboard.rs     # Native clipboard bridge
-│   │   ├── window.rs        # Window state management
-│   │   └── system_tray.rs   # System tray integration
-│   └── security/
-│       └── permissions.rs   # Permission system
-│       └── mod.rs           # Encryption utilities
-├── src-frontend/            # Next.js frontend
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   └── components/
-│       ├── Terminal.tsx
-│       ├── HostList.tsx
-│       └── ConnectionBar.tsx
-├── tauri.conf.json          # Tauri configuration
-├── Cargo.toml               # Rust dependencies
-└── package.json             # Frontend dependencies
-```
+- This package is not required for the web or API builds.
+- Rust toolchain must be installed to build or test this app.
