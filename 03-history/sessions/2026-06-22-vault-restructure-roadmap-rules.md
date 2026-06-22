@@ -18,7 +18,8 @@
   - `infra/vexa Roadmap.md` — rencana fitur P3–P12
   - `infra/vexa Rules.md` — aturan baja project
   - `infra/vexa.md` — pointer singkat ke SSOT
-  - `infra/vexa/history/` — arsip catatan lama hasil review awal
+  - `infra/vexa Claude Code Setup.md` — setup Claude Code lengkap
+  - `infra/vexa/history/` — arsip catatan lama
 
 - **Archived old notes:**
   - vexa Audit Ketidaksesuaian.md
@@ -32,13 +33,21 @@
 
 ### Root Orchestrator
 
-- Updated `CLAUDE.md` dengan aturan baja, skill mapping, verification gates, dan link ke Obsidian SSOT.
+- Updated `CLAUDE.md` dengan aturan baja, skill mapping, permission mode, verification gates, dan link ke Obsidian SSOT.
+
+### Skill Verification
+
+- ✅ `superpowers` terinstall di `~/.claude/skills/superpowers/`
+- ✅ `caveman` terinstall di `~/.claude/skills/caveman/` dengan hooks aktif
+- ✅ `graphify` terinstall di `~/.claude/skills/graphify/` dengan binary `~/.local/bin/graphify`
+- ✅ `playwright` MCP terregister di `~/.claude/settings.json`
 
 ## Verification
 
 - Semua file vault tertulis dengan benar.
 - Struktur vault bersih dan tidak ada duplikat di root infra.
 - Tidak ada kode diubah di `02-application/` (sesuai rules: Ame hanya orkestrasi).
+- Semua skill/MCP Claude Code wajib sudah terinstall dan aktif.
 
 ## Notes
 

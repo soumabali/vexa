@@ -28,6 +28,23 @@
    - `project-directory-structure`
    - `hermes-agent`
 
+### Permission Mode
+
+- Workflow otomatis (print mode) menggunakan `ollama launch claude --model kimi-k2.7-code:cloud -- ... --dangerously-skip-permissions`.
+- `--dangerously-skip-permissions` mempercepat eksekusi tetapi **tidak menghilangkan verification gates**.
+- Pekerjaan interaktif berisiko tinggi boleh pakai plan/ask mode.
+
+### Claude Code Skills/MCP
+
+Claude Code wajib memuat skill/MCP ini untuk project vexa:
+
+| Skill/MCP | Lokasi | Fungsi |
+|-----------|--------|--------|
+| `superpowers` | `~/.claude/skills/superpowers/` | Coding superpowers |
+| `caveman` | `~/.claude/skills/caveman/` | Caveman hooks dan workflows |
+| `graphify` | `~/.claude/skills/graphify/` | Codebase graph understanding |
+| `playwright` | MCP `@executeautomation/playwright-mcp-server` | Browser automation |
+
 ---
 
 ## Verification Gates
@@ -92,3 +109,4 @@ See `03-history/sessions/` for examples.
 - [[vexa Runbook]]
 - [[vexa Roadmap]]
 - [[vexa Rules]]
+- [[vexa Claude Code Setup]]
