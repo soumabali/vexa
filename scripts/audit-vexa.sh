@@ -133,6 +133,15 @@ for f in "${COMPLIANCE_FILES[@]}"; do
   fi
 done
 
+# 13. Check schema and compliance script exist
+for f in "${ROOT_DIR}/00-meta/claude-response-schema.json" "${ROOT_DIR}/scripts/claude-compliance-check.sh"; do
+  if [ -f "$f" ]; then
+    log "OK: ${f} exists"
+  else
+    warn "Missing compliance tool: ${f}"
+  fi
+done
+
 # Summary
 if [ $FAIL -eq 0 ]; then
   log "AUDIT PASSED ✅"

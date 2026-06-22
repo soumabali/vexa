@@ -5,6 +5,7 @@
 ## 2026
 
 | Tanggal | File | Topik | Status |
+| 2026-06-22 | `2026-06-22-test-session-generator.md` | test session generator | 🚧 In Progress |
 |---------|------|-------|--------|
 | 2026-06-22 | `2026-06-22-vault-restructure-roadmap-rules.md` | Vault restructure, roadmap P1-P12, rules baja | ✅ Done |
 | 2026-06-22 | `2026-06-22-cleanup-app-context-docs.md` | Cleanup app context, docs, CI/CD untuk open source | ✅ Done |

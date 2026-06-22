@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/soumabali/vexa-root/blob/main/00-meta/claude-response-schema.json",
+  "title": "vexa Claude Code Response Schema",
+  "description": "Structured response schema for Claude Code when dispatched on vexa project tasks.",
+  "type": "object",
+  "required": ["compliance", "context", "skills", "scope", "work", "verification", "summary"],
+  "properties": {
+    "compliance": {
+      "type": "object",
+      "required": ["confirmation"],
+      "properties": {
+        "confirmation": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {
+            "type": "boolean"
+          },
+          "description": "10 compliance checkpoints. All must be true."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "required": ["files_read"],
+      "properties": {
+        "files_read": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "string"
+          },
+          "description": "List of context files read before execution. Must include AGENTS.md, root CLAUDE.md, 00-meta/skills.md, 00-meta/git-structure.md, 02-application/CLAUDE.md, and active plan."
+        }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "required": ["used"],
+      "properties": {
+        "used": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "string",
+            "enum": ["superpowers", "caveman", "graphify", "playwright"]
+          },
+          "description": "Skills/MCP actually used during the session."
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": ["only_02_application", "no_push", "no_root_edit"],
+      "properties": {
+        "only_02_application": {
+          "type": "boolean"
+        },
+        "no_push": {
+          "type": "boolean"
+        },
+        "no_root_edit": {
+          "type": "boolean"
+        }
+      }
+    },
+    "work": {
+      "type": "object",
+      "required": ["files_changed", "lines_of_impact"],
+      "properties": {
+        "files_changed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lines_of_impact": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["gates_passed"],
+      "properties": {
+        "gates_passed": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "object",
+          "properties": {
+            "go_test": {
+              "type": "boolean"
+            },
+            "go_build": {
+              "type": "boolean"
+            },
+            "npm_build": {
+              "type": "boolean"
+            },
+            "e2e": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 50
+    }
+  }
+}
