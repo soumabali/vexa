@@ -1,0 +1,37 @@
+# syntax=docker/dockerfile:1.6
+# Development Dockerfile for Next.js web application
+
+FROM node:20-alpine
+
+# Install development tools
+RUN apk add --no-cache git curl wget ca-certificates
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install all dependencies (including devDependencies)
+RUN pnpm install
+
+# Copy configuration files
+COPY . .
+
+# Expose port for Next.js dev server
+EXPOSE 3000
+
+# Environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget --spider -q http://localhost:3000/api/health || exit 1
+
+# Start Next.js in development mode with hot reload
+CMD ["pnpm", "dev"]

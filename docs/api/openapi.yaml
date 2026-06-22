@@ -1,0 +1,1533 @@
+openapi: 3.0.3
+info:
+  title: vexa API
+  description: Security-focused self-hosted server management platform API
+  version: 1.0.0
+  contact:
+    name: vexa Team
+
+servers:
+  - url: https://localhost:8443/api/v1
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user (Step 1)
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: MFA required or login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/mfa/verify:
+    post:
+      summary: Verify MFA code (Step 2)
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFAVerifyRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      summary: Logout user and invalidate all sessions
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/mfa/setup:
+    post:
+      summary: Generate MFA TOTP secret and QR code
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: MFA setup data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFASetupResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/mfa/enable:
+    post:
+      summary: Verify TOTP code to enable MFA
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - totp_code
+              properties:
+                totp_code:
+                  type: string
+                  pattern: '^[0-9]{6}$'
+      responses:
+        '200':
+          description: MFA enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/mfa/disable:
+    delete:
+      summary: Disable MFA for the authenticated user
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: MFA disabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/sessions:
+    get:
+      summary: Get active session count
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Active session info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active_sessions:
+                    type: integer
+                  message:
+                    type: string
+    post:
+      summary: Revoke a specific session
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - session_id
+              properties:
+                session_id:
+                  type: string
+      responses:
+        '200':
+          description: Session revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /vault/unlock:
+    post:
+      summary: Unlock credential vault with master password
+      tags:
+        - Vault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultUnlockRequest'
+      responses:
+        '200':
+          description: Vault unlocked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  expires_in:
+                    type: integer
+                  session_key:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /vault/lock:
+    post:
+      summary: Lock the credential vault
+      tags:
+        - Vault
+      responses:
+        '200':
+          description: Vault locked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /vault/status:
+    get:
+      summary: Check if vault is unlocked
+      tags:
+        - Vault
+      responses:
+        '200':
+          description: Vault status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unlocked:
+                    type: boolean
+
+  /vault/key/rotate:
+    post:
+      summary: Rotate vault master key
+      tags:
+        - Vault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - new_password
+              properties:
+                current_password:
+                  type: string
+                new_password:
+                  type: string
+                  minLength: 16
+      responses:
+        '200':
+          description: Key rotation initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  credentials_affected:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /vault/credentials:
+    get:
+      summary: List all credentials (metadata only)
+      tags:
+        - Vault
+      parameters:
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Credential list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  credentials:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CredentialMeta'
+                  count:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Create a new credential
+      tags:
+        - Vault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCredentialRequest'
+      responses:
+        '201':
+          description: Credential created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialMeta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /vault/credentials/{id}:
+    get:
+      summary: Get credential metadata
+      tags:
+        - Vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Credential metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update credential metadata or data
+      tags:
+        - Vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCredentialRequest'
+      responses:
+        '200':
+          description: Credential updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      summary: Delete a credential
+      tags:
+        - Vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Credential deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vault/credentials/{id}/decrypt:
+    get:
+      summary: Decrypt and retrieve credential data
+      tags:
+        - Vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Decrypted credential data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialData'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vault/credentials/{id}/share:
+    post:
+      summary: Share credential with a team
+      tags:
+        - Vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - team_id
+                - permissions
+              properties:
+                team_id:
+                  type: string
+                  format: uuid
+                permissions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Credential shared
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    delete:
+      summary: Revoke credential share from a team
+      tags:
+        - Vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - team_id
+              properties:
+                team_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Share revoked
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /hosts:
+    get:
+      summary: List hosts
+      tags:
+        - Hosts
+      parameters:
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: group
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of hosts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hosts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Host'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create host
+      tags:
+        - Hosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHostRequest'
+      responses:
+        '201':
+          description: Host created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Host'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /hosts/{id}:
+    get:
+      summary: Get host by ID
+      tags:
+        - Hosts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Host details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Host'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      summary: Update host
+      tags:
+        - Hosts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateHostRequest'
+      responses:
+        '200':
+          description: Host updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      summary: Delete host
+      tags:
+        - Hosts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Host deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /hosts/{id}/health:
+    get:
+      summary: Check host health
+      tags:
+        - Hosts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Health check result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /ws/terminal:
+    get:
+      summary: WebSocket terminal session
+      tags:
+        - Terminal
+      parameters:
+        - name: host_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: protocol
+          in: query
+          schema:
+            type: string
+            enum: [ssh, rdp, vnc]
+      responses:
+        '101':
+          description: WebSocket connection established
+
+  /sessions:
+    get:
+      summary: List active terminal sessions
+      tags:
+        - Terminal
+      responses:
+        '200':
+          description: Active sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+
+  /sessions/{id}:
+    delete:
+      summary: Close a terminal session
+      tags:
+        - Terminal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session closed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /users/me:
+    get:
+      summary: Get current user profile
+      tags:
+        - Users
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  mfa_verified:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      summary: Update current user profile
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Profile updated
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/password:
+    post:
+      summary: Change current user's password
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /admin/users:
+    get:
+      summary: List all users (admin only)
+      tags:
+        - Admin
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Create a new user (admin only)
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - role
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 12
+                role:
+                  type: string
+                  enum: [admin, operator, viewer]
+      responses:
+        '201':
+          description: User created
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/users/{id}:
+    get:
+      summary: Get user by ID (admin only)
+      tags:
+        - Admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User details
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    patch:
+      summary: Update user (admin only)
+      tags:
+        - Admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum: [admin, operator, viewer]
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: User updated
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      summary: Deactivate user (admin only)
+      tags:
+        - Admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: User deactivated
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/audit:
+    get:
+      summary: Query audit log (admin only)
+      tags:
+        - Admin
+      parameters:
+        - name: event_type
+          in: query
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditEntry'
+                  count:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/audit/export:
+    get:
+      summary: Export audit log (admin only)
+      tags:
+        - Admin
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+        - name: start_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Audit log export file
+          content:
+            application/json:
+              schema:
+                type: string
+            text/csv:
+              schema:
+                type: string
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/audit/log:
+    post:
+      summary: Log a custom audit event (admin only)
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event_type
+              properties:
+                event_type:
+                  type: string
+                details:
+                  type: object
+      responses:
+        '201':
+          description: Event logged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/gateway/ssh/connect:
+    post:
+      summary: Connect via SSH gateway
+      tags:
+        - Gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayConnectRequest'
+      responses:
+        '200':
+          description: SSH connection established
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connection_id:
+                    type: string
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: Service unavailable
+
+  /api/v1/gateway/rdp/connect:
+    post:
+      summary: Connect via RDP gateway
+      tags:
+        - Gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayConnectRequest'
+      responses:
+        '200':
+          description: RDP connection info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  protocol:
+                    type: string
+
+  /api/v1/gateway/vnc/connect:
+    post:
+      summary: Connect via VNC gateway
+      tags:
+        - Gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayConnectRequest'
+      responses:
+        '200':
+          description: VNC connection info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  protocol:
+                    type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+        totp_code:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        mfa_required:
+          type: boolean
+        mfa_token:
+          type: string
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        token_type:
+          type: string
+
+    MFAVerifyRequest:
+      type: object
+      required:
+        - email
+        - totp_code
+      properties:
+        email:
+          type: string
+          format: email
+        totp_code:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    TokenPair:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        token_type:
+          type: string
+          default: Bearer
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+
+    MFASetupResponse:
+      type: object
+      properties:
+        secret:
+          type: string
+        qr_code:
+          type: string
+        uri:
+          type: string
+        backup_codes:
+          type: array
+          items:
+            type: string
+
+    VaultUnlockRequest:
+      type: object
+      required:
+        - master_password
+      properties:
+        master_password:
+          type: string
+          minLength: 1
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - current_password
+        - new_password
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+          minLength: 16
+          maxLength: 128
+
+    Host:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+        protocol:
+          type: string
+          enum: [ssh, rdp, vnc]
+        port:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        group_path:
+          type: string
+        allowed_users:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateHostRequest:
+      type: object
+      required:
+        - name
+        - address
+        - protocol
+        - port
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 255
+        protocol:
+          type: string
+          enum: [ssh, rdp, vnc]
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        credentials_id:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+        group_path:
+          type: string
+          maxLength: 512
+        description:
+          type: string
+          maxLength: 1024
+
+    UpdateHostRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        protocol:
+          type: string
+          enum: [ssh, rdp, vnc]
+        port:
+          type: integer
+        credentials_id:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+        group_path:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+
+    HealthCheckResult:
+      type: object
+      properties:
+        host_id:
+          type: string
+          format: uuid
+        reachable:
+          type: boolean
+        latency_ms:
+          type: integer
+        error:
+          type: string
+        checked_at:
+          type: string
+          format: date-time
+
+    CredentialMeta:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum: [password, ssh_key, api_token]
+        version:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        last_rotated_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCredentialRequest:
+      type: object
+      required:
+        - name
+        - type
+        - data
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        type:
+          type: string
+          enum: [password, ssh_key, api_token]
+        data:
+          type: string
+        password:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        expires_at:
+          type: string
+          format: date-time
+
+    UpdateCredentialRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        data:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    CredentialData:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        private_key:
+          type: string
+        passphrase:
+          type: string
+        api_token:
+          type: string
+
+    AuditEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        event_type:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        ip_address:
+          type: string
+        details:
+          type: object
+        integrity_hash:
+          type: string
+
+    GatewayConnectRequest:
+      type: object
+      required:
+        - host
+        - port
+        - user
+        - password
+      properties:
+        host:
+          type: string
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        user:
+          type: string
+        password:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    Forbidden:
+      description: Access denied
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              retry_after:
+                type: integer

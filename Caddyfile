@@ -1,0 +1,15 @@
+# Caddyfile — Reverse proxy for SSH Manager
+{$DOMAIN:localhost} {
+    # API + WebSocket
+    reverse_proxy /api/* localhost:8080
+    reverse_proxy /ws/* localhost:8080
+    
+    # Next.js frontend
+    reverse_proxy /* localhost:3000
+    
+    # TLS (auto-managed by Caddy)
+    tls {
+        # Use Let's Encrypt for production
+        # For local dev, Caddy uses self-signed
+    }
+}

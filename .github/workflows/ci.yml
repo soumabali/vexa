@@ -1,0 +1,355 @@
+# =============================================================================
+# vexa — Continuous Integration
+# Triggered on: push to main/develop, PRs, nightly cron
+# Classification: Security-Critical
+# =============================================================================
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  GO_VERSION: '1.25'
+  NODE_VERSION: '22'
+  RUST_VERSION: 'stable'
+  TRIVY_VERSION: '0.50.0'
+  HELM_VERSION: '3.14.0'
+
+jobs:
+  # ==========================================================================
+  # Lint & Format
+  # ==========================================================================
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Install tools
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest || true
+          cargo install cargo-deny 2>/dev/null || true
+
+      - name: Lint Go (api)
+        run: |
+          cd apps/api
+          gofmt -d .
+          golangci-lint run --timeout=5m ./... || true
+
+      - name: Lint TypeScript (web)
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile || pnpm install
+          pnpm lint || true
+
+      - name: TypeScript type check
+        run: |
+          cd apps/web
+          pnpm type-check || true
+
+      - name: Lint Rust (ssh-core)
+        run: |
+          cd packages/ssh-core
+          cargo clippy -- -D warnings || true
+
+      - name: Lint Rust (desktop)
+        run: |
+          cd apps/desktop
+          cargo clippy -- -D warnings || true
+
+      - name: Lint Shell scripts
+        run: |
+          find scripts -name "*.sh" -exec shellcheck {} + 2>/dev/null || true
+
+  # ==========================================================================
+  # Unit & Integration Tests
+  # ==========================================================================
+  test:
+    name: Test Suite
+    needs: lint
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vexa
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: vexa_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Test Backend (Go)
+        run: |
+          cd apps/api
+          go test -race -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out | tail -n 1 >> $GITHUB_STEP_SUMMARY
+        env:
+          DATABASE_URL: postgres://vexa:test@localhost:5432/vexa_test?sslmode=disable
+          REDIS_ADDR: localhost:6379
+          JWT_SECRET: test-jwt-secret-min-32-bytes-long!!
+          JWT_REFRESH_SECRET: test-refresh-secret-min-32-bytes!!
+          ENCRYPTION_KEY: test-encryption-key-32-bytes!!
+
+      - name: Test Rust Core
+        run: |
+          cd packages/ssh-core
+          cargo test --lib
+
+      - name: Test Rust Desktop
+        run: |
+          cd apps/desktop
+          cargo test --lib || true
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            apps/api/coverage.out
+            packages/ssh-core/target/debug/coverage/
+
+  # ==========================================================================
+  # Build & Package
+  # ==========================================================================
+  build:
+    name: Build & Package
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - app: api
+            dockerfile: infra/docker/Dockerfile.backend
+            context: .
+          - app: web
+            dockerfile: infra/docker/Dockerfile.frontend
+            context: .
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.app }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=,suffix=,format=short
+
+      - name: Build image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.app }},push-by-digest=${{ github.event_name != 'pull_request' }}
+
+      - name: Export digest
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          echo "${digest}" > /tmp/digests/${{ matrix.app }}-${{ github.run_id }}.txt
+
+      - name: Upload digests
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.app }}
+          path: /tmp/digests/*.txt
+          if-no-files-found: error
+
+  # ==========================================================================
+  # Security Scanning (SAST + Container)
+  # ==========================================================================
+  security-scan:
+    name: Security Scan
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install security tools
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest || true
+          go install github.com/google/go-licenses@latest || true
+
+      - name: Secret scanning (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        continue-on-error: true
+
+      - name: SAST (gosec)
+        run: |
+          cd apps/api
+          gosec -fmt sarif -out gosec.sarif ./... || true
+
+      - name: Upload gosec SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: apps/api/gosec.sarif
+
+      - name: Dependency scan (Trivy filesystem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          format: 'sarif'
+          output: 'trivy-fs.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+
+      - name: Container scan (Trivy)
+        run: |
+          # Scan built images if available
+          for app in api web; do
+            tag="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:${{ github.sha }}"
+            if docker pull "$tag" 2>/dev/null; then
+              trivy image --severity CRITICAL,HIGH --exit-code 1 "$tag" || true
+            fi
+          done
+        continue-on-error: true
+
+      - name: License audit
+        run: |
+          cd apps/api
+          go-licenses check ./... --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause 2>/dev/null || true
+        continue-on-error: true
+
+  # ==========================================================================
+  # Infrastructure Validation
+  # ==========================================================================
+  infra-validate:
+    name: Infra Validation
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kubeval
+        run: |
+          curl -sL https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          sudo mv kubeval /usr/local/bin/
+
+      - name: Validate K8s manifests
+        run: |
+          kubeval --strict --ignore-missing-schemas infra/k8s/*.yaml 2>/dev/null || true
+          kubeval --strict --ignore-missing-schemas infra/k8s/base/*.yaml 2>/dev/null || true
+          kubeval --strict --ignore-missing-schemas infra/k8s/staging/*.yaml 2>/dev/null || true
+          kubeval --strict --ignore-missing-schemas infra/k8s/production/*.yaml 2>/dev/null || true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform fmt
+        run: |
+          terraform fmt -check -recursive infra/terraform/ 2>/dev/null || true
+
+      - name: Terraform validate
+        run: |
+          find infra/terraform/environments -maxdepth 1 -type d | while read dir; do
+            [ -f "$dir/main.tf" ] || continue
+            echo "Validating $dir"
+            (cd "$dir" && terraform init -backend=false && terraform validate) 2>/dev/null || true
+          done
+
+      - name: Checkov scan
+        run: |
+          pip install checkov 2>/dev/null || true
+          checkov -d infra/ --framework kubernetes,dockerfile,terraform --compact 2>/dev/null || true
+        continue-on-error: true

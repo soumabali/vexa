@@ -1,0 +1,55 @@
+# RDP Gateway + VNC Proxy Status
+## Generated: 2026-05-28
+## Status: COMPLETE
+
+## Deliverables
+
+### Backend (Go)
+- [x] `apps/api/internal/rdp/gateway.go` — RDP gateway, session management, FreeRDP wrapper
+- [x] `apps/api/internal/rdp/client.go` — RDP client with auto-reconnect
+- [x] `apps/api/internal/rdp/handlers.go` — WebSocket + HTTP handlers
+- [x] `apps/api/internal/vnc/proxy.go` — VNC proxy, protocol handshake
+- [x] `apps/api/internal/vnc/client.go` — VNC client
+- [x] `apps/api/internal/vnc/handlers.go` — WebSocket + HTTP handlers
+
+### Frontend (React/Next.js)
+- [x] `apps/web/src/components/rdp-viewer.tsx` — RDP canvas viewer (18KB)
+- [x] `apps/web/src/components/vnc-viewer.tsx` — VNC canvas viewer (14KB)
+
+### Tests
+- [x] `apps/api/tests/rdp_test.go` — Unit tests
+- [x] `apps/api/tests/rdp_handlers_test.go` — Handler tests
+- [x] `apps/api/tests/vnc_test.go` — Unit tests
+- [x] `apps/api/tests/vnc_handlers_test.go` — Handler tests
+
+## Features
+
+### RDP
+- FreeRDP3 wrapper via exec
+- WebSocket binary protocol
+- Canvas rendering with input forwarding
+- Keyboard/mouse/clipboard sync
+- Multi-monitor support
+- Adaptive quality (30-100%)
+- Auto-reconnect
+
+### VNC
+- Pure VNC protocol (RFB 003.008)
+- Security types: None, VNC Auth
+- Pixel format negotiation
+- Encoding: Tight, ZRLE, Hextile, Raw
+- Clipboard sync
+- View-only mode
+- Scale modes: fit/stretch/original
+
+### Binary WebSocket Protocol
+- Frame type: 1 byte + payload
+- Types: Screen, Input, Audio, Resize, Clipboard, Cursor, Error
+- Compression: per-message deflate
+- TLS 1.3 encryption
+
+## API Endpoints
+- WS /api/rdp/connect — RDP WebSocket
+- GET/POST /api/rdp/sessions — Session management
+- WS /api/vnc/connect — VNC WebSocket
+- GET/POST /api/vnc/sessions — Session management

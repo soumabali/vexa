@@ -1,0 +1,108 @@
+# SSH Manager - Desktop Clippy Configuration
+# Security-focused Rust linting configuration
+
+# ---- Severity and Behavior ----
+warn-on-all-wildcard-imports = true
+avoid-breaking-exported-api = false
+
+cognitive-complexity-threshold = 30
+
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 100
+type-complexity-threshold = 250
+
+# ---- Allow/Deny/Warn Rules ----
+
+# Security critical - deny (must fix)
+deny = [
+    "clippy::dbg_macro",
+    "clippy::unwrap_used",
+    "clippy::expect_used",
+    "clippy::panic",
+    "clippy::todo",
+    "clippy::unimplemented",
+    "clippy::missing_safety_doc",
+    "clippy::undocumented_unsafe_blocks",
+    "clippy::cast_lossless",
+    "clippy::cast_ptr_alignment",
+    "clippy::no_effect",
+    "clippy::path_buf_push_overwrite",
+    "clippy::string_to_string",
+]
+
+# Security and quality - warn (should fix)
+warn = [
+    "clippy::all",
+    "clippy::pedantic",
+    "clippy::nursery",
+    "clippy::cargo",
+    "clippy::clone_on_ref_ptr",
+    "clippy::create_dir",
+    "clippy::decimal_literal_representation",
+    "clippy::default_numeric_fallback",
+    "clippy::exit",
+    "clippy::filetype_is_file",
+    "clippy::float_cmp_const",
+    "clippy::fn_to_numeric_cast_any",
+    "clippy::format_push_string",
+    "clippy::get_unwrap",
+    "clippy::if_then_some_else_none",
+    "clippy::impl_trait_in_params",
+    "clippy::imprecise_flops",
+    "clippy::indexing_slicing",
+    "clippy::let_underscore_must_use",
+    "clippy::map_err_ignore",
+    "clippy::mem_forget",
+    "clippy::missing_assert_message",
+    "clippy::mixed_read_write_in_expression",
+    "clippy::mutex_atomic",
+    "clippy::mutex_integer",
+    "clippy::needless_collect",
+    "clippy::needless_raw_strings",
+    "clippy::or_fun_call",
+    "clippy::rc_buffer",
+    "clippy::rc_mutex",
+    "clippy::redundant_type_annotations",
+    "clippy::rest_pat_in_fully_bound_structs",
+    "clippy::same_name_method",
+    "clippy::self_named_module_files",
+    "clippy::semicolon_inside_block",
+    "clippy::significant_drop_tightening",
+    "clippy::significant_drop_in_scrutinee",
+    "clippy::str_to_string",
+    "clippy::string_add",
+    "clippy::string_lit_as_bytes",
+    "clippy::string_slice",
+    "clippy::suboptimal_flops",
+    "clippy::suspicious_xor_used_as_pow",
+    "clippy::tests_outside_test_module",
+    "clippy::try_err",
+    "clippy::unnecessary_self_imports",
+    "clippy::unneeded_field_pattern",
+    "clippy::unwrap_in_result",
+    "clippy::verbose_file_reads",
+    "clippy::wildcard_imports",
+]
+
+# Allow (known false positives or intentional patterns)
+allow = [
+    "clippy::module_name_repetitions",
+    "clippy::multiple_crate_versions",
+    "clippy::must_use_candidate",
+    "clippy::missing_errors_doc",
+    "clippy::missing_panics_doc",
+    "clippy::similar_names",
+    "clippy::too_many_lines",
+    "clippy::cast_possible_truncation",
+    "clippy::cast_sign_loss",
+    "clippy::cast_precision_loss",
+    "clippy::float_cmp",
+    "clippy::enum_glob_use",
+    "clippy::implicit_hasher",
+    "clippy::inline_always",
+    "clippy::map_unwrap_or",
+    "clippy::single_match_else",
+    "clippy::struct_excessive_bools",
+    "clippy::trivially_copy_pass_by_ref",
+    "clippy::unused_async",
+]

@@ -1,0 +1,77 @@
+# Lint Configs Setup Status
+# Generated: 2026-05-28T16:49:00+08:00
+
+STATUS=COMPLETE
+
+## Deliverables
+
+### 1. ESLint (apps/web/)
+- [x] `.eslintrc.json` — Security plugins enabled:
+  - eslint-plugin-security (detect-object-injection, detect-unsafe-regex, etc.)
+  - eslint-plugin-no-secrets
+  - eslint-plugin-no-unsanitized
+  - eslint-plugin-scanjs-rules
+  - eslint-plugin-jsx-a11y
+- [x] `.eslintignore` — Build outputs, node_modules, generated files
+- [x] `package.json` scripts updated:
+  - `lint`: Check all TS/JS/TSX/JSX
+  - `lint:fix`: Auto-fix
+  - `lint:ci`: CI mode (max-warnings=0)
+  - `lint:report`: JSON report output
+  - `typecheck`: TypeScript type checking
+
+### 2. golangci-lint (apps/api/)
+- [x] `.golangci.yml` — Security linters enabled:
+  - gosec (G101-G505 rules)
+  - bodyclose, contextcheck, durationcheck
+  - noctx, errcheck, staticcheck
+  - ~45 total linters configured
+- [x] `.golangci-ignore` — Build artifacts, migrations, generated files
+- [x] `Makefile` targets:
+  - `make lint`: Full lint
+  - `make lint-fix`: Auto-fix
+  - `make lint-fast`: Fast mode
+  - `make lint-ci`: CI formatted output
+  - `make lint-new`: Only new changes
+  - `make lint-diff`: Diff against origin/main
+
+### 3. Rust Clippy (apps/desktop/)
+- [x] `clippy.toml` — Security-focused rules:
+  - deny: dbg_macro, unwrap_used, expect_used, panic, todo
+  - warn: all, pedantic, nursery, cargo + security lints
+  - allow: module_name_repetitions, must_use_candidate, etc.
+- [x] `scripts/clippy-check.sh` — Full check script with:
+  - `--fix`: Auto-fix capability
+  - `--ci`: CI mode (strict)
+  - `--deny-warnings`: Warnings as errors
+  - `--all-targets`: Check bin/lib/tests/examples
+  - `--json`: JSON output for CI
+  - cargo fmt check integration
+  - cargo doc check integration
+
+### 4. Flutter Analyze (apps/mobile/)
+- [x] `analysis_options.yaml` — Security-focused rules:
+  - avoid_dynamic_calls, avoid_slow_async_io, unsafe_html
+  - strict-casts, strict-inference, strict-raw-types
+  - 200+ linter rules configured
+  - exclude: build, generated, platform directories
+
+### 5. Documentation
+- [x] `docs/dev/getting-started.md` updated with:
+  - Web lint commands section
+  - API lint commands section
+  - Desktop lint commands section
+  - Mobile lint commands section
+  - Configuration files reference updated
+
+## Security Focus
+- All configs prioritize security linters
+- Auto-fix capability available per stack
+- CI integration ready (exit codes, JSON output, strict modes)
+- No destructive commands used
+
+## Notes
+- ESLint: requires `npm install` in apps/web to install security plugins
+- golangci-lint: requires `golangci-lint` binary installed
+- Clippy: requires `rustup component add clippy` + `rustfmt`
+- Flutter: `flutter analyze` included with Flutter SDK

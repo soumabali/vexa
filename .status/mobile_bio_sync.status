@@ -1,0 +1,27 @@
+# Mobile Biometric + Offline Sync Status
+# Generated: 2026-05-28T22:48:00+08:00
+agent: mobile_bio_sync
+status: done
+current_task: Mobile Biometric + Offline Sync implementation
+output_files:
+  # Biometric
+  - apps/mobile/lib/services/biometric_service.dart
+  - apps/mobile/lib/screens/security/biometric_setup.dart
+  - apps/mobile/lib/widgets/biometric_prompt.dart
+  # Offline Sync
+  - apps/mobile/lib/services/sync_service.dart
+  - apps/mobile/lib/services/offline_storage.dart
+  - apps/mobile/lib/models/sync_queue.dart
+  - apps/mobile/lib/screens/sync/sync_status.dart
+  # Security
+  - apps/mobile/lib/services/secure_storage.dart
+  - apps/mobile/lib/services/keychain_service.dart
+  - apps/mobile/lib/screens/security/pin_setup.dart
+  - apps/mobile/lib/screens/security/security_settings.dart
+  # Background
+  - apps/mobile/lib/services/background_service.dart
+  - apps/mobile/lib/services/notification_service.dart
+  - apps/mobile/lib/services/connectivity_service.dart
+blockers: []
+timestamp: "2026-05-28T22:48:00+08:00"
+version: "0.1.0"

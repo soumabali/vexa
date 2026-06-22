@@ -1,0 +1,134 @@
+# SSH Manager API - ARM64 Optimized Dockerfile
+# Multi-stage build for production ARM64 deployment
+
+# Stage 1: Rust Builder
+FROM rust:1.80-bookworm AS rust-builder
+
+WORKDIR /build
+COPY crates/core/ ./crates/core/
+COPY Cargo.toml Cargo.lock ./
+
+# Install ARM64 cross-compilation toolchain
+RUN apt-get update && apt-get install -y \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set cross-compilation environment
+ENV CC=aarch64-linux-gnu-gcc \
+    CXX=aarch64-linux-gnu-g++ \
+    AR=aarch64-linux-gnu-ar \
+    CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+
+# Build Rust library for ARM64
+RUN rustup target add aarch64-unknown-linux-gnu
+RUN cd crates/core && \
+    cargo build --release --target aarch64-unknown-linux-gnu
+
+# Stage 2: Go Builder
+FROM golang:1.23-bookworm AS go-builder
+
+WORKDIR /build
+
+# Install ARM64 cross-compilation tools
+RUN apt-get update && apt-get install -y \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Go module files
+COPY apps/api/go.mod apps/api/go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY apps/api/ ./
+COPY --from=rust-builder /build/crates/core/target/aarch64-unknown-linux-gnu/release/libsshmanager.so /usr/local/lib/
+COPY --from=rust-builder /build/crates/core/target/aarch64-unknown-linux-gnu/release/libsshmanager.a /usr/local/lib/
+COPY --from=rust-builder /build/crates/core/ffi/ /usr/local/include/sshmanager/
+
+# Set build environment
+ENV CGO_ENABLED=1 \
+    GOOS=linux \
+    GOARCH=arm64 \
+    CC=aarch64-linux-gnu-gcc \
+    CXX=aarch64-linux-gnu-g++ \
+    CGO_LDFLAGS="-L/usr/local/lib -lsshmanager" \
+    CGO_CFLAGS="-I/usr/local/include"
+
+# Build Go binary
+ARG VERSION=dev
+ARG BUILD_TIME
+ARG GIT_COMMIT
+
+RUN go build -ldflags "-s -w \
+    -X main.Version=${VERSION} \
+    -X main.BuildTime=${BUILD_TIME} \
+    -X main.GitCommit=${GIT_COMMIT} \
+    -extldflags '-static'" \
+    -o ssh-manager-api \
+    ./cmd/server
+
+# Stage 3: Web Builder
+FROM node:22-bookworm AS web-builder
+
+WORKDIR /build
+COPY apps/web/package.json apps/web/pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
+COPY apps/web/ ./
+RUN pnpm run build:production
+
+# Stage 4: Final ARM64 Image
+FROM debian:bookworm-slim
+
+LABEL maintainer="SSH Manager Team <team@sshmanager.dev>"
+LABEL version="${VERSION}"
+LABEL description="SSH Manager API Server - ARM64"
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    libssl3 \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r sshmanager && \
+    useradd -r -g sshmanager -s /bin/false sshmanager
+
+# Copy binaries and assets
+COPY --from=go-builder /build/ssh-manager-api /usr/local/bin/
+COPY --from=rust-builder /build/crates/core/target/aarch64-unknown-linux-gnu/release/libsshmanager.so /usr/local/lib/
+COPY --from=web-builder /build/dist /usr/share/ssh-manager/web
+COPY apps/api/config.yaml /etc/ssh-manager/
+
+# Update library cache
+RUN ldconfig
+
+# Set permissions
+RUN chmod +x /usr/local/bin/ssh-manager-api && \
+    chown -R sshmanager:sshmanager /usr/share/ssh-manager /etc/ssh-manager
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Expose ports
+EXPOSE 8080 2222 5900 3389
+
+# Switch to non-root user
+USER sshmanager
+
+# Set environment
+ENV CONFIG_PATH=/etc/ssh-manager/config.yaml \
+    WEB_ROOT=/usr/share/ssh-manager/web \
+    RUST_LOG=info \
+    GO_ENV=production
+
+# Run
+ENTRYPOINT ["ssh-manager-api"]
+CMD ["--config", "/etc/ssh-manager/config.yaml"]

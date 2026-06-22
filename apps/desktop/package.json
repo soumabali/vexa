@@ -1,0 +1,19 @@
+{
+  "name": "@vexa/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "vexa desktop app (roadmap)",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:frontend": "cd src-frontend && npm run build",
+    "tauri": "tauri",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0"
+  }
+}

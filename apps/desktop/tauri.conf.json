@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "vexa",
+  "version": "0.1.0",
+  "identifier": "com.soumabali.vexa.desktop",
+  "build": {
+    "beforeDevCommand": "cd src-frontend && npm run dev",
+    "beforeBuildCommand": "cd src-frontend && npm run build",
+    "frontendDist": "src-frontend/dist",
+    "devUrl": "http://localhost:3000"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "vexa",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png"
+    ],
+    "category": "DeveloperTool",
+    "shortDescription": "vexa — Complete SSH Manager (desktop roadmap)",
+    "longDescription": "Self-hosted SSH access management. Desktop build is experimental."
+  }
+}

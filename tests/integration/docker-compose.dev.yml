@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: vexa
+      POSTGRES_PASSWORD: "testpassword"
+      POSTGRES_DB: vexa_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ../../apps/api/internal/db/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vexa"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_test_data:/data
+    ports:
+      - "16379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  api:
+    build:
+      context: ../../apps/api
+      dockerfile: Dockerfile.dev
+      target: test-runner
+    environment:
+      - DATABASE_URL=postgres://vexa:testpassword@postgres:5432/vexa_test?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - JWT_SECRET=test-j…ng!!
+      - JWT_REFRESH_SECRET=test-j…s!!!
+      - ENVIRONMENT=development
+      - ENCRYPTION_KEY=test-e…s!!!
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=debug
+      - SERVER_PORT=8080
+    ports:
+      - "18080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+
+volumes:
+  postgres_test_data:
+  redis_test_data:
+
+networks:
+  test-network:
+    driver: bridge

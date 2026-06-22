@@ -1,0 +1,99 @@
+{
+  "root": true,
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript",
+    "plugin:security/recommended",
+    "plugin:security/recommended-legacy",
+    "plugin:jsx-a11y/recommended"
+  ],
+  "plugins": [
+    "security",
+    "no-secrets",
+    "scanjs-rules",
+    "no-unsanitized",
+    "jsx-a11y"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  },
+  "rules": {
+    "security/detect-object-injection": "error",
+    "security/detect-non-literal-regexp": "error",
+    "security/detect-unsafe-regex": "error",
+    "security/detect-buffer-noassert": "error",
+    "security/detect-eval-with-expression": "error",
+    "security/detect-no-csrf-before-method-override": "error",
+    "security/detect-non-literal-fs-filename": "error",
+    "security/detect-non-literal-require": "error",
+    "security/detect-possible-timing-attacks": "error",
+    "security/detect-pseudoRandomBytes": "error",
+    "no-secrets/no-secrets": ["error", { "tolerance": 4.5 }],
+    "no-unsanitized/method": "error",
+    "no-unsanitized/property": "error",
+    "scanjs-rules/accidental_assignment": "warn",
+    "scanjs-rules/assign_to_hostname": "warn",
+    "scanjs-rules/assign_to_href": "warn",
+    "scanjs-rules/assign_to_location": "warn",
+    "scanjs-rules/assign_to_protocol": "warn",
+    "scanjs-rules/call_Function": "warn",
+    "scanjs-rules/call_addEventListener": "warn",
+    "scanjs-rules/call_setTimeout": "warn",
+    "scanjs-rules/call_setInterval": "warn",
+    "scanjs-rules/call_execScript": "warn",
+    "scanjs-rules/eval": "warn",
+    "scanjs-rules/new_Function": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/strict-boolean-expressions": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "warn",
+    "@typescript-eslint/no-unnecessary-condition": "warn",
+    "no-console": ["warn", { "allow": ["error", "warn", "info"] }],
+    "no-debugger": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"]
+  },
+  "settings": {
+    "security": {
+      "detect-buffer-noassert": true,
+      "detect-child-process": true,
+      "detect-disable-mustache-escape": true,
+      "detect-eval-with-expression": true,
+      "detect-new-buffer": true,
+      "detect-no-csrf-before-method-override": true,
+      "detect-non-literal-fs-filename": true,
+      "detect-non-literal-regexp": true,
+      "detect-non-literal-require": true,
+      "detect-object-injection": true,
+      "detect-possible-timing-attacks": true,
+      "detect-pseudoRandomBytes": true,
+      "detect-unsafe-regex": true
+    },
+    "next": {
+      "rootDir": "."
+    }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "security/detect-object-injection": "off",
+        "no-secrets/no-secrets": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+# CodeQL Configuration
+# https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning
+
+name: "vexa CodeQL Config"
+
+# Paths to include/exclude from analysis
+paths:
+  - apps/api
+  - apps/web
+  - apps/desktop
+  - packages/ssh-core
+paths-ignore:
+  - '**/vendor/**'
+  - '**/node_modules/**'
+  - '**/.next/**'
+  - '**/target/**'
+  - '**/tests/**'
+  - '**/*_test.go'
+  - '**/*_test.rs'
+  - '**/__tests__/**'
+  - '**/migrations/**'
+  - '**/generated/**'
+  - '**/dist/**'
+  - '**/build/**'
+
+# Query packs and suites
+queries:
+  # Security extended queries (includes all security queries + experimental)
+  - uses: security-extended
+  # Security and quality queries (includes security + code quality)
+  - uses: security-and-quality
+
+# Custom query filters
+query-filters:
+  # Exclude low-severity results in test files
+  - exclude:
+      tags:
+        - test
+  # Exclude informational results
+  - exclude:
+      severity: info
+
+# Disable specific queries by ID if needed
+# disable-default-queries: false
+# queries:
+#   - exclude: go/sql-injection
+#   - exclude: javascript/xss
+
+# Analysis configuration
+analysis:
+  # Maximum amount of RAM to use (in MB)
+  ram: 4096
+
+# Packs (optional - for custom query packs)
+# packs:
+#   - githubsecuritylab/codeql-go-queries

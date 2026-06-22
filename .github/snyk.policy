@@ -1,0 +1,44 @@
+# Snyk Security Policy
+# https://docs.snyk.io/manage-risk/policies/security-policies
+
+# Version
+version: v1.0.0
+
+# Policy: Ignore specific vulnerabilities with justification
+ignore:
+  # Example: Known false positive in development dependency
+  # 'SNYK-JS-EXAMPLE-1234':
+  #   - '*':
+  #       reason: 'Development-only dependency, not used in production'
+  #       expires: '2026-12-31T00:00:00.000Z'
+  #       created: '2026-05-28T00:00:00.000Z'
+
+  # Go standard library false positives (common with older Go versions)
+  # 'SNYK-GOLANG-GOLANGORGXNETHTML-1234567':
+  #   - '*':
+  #       reason: 'Not applicable - we sanitize HTML input separately'
+  #       expires: '2026-12-31T00:00:00.000Z'
+
+# Policy: Patch specific vulnerabilities
+patch: {}
+
+# Policy: Severity thresholds
+severityThreshold: high
+
+# Policy: Fail conditions
+failThreshold: high
+
+# Policy: Auto-remediation settings (for Snyk PRs)
+autoRemediation:
+  enabled: true
+  autoMerge:
+    enabled: false  # Require manual review for security patches
+  pullRequest:
+    enabled: true
+    assignees: []
+    labels: ["security", "dependencies"]
+
+# Policy: License compliance (optional)
+licensePolicy:
+  enabled: false
+  severityThreshold: high
