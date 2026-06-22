@@ -45,14 +45,22 @@ No agent may:
 
 Every coding session in `02-application/` must use:
 
-| Skill / MCP | Purpose | Mandatory |
-|-------------|---------|-----------|
-| `superpowers` | Coding superpowers | ✅ YES |
-| `caveman` | Caveman hooks and workflows | ✅ YES |
-| `graphify` | Codebase graph understanding | ✅ YES |
-| `playwright` MCP | Browser automation for E2E | ✅ For any E2E/UI change |
+| Skill / MCP | Purpose | Mandatory | Runtime Status |
+|-------------|---------|-----------|----------------|
+| `superpowers` | Coding superpowers | ✅ Yes | `superpowers@skills-dir` loaded |
+| `caveman` | Caveman hooks and workflows | ✅ Yes | `caveman@caveman` enabled |
+| `graphify` | Codebase graph understanding | ✅ Yes | `graphify@skills-dir` loaded |
+| `playwright` MCP | Browser automation for E2E | ✅ For any E2E/UI change | configured in `~/.claude/settings.json` |
 
-If a skill/MCP is missing, **stop work immediately** and report to Ame.
+Verify before each session:
+
+```bash
+ollama launch claude --model kimi-k2.7-code:cloud -- plugin list
+ls -d ~/.claude/skills/{superpowers,caveman,graphify}
+grep -A3 '"playwright"' ~/.claude/settings.json
+```
+
+If a skill/MCP is missing or not loaded, **stop work immediately** and report to Ame.
 
 ---
 
