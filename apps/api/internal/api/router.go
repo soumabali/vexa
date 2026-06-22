@@ -106,7 +106,7 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	terminalHandler := handlers.NewTerminalHandler(terminalManager, jwtManager, sessionStore, cfg.AllowedOrigins, hostRepo, credService, sshGateway, auditLogger)
 	auditHandler := handlers.NewAuditHandler(auditLogger)
 	gatewayHandler := handlers.NewGatewayHandler(sshGateway, rdpGateway, vncGateway, auditLogger)
-	userHandler := handlers.NewUserHandler(auditLogger)
+	userHandler := handlers.NewUserHandler(userService, auditLogger)
 
 	// Public routes (no auth required)
 	public := r.Group("/api/v1")

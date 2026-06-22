@@ -71,18 +71,16 @@ func TestMFAService(t *testing.T) {
 	})
 
 	t.Run("Validate TOTP", func(t *testing.T) {
-		setup, err := service.GenerateTOTPSecret("user@example.com")
-		require.NoError(t, err)
 		encKey := []byte("12345678901234567890123456789012")
 		service2 := auth.NewMFAService("SSH Manager", encKey)
 		setup2, err := service2.GenerateTOTPSecret("user@example.com")
 		require.NoError(t, err)
-		secret, err := crypto.DecryptString(encKey, setup2.Secret)
+		secret, err := crypto.DecryptString(encKey, setup2.EncryptedSecret)
 		require.NoError(t, err)
 		code, err := service2.GenerateTOTPCode(secret)
 		require.NoError(t, err)
-		assert.True(t, service2.ValidateTOTP(setup2.Secret, code))
-		assert.False(t, service.ValidateTOTP(setup.Secret, "000000"))
+		assert.True(t, service2.ValidateTOTP(setup2.EncryptedSecret, code))
+		assert.False(t, service2.ValidateTOTP(setup2.EncryptedSecret, "000000"))
 	})
 
 	t.Run("Generate secure code", func(t *testing.T) {

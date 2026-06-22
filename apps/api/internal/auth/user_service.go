@@ -148,8 +148,8 @@ func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*User, err
 
 func (s *UserService) UpdateLastLogin(ctx context.Context, userID uuid.UUID) error {
 	_, err := s.db.ExecContext(ctx,
-		"UPDATE users SET last_login = datetime('now') WHERE id = $1",
-		userID,
+		"UPDATE users SET last_login = $1 WHERE id = $2",
+		time.Now().UTC(), userID,
 	)
 	return err
 }
