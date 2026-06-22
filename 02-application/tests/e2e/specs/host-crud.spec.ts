@@ -2,45 +2,39 @@ import { test, expect } from '@playwright/test';
 import testUser from '../fixtures/test-user.json';
 
 async function apiLogin() {
-  const res = await fetch(`${process.env.BASE_URL?.replace('3000', '8080') || 'http://localhost:8080'}/api/v1/auth/login`, {
+  const apiBase = process.env.API_BASE_URL || process.env.BASE_URL?.replace('3000', '8080') || 'http://localhost:8080';
+  const res = await fetch(`${apiBase}/api/v1/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Origin': process.env.BASE_URL || 'http://localhost:3000' },
     body: JSON.stringify({ email: testUser.email, password: testUser.password }),
   });
+  if (!res.ok) {
+    throw new Error(`apiLogin failed: ${res.status} ${await res.text()}`);
+  }
   const data = await res.json();
   return data.access_token as string;
 }
 
 async function cleanupHosts(token: string) {
-  const res = await fetch('http://localhost:8080/api/v1/hosts', {
-    headers: { Authorization: `Bearer ${token}` },
+  const apiBase = process.env.API_BASE_URL || process.env.BASE_URL?.replace('3000', '8080') || 'http://localhost:8080';
+  const res = await fetch(`${apiBase}/api/v1/hosts`, {
+    headers: { Authorization: `Bearer ${token}`, Origin: process.env.BASE_URL || 'http://localhost:3000' },
   });
+  if (!res.ok) return;
   const data = await res.json();
   const hosts = data.hosts || [];
   for (const h of hosts) {
     if (h.name?.startsWith('E2E') || h.name?.startsWith('Debug')) {
-      await fetch(`http://localhost:8080/api/v1/hosts/${h.id}`, {
+      await fetch(`${apiBase}/api/v1/hosts/${h.id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, Origin: process.env.BASE_URL || 'http://localhost:3000' },
       });
     }
   }
 }
 
 async function deleteAllHosts(token: string) {
-  const res = await fetch('http://localhost:8080/api/v1/hosts', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await res.json();
-  const hosts = data.hosts || [];
-  for (const h of hosts) {
-    if (h.name?.startsWith('E2E') || h.name?.startsWith('Debug')) {
-      await fetch(`http://localhost:8080/api/v1/hosts/${h.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    }
-  }
+  cleanupHosts(token);
 }
 
 test.describe("Host CRUD Operations", () => {
@@ -78,13 +72,17 @@ test.describe("Host CRUD Operations", () => {
     page.on('request', req => networkLogs.push(`REQ ${req.method()} ${req.url()}`));
     page.on('response', res => networkLogs.push(`RESP ${res.status()} ${res.url()}`));
 
+    const apiBase = process.env.API_BASE_URL || process.env.BASE_URL?.replace('3000', '8080') || 'http://localhost:8080';
+    const origin = process.env.BASE_URL || 'http://localhost:3000';
+
     // Pre-create host via API to ensure edit target exists
     const token = await apiLogin();
-    const createRes = await fetch('http://localhost:8080/api/v1/hosts', {
+    const createRes = await fetch(`${apiBase}/api/v1/hosts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        Origin: origin,
       },
       body: JSON.stringify({
         name: 'E2E Edit Host',
@@ -117,13 +115,17 @@ test.describe("Host CRUD Operations", () => {
   });
 
   test('deletes a host', async ({ page }) => {
+    const apiBase = process.env.API_BASE_URL || process.env.BASE_URL?.replace('3000', '8080') || 'http://localhost:8080';
+    const origin = process.env.BASE_URL || 'http://localhost:3000';
+
     // Pre-create host via API
     const token = await apiLogin();
-    const createRes = await fetch('http://localhost:8080/api/v1/hosts', {
+    const createRes = await fetch(`${apiBase}/api/v1/hosts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        Origin: origin,
       },
       body: JSON.stringify({
         name: 'E2E Delete Host',
