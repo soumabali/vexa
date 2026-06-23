@@ -1,0 +1,12 @@
+FROM postgres:16-alpine
+
+RUN apk add --no-cache bash curl tar
+
+WORKDIR /app
+COPY scripts/backup.sh /app/backup.sh
+RUN chmod +x /app/backup.sh
+
+COPY scripts/backup.crontab /etc/crontabs/root
+
+# Run crond in foreground; backup.sh is triggered by /etc/crontabs/root (daily at 02:00).
+CMD ["crond", "-f", "-l", "2"]
