@@ -1,0 +1,19 @@
+{
+  "defaultModel": "kimi-k2.7-code:cloud",
+  "defaultMaxTurns": 20,
+  "allowedTools": [
+    "Read",
+    "Write",
+    "Edit",
+    "Bash",
+    "TaskCreate",
+    "TaskUpdate",
+    "TaskList"
+  ],
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@executeautomation/playwright-mcp-server"]
+    }
+  }
+}

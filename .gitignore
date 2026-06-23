@@ -30,9 +30,6 @@ logs/
 *.swo
 .DS_Store
 
-# Subtree (managed from root git)
-02-application/
-
 # Backup data (host-side only)
 backups/
 /backups
