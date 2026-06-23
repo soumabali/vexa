@@ -100,7 +100,7 @@ jobs:
       - name: TS lint
         run: |
           cd apps/web
-          npm ci
+          npm ci --legacy-peer-deps
           npm run lint || true
 
       - name: Rust format check
