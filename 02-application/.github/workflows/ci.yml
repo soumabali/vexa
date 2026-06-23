@@ -170,7 +170,7 @@ jobs:
       - name: Lint TypeScript (web)
         run: |
           cd apps/web
-          npm ci
+          npm ci --legacy-peer-deps
           npm run lint || true
 
       - name: TypeScript type check
