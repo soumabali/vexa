@@ -243,8 +243,8 @@ jobs:
           DATABASE_URL: postgres://vexa:test@localhost:5432/vexa_test?sslmode=disable
           REDIS_ADDR: localhost:6379
           JWT_SECRET: test-jwt-secret-min-32-bytes-long!!
-          JWT_REFRESH_SECRET: test-refresh-secret-min-32-bytes!!
-          ENCRYPTION_KEY: test-encryption-key-32-bytes!!
+          JWT_REFRESH_SECRET: test-refresh-secret-min-32-bytes-long!!
+          ENCRYPTION_KEY: test-encryption-key-32-bytes-long!!
 
       - name: Test Rust Core
         run: |
