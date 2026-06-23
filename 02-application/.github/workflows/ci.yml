@@ -278,10 +278,10 @@ jobs:
       matrix:
         include:
           - app: api
-            dockerfile: Dockerfile
+            dockerfile: ./apps/api/Dockerfile
             context: ./apps/api
           - app: web
-            dockerfile: Dockerfile
+            dockerfile: ./apps/web/Dockerfile
             context: ./apps/web
     steps:
       - name: Checkout code
