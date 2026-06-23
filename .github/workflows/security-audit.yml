@@ -170,7 +170,7 @@ jobs:
 
       - name: Setup Rust
         if: matrix.language == 'rust'
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -205,7 +205,7 @@ jobs:
           cache-dependency-path: apps/web/package-lock.json
 
       - name: Setup Rust
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install Snyk
         run: npm install -g snyk
