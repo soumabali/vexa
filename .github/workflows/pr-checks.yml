@@ -75,7 +75,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Setup Rust
         uses: dtolnay/rust-action@stable
@@ -99,8 +100,8 @@ jobs:
       - name: TS lint
         run: |
           cd apps/web
-          pnpm install --frozen-lockfile || pnpm install
-          pnpm lint || true
+          npm ci
+          npm run lint || true
 
       - name: Rust format check
         run: |
