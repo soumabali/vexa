@@ -124,6 +124,10 @@ api-vexa.example.com {
 ### 4.4 Start Production Stack
 
 ```bash
+# Pull latest images from GHCR (built by GitHub Actions)
+docker compose -f docker-compose.prod.yml pull
+
+# Start the stack
 docker compose -f docker-compose.prod.yml up -d
 ```
 
@@ -190,13 +194,18 @@ gitleaks detect --source . -v
 
 ## 8. Updates
 
-```bash
-# Pull latest code
-git pull origin main
+Images are built and pushed to GHCR automatically by GitHub Actions on every push to `main`.
+No local build or toolchain required on the production server.
 
-# Rebuild and restart
-docker compose -f docker-compose.prod.yml build api web
+```bash
+# Pull latest images from GHCR
+docker compose -f docker-compose.prod.yml pull
+
+# Restart only services with new images
 docker compose -f docker-compose.prod.yml up -d
+
+# Remove old unused images
+docker image prune -f
 ```
 
 ---
@@ -204,11 +213,15 @@ docker compose -f docker-compose.prod.yml up -d
 ## 9. Rollback
 
 ```bash
-# Check previous image tag
-docker images | grep vexa
+# Pull a specific image tag (sha-<short_commit>)
+docker compose -f docker-compose.prod.yml pull
 
-# Re-deploy the previous image tag
-docker compose -f docker-compose.prod.yml up -d --no-deps --build=false api web
+# Or pin specific version
+# Edit docker-compose.prod.yml and change image tag:
+#   image: ghcr.io/soumabali/vexa-api:latest  →  image: ghcr.io/soumabali/vexa-api:sha-abc1234
+
+# Redeploy pinned version
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 For database-level rollback, restore from a backup before restarting the API.

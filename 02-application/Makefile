@@ -29,10 +29,12 @@ verify:
 	cd apps/web && npm run build
 	cp -r apps/web/.next/static apps/web/.next/standalone/.next/static
 
-# Deploy production manually (self-hosted Docker Compose only)
+# Deploy production (images built by GitHub Actions → GHCR)
 deploy:
-	@echo "Production deploy: use docker-compose.prod.yml with your .env"
-	@echo "docker compose -f docker-compose.prod.yml up -d"
+	@echo "Pull latest images from GHCR..."
+	docker compose -f docker-compose.prod.yml pull
+	@echo "Restart services..."
+	docker compose -f docker-compose.prod.yml up -d
 
 # Clean
 clean:
