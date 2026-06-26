@@ -16,7 +16,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies with npm (repo uses package-lock.json)
-RUN npm ci --legacy-peer-deps --omit=dev
+# NOTE: Do NOT use --omit=dev — Next.js build needs TypeScript + dev tooling
+RUN npm ci --legacy-peer-deps
 
 #############################################
 # STAGE 2: Builder
