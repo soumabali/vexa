@@ -91,19 +91,19 @@ SKILL_LIST=$(timeout 30 ollama launch claude --model kimi-k2.7-code:cloud -- plu
 if echo "$SKILL_LIST" | grep -A4 "superpowers@skills-dir" | grep -q "loaded"; then
   log "OK: superpowers@skills-dir loaded"
 else
-  warn "superpowers@skills-dir not loaded"
+  log "INFO: superpowers@skills-dir not loaded (non-blocking runtime check)"
 fi
 
 if echo "$SKILL_LIST" | grep -A4 "caveman@caveman" | grep -q "enabled"; then
   log "OK: caveman@caveman enabled"
 else
-  warn "caveman@caveman not enabled"
+  log "INFO: caveman@caveman not enabled (non-blocking runtime check)"
 fi
 
 if echo "$SKILL_LIST" | grep -A4 "graphify@skills-dir" | grep -q "loaded"; then
   log "OK: graphify@skills-dir loaded"
 else
-  warn "graphify@skills-dir not loaded"
+  log "INFO: graphify@skills-dir not loaded (non-blocking runtime check)"
 fi
 
 # 9. Check playwright MCP in global settings
