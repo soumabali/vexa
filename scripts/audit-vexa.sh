@@ -85,8 +85,8 @@ for d in /backups/vexa/db /backups/vexa/wireguard /backups/vexa/logs; do
   fi
 done
 
-# 8. Check Claude skills/plugins are loaded at runtime
-SKILL_LIST=$(timeout 30 ollama launch claude --model kimi-k2.7-code:cloud -- plugin list 2>/dev/null)
+# 8. Check Claude skills/plugins are loaded at runtime (informational only, non-blocking)
+SKILL_LIST=$(timeout 30 ollama launch claude --model kimi-k2.7-code:cloud -- plugin list 2>/dev/null || true)
 
 if echo "$SKILL_LIST" | grep -A4 "superpowers@skills-dir" | grep -q "loaded"; then
   log "OK: superpowers@skills-dir loaded"
