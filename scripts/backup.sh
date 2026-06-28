@@ -1,66 +1,107 @@
-#!/usr/bin/env sh
-# backup.sh — Daily backup runner for vexa inside container
-# Backs up PostgreSQL database and WireGuard configs to /backups
+#!/usr/bin/env bash
+# backup.sh — PostgreSQL backup for vexa (P4 #2)
+# Modes:
+#   backup.sh daily   — keep last BACKUP_RETENTION_DAYS days
+#   backup.sh weekly  — keep last BACKUP_RETENTION_WEEKS weeks (Sunday rotation)
+#
+# Env:
+#   DB_HOST, DB_PORT, DB_USER, DB_PASSWORD (or PGPASSWORD), DB_NAME
+#   BACKUP_DIR                  (default: /home/ubuntu/projects/vexa/02-application/backups/postgres)
+#   BACKUP_RETENTION_DAYS       (default: 14)
+#   BACKUP_RETENTION_WEEKS      (default: 8)
+#   LOG_DIR                     (default: /home/ubuntu/projects/vexa/02-application/logs)
 
 set -euo pipefail
 
-BACKUP_DIR="/backups/vexa"
-DATE=$(date +%Y%m%d-%H%M%S)
-RETENTION_DAYS=${RETENTION_DAYS:-7}
+MODE="${1:-daily}"
 
-log() { echo "[vexa-backup] $*"; }
-
-log "Starting backup at ${DATE}"
-
-mkdir -p "${BACKUP_DIR}/db" "${BACKUP_DIR}/wireguard" "${BACKUP_DIR}/logs"
-
-# PostgreSQL backup
-DB_BACKUP="${BACKUP_DIR}/db/vexa-${DATE}.dump"
-DB_URL="${DATABASE_URL:-}"
-if [ -z "$DB_URL" ] && [ -f "/home/ubuntu/projects/vexa/02-application/.env" ]; then
-  # Try to extract from .env file as fallback
-  DB_URL=$(grep -E '^DATABASE_URL=' /home/ubuntu/projects/vexa/02-application/.env | cut -d= -f2-)
-fi
-if [ -z "$DB_URL" ]; then
-  log "WARNING: DATABASE_URL not set and not found in .env, skipping PostgreSQL backup"
-elif ! command -v pg_dump >/dev/null 2>&1; then
-  log "WARNING: pg_dump not available, skipping PostgreSQL backup (run inside vexa-backup container or install PostgreSQL client)"
-else
-  log "Backing up PostgreSQL to ${DB_BACKUP}"
-  pg_dump "${DB_URL}" -Fc -f "${DB_BACKUP}" || {
-    log "ERROR: PostgreSQL backup failed"
-    exit 1
-  }
+# Load .env if present (silent)
+if [[ -f "$(cd "$(dirname "$0")/.." && pwd)/.env" ]]; then
+  # shellcheck disable=SC1091
+  set -a
+  . "$(cd "$(dirname "$0")/.." && pwd)/.env"
+  set +a
 fi
 
-# WireGuard configs backup
-WG_BACKUP="${BACKUP_DIR}/wireguard/wg-${DATE}.tar.gz"
-log "Backing up WireGuard configs to ${WG_BACKUP}"
-if [ -d "/etc/wireguard" ]; then
-  tar -czf "${WG_BACKUP}" -C /etc/wireguard . || {
-    log "ERROR: WireGuard backup failed"
-    exit 1
-  }
-else
-  log "WARNING: /etc/wireguard not found, skipping WireGuard backup"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+BACKUP_DIR="${BACKUP_DIR:-${ROOT_DIR}/backups/postgres}"
+LOG_DIR="${LOG_DIR:-${ROOT_DIR}/logs}"
+BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+BACKUP_RETENTION_WEEKS="${BACKUP_RETENTION_WEEKS:-8}"
+
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-5432}"
+DB_USER="${DB_USER:-vexa}"
+DB_NAME="${DB_NAME:-vexa}"
+PGPASSWORD="${PGPASSWORD:-${DB_PASSWORD:-}}"
+export PGPASSWORD
+
+mkdir -p "${BACKUP_DIR}" "${LOG_DIR}"
+LOG_FILE="${LOG_DIR}/backup.log"
+
+log() {
+  local ts
+  ts="$(date '+%Y-%m-%d %H:%M:%S')"
+  echo "[${ts}] [${MODE}] $*" | tee -a "${LOG_FILE}"
+}
+
+fail() {
+  log "ERROR: $*"
+  exit 1
+}
+
+# --- Preflight ---
+command -v pg_dump >/dev/null 2>&1 || fail "pg_dump not found in PATH"
+command -v gunzip >/dev/null 2>&1 || fail "gunzip not found in PATH"
+
+[[ -n "${DB_NAME}" ]] || fail "DB_NAME not set"
+
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+OUTFILE="${BACKUP_DIR}/vexa_${DB_NAME}_${TIMESTAMP}.sql.gz"
+
+log "Starting PostgreSQL dump (db=${DB_NAME} host=${DB_HOST}:${DB_PORT} user=${DB_USER})"
+
+# pg_dump -> gzip (atomic write via temp file)
+TMPFILE="$(mktemp "${BACKUP_DIR}/.dump.XXXXXX.sql.gz")"
+trap 'rm -f "${TMPFILE}"' EXIT
+
+if ! pg_dump \
+    -h "${DB_HOST}" \
+    -p "${DB_PORT}" \
+    -U "${DB_USER}" \
+    -d "${DB_NAME}" \
+    --no-owner --no-privileges --clean --if-exists \
+  | gzip -c > "${TMPFILE}"; then
+  fail "pg_dump failed for database ${DB_NAME}"
 fi
 
-# API logs backup
-LOG_BACKUP="${BACKUP_DIR}/logs/api-logs-${DATE}.tar.gz"
-log "Backing up API logs to ${LOG_BACKUP}"
-if [ -d "/var/log/vexa" ]; then
-  tar -czf "${LOG_BACKUP}" -C /var/log/vexa . || {
-    log "ERROR: API logs backup failed"
-    exit 1
-  }
-else
-  log "WARNING: /var/log/vexa not found, skipping log backup"
+# Verify gzip integrity
+if ! gunzip -t "${TMPFILE}" 2>>"${LOG_FILE}"; then
+  fail "gzip integrity check failed for ${TMPFILE}"
 fi
 
-# Retention cleanup
-log "Cleaning up backups older than ${RETENTION_DAYS} days"
-find "${BACKUP_DIR}/db" -type f -mtime +${RETENTION_DAYS} -delete
-find "${BACKUP_DIR}/wireguard" -type f -mtime +${RETENTION_DAYS} -delete
-find "${BACKUP_DIR}/logs" -type f -mtime +${RETENTION_DAYS} -delete
+# Move to final location
+mv "${TMPFILE}" "${OUTFILE}"
+trap - EXIT
+chmod 600 "${OUTFILE}"
+log "Dump OK: ${OUTFILE} ($(du -h "${OUTFILE}" | cut -f1))"
+
+# --- Retention ---
+case "${MODE}" in
+  daily)
+    DELETED=$(find "${BACKUP_DIR}" -maxdepth 1 -type f -name "vexa_${DB_NAME}_*.sql.gz" \
+      -mtime "+${BACKUP_RETENTION_DAYS}" -print -delete | wc -l || true)
+    log "Retention: removed ${DELETED} files older than ${BACKUP_RETENTION_DAYS} days"
+    ;;
+  weekly)
+    DELETED=$(find "${BACKUP_DIR}" -maxdepth 1 -type f -name "vexa_${DB_NAME}_*.sql.gz" \
+      -mtime "+$((BACKUP_RETENTION_WEEKS * 7))" -print -delete | wc -l || true)
+    log "Retention (weekly): removed ${DELETED} files older than ${BACKUP_RETENTION_WEEKS} weeks"
+    ;;
+  *)
+    fail "Unknown mode: ${MODE} (use daily|weekly)"
+    ;;
+esac
 
 log "Backup completed successfully"
+exit 0
