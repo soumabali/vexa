@@ -65,9 +65,14 @@ export default function ShareManagementPage() {
   };
 
   useEffect(() => {
-    if ((session as any)?.accessToken) {
-      fetchShares(activeTab === "sent");
-    }
+    const token = (session as any)?.accessToken;
+    if (!token) return;
+    // Defer the async state-setting call out of the effect body to avoid cascading renders.
+    const handle = setTimeout(() => {
+      void fetchShares(activeTab === "sent");
+    }, 0);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, session]);
 
   // Create share

@@ -95,17 +95,13 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
     eta: string;
   } | null>(null);
 
-  useEffect(() => {
-    fetchHosts();
-  }, []);
-
   const fetchHosts = async () => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/files/hosts');
       const data = await response.json();
       setHosts(data.hosts || []);
-      
+
       if (initialHostId) {
         const host = data.hosts?.find((h: FileSystem) => h.host === initialHostId);
         if (host) {
@@ -123,6 +119,10 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchHosts();
+  }, []);
 
   const connectToHost = async (host: FileSystem) => {
     setIsConnecting(true);

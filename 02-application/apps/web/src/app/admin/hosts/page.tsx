@@ -23,10 +23,6 @@ interface Host {
 export default function HostManagement() {
   const [hosts, setHosts] = useState<Host[]>([]);
 
-  useEffect(() => {
-    fetchHosts();
-  }, []);
-
   const fetchHosts = async () => {
     try {
       const res = await fetch('/api/admin/hosts');
@@ -36,6 +32,10 @@ export default function HostManagement() {
       console.error('Failed to fetch hosts:', error);
     }
   };
+
+  useEffect(() => {
+    fetchHosts();
+  }, []);
 
   const handleRunHealthCheck = async (id: string) => {
     try {
