@@ -1,0 +1,21 @@
+# Prometheus scrape config for vexa (P4 #5)
+# Used by docker compose --profile monitoring up -d
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: vexa-api
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - api:8080
+        labels:
+          service: vexa-api
+          env: ${ENV:-development}
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
