@@ -34,7 +34,15 @@ export default function ProfileSettingsPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const data = await authApi.getUserProfile().catch(() => authApi.getProfile()) as any;
+        const data = (await authApi.getUserProfile().catch(() => authApi.getProfile())) as {
+          id?: string;
+          email?: string;
+          name?: string;
+          avatar?: string;
+          createdAt?: string;
+          role?: string;
+          mfa_verified?: boolean;
+        };
         setProfile({
           id: data.id || "",
           email: data.email || "",

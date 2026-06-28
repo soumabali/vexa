@@ -51,8 +51,8 @@ export default function WebAuthnSettingsPage() {
     try {
       const data = await listCredentials();
       setCredentials(data.credentials || []);
-    } catch (e: any) {
-      setError(e.message || "Failed to load credentials");
+    } catch (e) { const err = e as { message?: string };
+      setError(err.message || "Failed to load credentials");
     }
   }
 
@@ -65,9 +65,9 @@ export default function WebAuthnSettingsPage() {
       setRequirePlatform(false);
       await fetchCredentials();
       toast.success("Passkey registered");
-    } catch (e: any) {
-      setError(e.message || "Registration failed");
-      toast.error(e.message || "Registration failed");
+    } catch (e) { const err = e as { message?: string };
+      setError(err.message || "Registration failed");
+      toast.error(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -81,8 +81,8 @@ export default function WebAuthnSettingsPage() {
       setDeleteId(null);
       await fetchCredentials();
       toast.success("Passkey removed");
-    } catch (e: any) {
-      setError(e.message || "Delete failed");
+    } catch (e) { const err = e as { message?: string };
+      setError(err.message || "Delete failed");
     } finally {
       setLoading(false);
     }
@@ -97,8 +97,8 @@ export default function WebAuthnSettingsPage() {
       setRenameValue("");
       await fetchCredentials();
       toast.success("Passkey renamed");
-    } catch (e: any) {
-      setError(e.message || "Rename failed");
+    } catch (e) { const err = e as { message?: string };
+      setError(err.message || "Rename failed");
     } finally {
       setLoading(false);
     }

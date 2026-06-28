@@ -48,7 +48,12 @@ export interface Credential {
   lastUsed?: Date;
   createdAt: Date;
   updatedAt: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  privateKey?: string;
+  password?: string;
+  apiKey?: string;
+  certificate?: string;
+  note?: string;
 }
 
 interface CredentialListProps {
