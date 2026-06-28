@@ -8,6 +8,7 @@ import (
 
 	"github.com/soumabali/vexa/internal/audit"
 	"github.com/soumabali/vexa/internal/auth"
+	"github.com/soumabali/vexa/internal/crypto"
 	"github.com/soumabali/vexa/internal/models"
 )
 
@@ -391,6 +392,23 @@ func (h *AuthHandler) VerifyMFAEnable(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enable MFA"})
 		return
 	}
+
+	// Persist backup-code hashes so the codes survive the Redis setup session
+	// and can be re-issued later via RegenerateBackupCodes.
+	hashes := make([]string, 0, len(pending.BackupCodes))
+	for _, code := range pending.BackupCodes {
+		hashed, herr := crypto.HashPassword(code, crypto.DefaultArgon2Params())
+		if herr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash backup codes"})
+			return
+		}
+		hashes = append(hashes, hashed)
+	}
+	if err := h.userService.SetBackupCodesHashes(c.Request.Context(), userID, hashes); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to persist backup codes"})
+		return
+	}
+
 	_ = h.userService.DeleteMFASetupSession(c.Request.Context(), userID)
 
 	h.auditLogger.Log("auth.mfa", &userID, nil, c.ClientIP(), map[string]interface{}{
@@ -400,12 +418,93 @@ func (h *AuthHandler) VerifyMFAEnable(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "MFA enabled successfully"})
 }
 
+// RegenerateBackupCodes issues fresh backup codes for the authenticated user,
+// invalidating any previously-issued codes. Requires a current TOTP code.
+func (h *AuthHandler) RegenerateBackupCodes(c *gin.Context) {
+	userIDVal, _ := c.Get("user_id"); userID := userIDVal.(uuid.UUID)
+
+	var req struct {
+		TOTPCode string `json:"totp_code" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "totp_code required"})
+		return
+	}
+
+	user, err := h.userService.GetUserByID(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load user"})
+		return
+	}
+	if !user.MFAEnabled || user.TOTPSecret == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "MFA not enabled"})
+		return
+	}
+	if !h.mfaService.ValidateTOTP(*user.TOTPSecret, req.TOTPCode) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid MFA code"})
+		return
+	}
+
+	// Generate fresh plain codes + Argon2id hashes
+	plainCodes, err := h.mfaService.GenerateRecoveryCodes(8)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate codes"})
+		return
+	}
+
+	hashes := make([]string, 0, len(plainCodes))
+	for _, code := range plainCodes {
+		h, err := crypto.HashPassword(code, crypto.DefaultArgon2Params())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash code"})
+			return
+		}
+		hashes = append(hashes, h)
+	}
+
+	if err := h.userService.SetBackupCodesHashes(c.Request.Context(), userID, hashes); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to persist codes"})
+		return
+	}
+
+	h.auditLogger.Log("auth.mfa", &userID, nil, c.ClientIP(), map[string]interface{}{
+		"action":     "mfa_backup_codes_regenerated",
+		"code_count": len(plainCodes),
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"backup_codes": plainCodes,
+		"message":      "Backup codes regenerated. Previous codes have been invalidated.",
+	})
+}
+
 // DisableMFA disables MFA for the authenticated user.
+// Requires a valid TOTP code to prevent token-theft disable attacks.
 func (h *AuthHandler) DisableMFA(c *gin.Context) {
 	userIDVal, _ := c.Get("user_id"); userID := userIDVal.(uuid.UUID)
 
-	err := h.userService.DisableMFA(c.Request.Context(), userID)
+	var req struct {
+		TOTPCode string `json:"totp_code"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil || req.TOTPCode == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "totp_code required"})
+		return
+	}
+
+	// Re-validate the user's TOTP secret before disabling
+	user, err := h.userService.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load user"})
+		return
+	}
+	if user.MFAEnabled && user.TOTPSecret != nil {
+		if !h.mfaService.ValidateTOTP(*user.TOTPSecret, req.TOTPCode) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid MFA code"})
+			return
+		}
+	}
+
+	if err := h.userService.DisableMFA(c.Request.Context(), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to disable MFA"})
 		return
 	}
