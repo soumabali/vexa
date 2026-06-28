@@ -184,6 +184,7 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 		authenticated.PATCH("/hosts/:id", hostHandler.Update)
 		authenticated.DELETE("/hosts/:id", hostHandler.Delete)
 		authenticated.GET("/hosts/:id/health", hostHandler.HealthCheck)
+		authenticated.GET("/hosts/:id/stats", hostHandler.GetStats)
 
 		// Terminal
 		authenticated.GET("/ws/terminal", terminalHandler.HandleTerminal)
