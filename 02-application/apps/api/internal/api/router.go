@@ -130,6 +130,7 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 		authenticated.POST("/auth/logout", authHandler.Logout)
 		authenticated.POST("/auth/mfa/setup", authHandler.SetupMFA)
 		authenticated.POST("/auth/mfa/enable", authHandler.VerifyMFAEnable)
+		authenticated.POST("/auth/mfa/backup-codes/regenerate", authHandler.RegenerateBackupCodes)
 		authenticated.DELETE("/auth/mfa/disable", authHandler.DisableMFA)
 		authenticated.GET("/auth/sessions", authHandler.GetActiveSessions)
 		authenticated.POST("/auth/sessions/revoke", authHandler.RevokeSession)

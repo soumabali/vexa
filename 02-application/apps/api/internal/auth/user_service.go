@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -222,10 +223,46 @@ func (s *UserService) EnableMFA(ctx context.Context, userID uuid.UUID, secret st
 
 func (s *UserService) DisableMFA(ctx context.Context, userID uuid.UUID) error {
 	_, err := s.db.ExecContext(ctx,
-		"UPDATE users SET totp_secret = NULL, mfa_enabled = false, totp_enabled = false, updated_at = $1 WHERE id = $2",
+		"UPDATE users SET totp_secret = NULL, mfa_enabled = false, totp_enabled = false, backup_codes_hashes = '[]'::jsonb, updated_at = $1 WHERE id = $2",
 		time.Now().UTC(), userID,
 	)
 	return err
+}
+
+// SetBackupCodesHashes replaces the user's stored backup-code hashes.
+// Used when MFA is enabled and when codes are regenerated.
+func (s *UserService) SetBackupCodesHashes(ctx context.Context, userID uuid.UUID, hashes []string) error {
+	payload, err := json.Marshal(hashes)
+	if err != nil {
+		return fmt.Errorf("failed to marshal backup codes: %w", err)
+	}
+	_, err = s.db.ExecContext(ctx,
+		"UPDATE users SET backup_codes_hashes = $1, updated_at = $2 WHERE id = $3",
+		payload, time.Now().UTC(), userID,
+	)
+	return err
+}
+
+// GetBackupCodesHashes returns the stored backup-code hashes for the user.
+func (s *UserService) GetBackupCodesHashes(ctx context.Context, userID uuid.UUID) ([]string, error) {
+	var raw []byte
+	err := s.db.QueryRowContext(ctx,
+		"SELECT backup_codes_hashes FROM users WHERE id = $1", userID,
+	).Scan(&raw)
+	if err == sql.ErrNoRows {
+		return nil, ErrUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	var hashes []string
+	if err := json.Unmarshal(raw, &hashes); err != nil {
+		return nil, err
+	}
+	return hashes, nil
 }
 
 
