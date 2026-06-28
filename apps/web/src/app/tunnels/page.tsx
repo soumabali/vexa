@@ -25,10 +25,12 @@ import { tunnelsApi, enableTunnelApi, disableTunnelApi, rotateTunnelKeys } from 
 import { TunnelStatusBadge } from "@/components/tunnels/TunnelStatusBadge"
 import { TunnelConfigModal } from "@/components/tunnels/TunnelConfigModal"
 import { TunnelDeleteDialog } from "@/components/tunnels/TunnelDeleteDialog"
+import { TunnelDetailDialog } from "@/components/tunnels/TunnelDetailDialog"
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 
 export default function TunnelsPage() {
   const [filter, setFilter] = useState("")
+  const [selected, setSelected] = useState<Tunnel | null>(null)
   const { data: tunnels, refetch } = useQuery({
     queryKey: ["tunnels"],
     queryFn: () => tunnelsApi(),
@@ -93,7 +95,12 @@ export default function TunnelsPage() {
                 </TableRow>
               )}
               {filtered?.map((tunnel) => (
-                <TableRow key={tunnel.id}>
+                <TableRow
+                  key={tunnel.id}
+                  className="cursor-pointer"
+                  onClick={() => setSelected(tunnel)}
+                  data-testid="tunnel-row"
+                >
                   <TableCell className="font-mono">{tunnel.interface_name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{tunnel.host_id.slice(0, 8)}…</Badge>
@@ -143,6 +150,11 @@ export default function TunnelsPage() {
           </Table>
         </div>
       </div>
+
+      <TunnelDetailDialog
+        tunnel={selected}
+        onOpenChange={(open) => !open && setSelected(null)}
+      />
     </DashboardLayout>
   )
 }
