@@ -2,92 +2,86 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Copy as CopyIcon,
+  Network,
+  Server,
+  Loader2,
+} from "lucide-react";
 import { hostsApi } from "@/lib/api/hosts";
+import type { HostDetailStats } from "@/lib/api/hosts";
 import { createTunnel } from "@/lib/api/tunnels";
 import { HostResponse } from "@/lib/validations/hosts";
 import { HostForm } from "@/components/hosts/HostForm";
 import { ConnectionButton } from "@/components/hosts/ConnectionButton";
+import { HostStatsCard } from "@/components/hosts/HostStatsCard";
+import { HostMetadataPanel } from "@/components/hosts/HostMetadataPanel";
+import { CopyableField } from "@/components/hosts/CopyableField";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
-import { ErrorDisplay } from "@/components/auth/ErrorDisplay";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  ArrowLeftIcon,
-  ServerIcon,
-  MonitorIcon,
-  StarIcon,
-  ClockIcon,
-  PencilIcon,
-  TrashIcon,
-  CopyIcon,
-  Network,
-} from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-
-const hostTypeIcons = {
-  ssh: ServerIcon,
-  rdp: MonitorIcon,
-  vnc: MonitorIcon,
-};
-
-const hostTypeLabels = {
-  ssh: "SSH",
-  rdp: "RDP",
-  vnc: "VNC",
-};
-
-const statusColors = {
-  online: "bg-emerald-500",
-  offline: "bg-red-500",
-  unknown: "bg-gray-400",
-};
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import { toast } from "sonner";
 
 export default function HostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const hostId = params.id as string;
+  const id = params.id as string;
 
-  const [host, setHost] = useState<HostResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [editingHost, setEditingHost] = useState<HostResponse | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showTunnelDialog, setShowTunnelDialog] = useState(false);
-  const [tunnelAllowedIPs, setTunnelAllowedIPs] = useState("0.0.0.0/0, ::/0");
-  const [tunnelPort, setTunnelPort] = useState("51820");
-  const [tunnelDNS, setTunnelDNS] = useState("1.1.1.1, 8.8.8.8");
-  const [isCreatingTunnel, setIsCreatingTunnel] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [tunnelName, setTunnelName] = useState("");
+  const [isCreatingTunnel, setIsCreatingTunnel] = useState(false);
 
+  // Host detail fetch (existing pattern preserved)
+  const {
+    data: host,
+    loading,
+    error,
+    reload: refetchHost,
+  } = useAsyncData<HostResponse>(async () => {
+    const resp = await hostsApi.get(id);
+    return resp;
+  });
+
+  // Per-host stats fetch (new)
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError,
+  } = useAsyncData<HostDetailStats>(async () => {
+    return await hostsApi.getStats(id);
+  });
+
+  // Sync edit form when host loads
   useEffect(() => {
-    const loadHost = async () => {
-      setIsLoading(true);
-      setError("");
-      try {
-        const data = await hostsApi.get(hostId);
-        setHost(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load host");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (hostId) loadHost();
-  }, [hostId]);
+    if (host) setEditingHost(host);
+  }, [host]);
 
-  const handleEditSuccess = (updated: HostResponse) => {
-    setHost(updated);
-    setShowEditDialog(false);
+  const handleCopyHost = async () => {
+    if (!host) return;
+    try {
+      await navigator.clipboard.writeText(`${host.address}:${host.port}`);
+      toast.success("Address copied");
+    } catch {
+      toast.error("Copy failed");
+    }
   };
 
   const handleDelete = async () => {
@@ -95,340 +89,263 @@ export default function HostDetailPage() {
     setIsDeleting(true);
     try {
       await hostsApi.delete(host.id);
+      toast.success("Host deleted");
       router.push("/hosts");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete host");
+      toast.error(err instanceof Error ? err.message : "Delete failed");
       setIsDeleting(false);
-    }
-  };
-
-  const handleCopyHost = () => {
-    if (host) {
-      navigator.clipboard.writeText(`${host.host}:${host.port}`);
     }
   };
 
   const handleCreateTunnel = async () => {
     if (!host) return;
+    if (!tunnelName.trim()) {
+      toast.error("Tunnel name required");
+      return;
+    }
     setIsCreatingTunnel(true);
-    setError("");
     try {
       await createTunnel({
-        host_id: host.id,
-        allowed_ips: tunnelAllowedIPs.split(",").map((s) => s.trim()).filter(Boolean),
-        listen_port: parseInt(tunnelPort, 10) || 51820,
-        dns_servers: tunnelDNS.split(",").map((s) => s.trim()).filter(Boolean),
+        hostId: host.id,
+        name: tunnelName.trim(),
       });
+      toast.success("Tunnel created");
       setShowTunnelDialog(false);
-      router.push("/tunnels");
+      setTunnelName("");
+      // Stats changed; refresh.
+      window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create tunnel");
+      toast.error(err instanceof Error ? err.message : "Tunnel creation failed");
+    } finally {
       setIsCreatingTunnel(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner />
-        <span className="ml-2 text-muted-foreground">Loading host...</span>
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner className="h-8 w-8" />
       </div>
     );
   }
 
-  if (error && !host) {
+  if (error || !host) {
     return (
-      <div className="container py-6">
-        <Button variant="ghost" onClick={() => router.push("/hosts")} className="mb-4">
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          Back to Hosts
+      <div className="container mx-auto p-6 space-y-4">
+        <Button variant="ghost" onClick={() => router.push("/hosts")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to hosts
         </Button>
-        <ErrorDisplay message={error} />
+        <Card>
+          <CardContent className="p-6 text-center text-muted-foreground">
+            {error?.message ?? "Host not found"}
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  if (!host) {
-    return (
-      <div className="container py-6">
-        <Button variant="ghost" onClick={() => router.push("/hosts")} className="mb-4">
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          Back to Hosts
-        </Button>
-        <p className="text-muted-foreground">Host not found</p>
-      </div>
-    );
-  }
-
-  const Icon = hostTypeIcons[host.hostType];
 
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4">
-          <Button variant="ghost" onClick={() => router.push("/hosts")}>
-            <ArrowLeftIcon className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-lg text-white ${
-              host.hostType === "ssh" ? "bg-blue-600" :
-              host.hostType === "rdp" ? "bg-purple-600" : "bg-teal-600"
-            }`}
-            style={host.color ? { backgroundColor: host.color } : undefined}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-start gap-3 min-w-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/hosts")}
+            aria-label="Back to hosts"
           >
-            <Icon className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold">{host.name}</h1>
-              {host.favorite && <StarIcon className="h-5 w-5 fill-yellow-400 text-yellow-400" />}
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Server className="h-5 w-5 text-muted-foreground shrink-0" />
+              <h1 className="text-2xl font-bold truncate">{host.name}</h1>
+              <Badge variant={host.favorite ? "default" : "secondary"}>
+                {host.favorite ? "active" : "inactive"}
+              </Badge>
+              {host.hostType && (
+                <Badge variant="outline" className="uppercase">
+                  {host.hostType}
+                </Badge>
+              )}
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <code className="rounded bg-muted px-1.5 py-0.5 font-mono">
-                {host.host}:{host.port}
-              </code>
-              <span>•</span>
-              <Badge variant="outline">{hostTypeLabels[host.hostType]}</Badge>
-              <span>•</span>
-              <div className={`h-2 w-2 rounded-full ${statusColors[host.status ?? "unknown"]}`} />
-              <span className="capitalize">{host.status}</span>
+            <div className="mt-2">
+              <CopyableField
+                value={`${host.address}:${host.port}`}
+                ariaLabel="Copy host:port"
+              />
             </div>
+            {host.description && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {host.description}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-wrap">
           <ConnectionButton host={host} />
-          <Button variant="outline" size="icon" onClick={handleCopyHost}>
-            <CopyIcon className="h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={handleCopyHost}>
+            <CopyIcon className="h-4 w-4 mr-1" />
+            Copy
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowTunnelDialog(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTunnelDialog(true)}
+          >
             <Network className="h-4 w-4 mr-1" />
             Tunnel
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setShowEditDialog(true)}>
-            <PencilIcon className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEditDialog(true)}
+          >
+            <Pencil className="h-4 w-4 mr-1" />
+            Edit
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setShowDeleteConfirm(true)}>
-            <TrashIcon className="h-4 w-4 text-destructive" />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
           </Button>
         </div>
       </div>
 
-      {/* Info cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Connection Details */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Connection</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Host</span>
-              <code className="font-mono">{host.host}</code>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Port</span>
-              <span>{host.port}</span>
-            </div>
-            {host.username && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Username</span>
-                <span>{host.username}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {/* Quick stats */}
+      <HostStatsCard
+        host={host}
+        stats={stats}
+        loading={statsLoading}
+        error={statsError}
+      />
 
-        {/* Group & Tags */}
-        {(host.groupName || (host.tags?.length ?? 0) > 0) && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Organization</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {host.groupName && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Group</span>
-                  <Badge variant="secondary">{host.groupName}</Badge>
-                </div>
-              )}
-              {host.tags && host.tags.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="text-sm text-muted-foreground">Tags</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {host.tags.map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+      {/* Metadata */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <HostMetadataPanel host={host} />
 
-        {/* Status */}
+        {/* Recent activity placeholder — keeps card grid balanced.
+            Future: surface last few connection_history rows. */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Status</CardTitle>
+          <CardHeader>
+            <CardTitle className="text-lg">Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className={`h-3 w-3 rounded-full ${statusColors[host.status ?? "unknown"]}`} />
-              <span className="text-sm capitalize">{host.status}</span>
-            </div>
-            {host.lastConnected && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ClockIcon className="h-4 w-4" />
-                <span>Last connected {new Date(host.lastConnected).toLocaleDateString()}</span>
-              </div>
+          <CardContent className="text-sm text-muted-foreground">
+            {stats?.last_connected_at ? (
+              <p>
+                Last connected{" "}
+                {new Date(stats.last_connected_at).toLocaleString()} ·{" "}
+                {stats.total_sessions} total session
+                {stats.total_sessions === 1 ? "" : "s"}
+              </p>
+            ) : (
+              <p>No prior connections recorded.</p>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Description */}
-      {host.description && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{host.description}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Connection options */}
-      {(host.sshOptions || host.rdpOptions || host.vncOptions) && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Connection Options</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="rounded bg-muted p-4 text-xs overflow-auto">
-              {JSON.stringify(
-                host.sshOptions || host.rdpOptions || host.vncOptions,
-                null,
-                2
-              )}
-            </pre>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Metadata */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Metadata</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Created</span>
-            <span>{new Date(host.createdAt).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Updated</span>
-            <span>{new Date(host.updatedAt).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">ID</span>
-            <code className="text-xs font-mono">{host.id}</code>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Edit Dialog */}
+      {/* Edit dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Host</DialogTitle>
             <DialogDescription>
-              Update connection details for {host.name}
+              Update connection details for {host.name}.
             </DialogDescription>
           </DialogHeader>
-          <HostForm
-            host={host}
-            onSuccess={handleEditSuccess}
-            onCancel={() => setShowEditDialog(false)}
-          />
+          {editingHost && (
+            <HostForm
+              host={editingHost}
+              onSuccess={() => {
+                setShowEditDialog(false);
+                refetchHost();
+              }}
+              onCancel={() => setShowEditDialog(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirm Dialog */}
+      {/* Delete confirm */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Host</DialogTitle>
+            <DialogTitle>Delete host?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{host.name}&quot;? This action cannot be undone.
+              This will permanently remove <strong>{host.name}</strong> and all
+              associated credentials. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? <LoadingSpinner className="h-4 w-4 mr-2" /> : null}
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Create Tunnel Dialog */}
+      {/* Create tunnel dialog */}
       <Dialog open={showTunnelDialog} onOpenChange={setShowTunnelDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Create WireGuard Tunnel</DialogTitle>
             <DialogDescription>
-              Create a tunnel for {host.name} ({host.host}).
+              Provision a WireGuard tunnel to <strong>{host.name}</strong>.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label htmlFor="allowed-ips">Allowed IPs</Label>
+              <Label htmlFor="tunnel-name">Tunnel name</Label>
               <Input
-                id="allowed-ips"
-                value={tunnelAllowedIPs}
-                onChange={(e) => setTunnelAllowedIPs(e.target.value)}
-                placeholder="0.0.0.0/0, ::/0"
+                id="tunnel-name"
+                value={tunnelName}
+                onChange={(e) => setTunnelName(e.target.value)}
+                placeholder="e.g. production-vpn"
+                disabled={isCreatingTunnel}
+                autoFocus
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="tunnel-port">Listen Port</Label>
-              <Input
-                id="tunnel-port"
-                type="number"
-                value={tunnelPort}
-                onChange={(e) => setTunnelPort(e.target.value)}
-                placeholder="51820"
-              />
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowTunnelDialog(false);
+                  setTunnelName("");
+                }}
+                disabled={isCreatingTunnel}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateTunnel}
+                disabled={isCreatingTunnel || !tunnelName.trim()}
+              >
+                {isCreatingTunnel && (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                )}
+                Create
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="tunnel-dns">DNS Servers</Label>
-              <Input
-                id="tunnel-dns"
-                value={tunnelDNS}
-                onChange={(e) => setTunnelDNS(e.target.value)}
-                placeholder="1.1.1.1, 8.8.8.8"
-              />
-            </div>
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowTunnelDialog(false)} disabled={isCreatingTunnel}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateTunnel} disabled={isCreatingTunnel}>
-              {isCreatingTunnel && <LoadingSpinner className="h-4 w-4 mr-2" />}
-              Create Tunnel
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
