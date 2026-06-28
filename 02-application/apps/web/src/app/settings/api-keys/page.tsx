@@ -307,7 +307,7 @@ export default function APIKeysPage() {
           <DialogHeader>
             <DialogTitle className="text-destructive">API Key Created</DialogTitle>
             <DialogDescription>
-              Copy this key now. You won't be able to see it again!
+              Copy this key now. You won&apos;t be able to see it again!
             </DialogDescription>
           </DialogHeader>
 
@@ -335,7 +335,7 @@ export default function APIKeysPage() {
                 setNewlyCreatedKey(null);
               }}
             >
-              I've Saved the Key
+              I&apos;ve Saved the Key
             </Button>
           </div>
         </DialogContent>

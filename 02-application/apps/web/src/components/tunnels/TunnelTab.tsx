@@ -170,7 +170,7 @@ function TunnelEmptyState({ hostId }: { hostId: string }) {
       <Shield className="h-12 w-12 text-muted-foreground" />
       <p className="text-lg font-medium">No WireGuard tunnel configured</p>
       <p className="text-sm text-muted-foreground text-center max-w-sm">
-        Create a tunnel to connect to this host's network securely over an encrypted WireGuard tunnel.
+        Create a tunnel to connect to this host&apos;s network securely over an encrypted WireGuard tunnel.
       </p>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
