@@ -438,6 +438,78 @@ func TestHostHandler_HealthCheck(t *testing.T) {
 	})
 }
 
+func TestHostHandler_GetStats(t *testing.T) {
+	_, mock, handler := newHostHandler(t)
+	hostID := uuid.New()
+	ownerID := uuid.New()
+
+	t.Run("returns stats for valid host", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT id, name, address, protocol, port, is_active, created_at, updated_at FROM hosts WHERE id = \$1 AND owner_id = \$2`).
+			WithArgs(hostID, ownerID).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "address", "protocol", "port", "is_active", "created_at", "updated_at"}).
+				AddRow(hostID, "stats-host", "10.0.0.1", "ssh", 22, true, time.Now(), time.Now()))
+
+		mock.ExpectQuery(`SELECT COUNT\(\*\), MAX\(started_at\)`).
+			WithArgs(hostID, ownerID).
+			WillReturnRows(sqlmock.NewRows([]string{"count", "max"}).
+				AddRow(7, time.Now().Add(-2*time.Hour)))
+
+		mock.ExpectQuery(`SELECT\s+COUNT\(\*\),`).
+			WithArgs(hostID, ownerID).
+			WillReturnRows(sqlmock.NewRows([]string{"total", "active"}).
+				AddRow(2, 1))
+
+		r := setupRouter()
+		r.GET("/hosts/:id/stats", func(c *gin.Context) {
+			c.Set("user_id", ownerID)
+			handler.GetStats(c)
+		})
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/hosts/"+hostID.String()+"/stats", nil)
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		resp := parseJSON(w)
+		assert.EqualValues(t, 7, resp["total_sessions"])
+		assert.EqualValues(t, 2, resp["tunnel_count"])
+		assert.EqualValues(t, 1, resp["active_tunnels"])
+		assert.NotEmpty(t, resp["last_connected_at"])
+	})
+
+	t.Run("non-existent host returns 404", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT .+ FROM hosts WHERE id = \$1 AND owner_id = \$2`).
+			WithArgs(sqlmock.AnyArg(), ownerID).
+			WillReturnError(sql.ErrNoRows)
+
+		r := setupRouter()
+		r.GET("/hosts/:id/stats", func(c *gin.Context) {
+			c.Set("user_id", ownerID)
+			handler.GetStats(c)
+		})
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/hosts/"+uuid.New().String()+"/stats", nil)
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("invalid UUID returns 400", func(t *testing.T) {
+		r := setupRouter()
+		r.GET("/hosts/:id/stats", func(c *gin.Context) {
+			c.Set("user_id", ownerID)
+			handler.GetStats(c)
+		})
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/hosts/not-a-uuid/stats", nil)
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}
+
 func TestHostCreateRequest_Validation(t *testing.T) {
 	tests := []struct {
 		name    string

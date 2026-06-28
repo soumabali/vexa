@@ -256,3 +256,35 @@ func (h *HostHandler) HealthCheck(c *gin.Context) {
 	result := &models.HealthCheckResult{HostID: id, Reachable: false, LatencyMs: 0, CheckedAt: time.Now().UTC()}
 	c.JSON(http.StatusOK, result)
 }
+
+// GetStats returns aggregate stats for a single host:
+// session count, last connection time, tunnel counts.
+// Returns 404 if the host does not exist for the calling user.
+func (h *HostHandler) GetStats(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid host ID"})
+		return
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	ownerID := userID.(uuid.UUID)
+
+	// Verify ownership / existence first so we return 404 instead of empty stats.
+	if _, err := h.repo.GetByID(c.Request.Context(), id, ownerID); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "host not found"})
+		return
+	}
+
+	stats, err := h.repo.GetStats(c.Request.Context(), id, ownerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch host stats"})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
