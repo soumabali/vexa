@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LineChart from '@/components/admin/charts/line-chart';
-import { Activity, Cpu, HardDrive, Network, MemoryStick } from 'lucide-react';
+import { Cpu, HardDrive, Network, MemoryStick } from 'lucide-react';
 
 interface MetricData {
   timestamp: string;
@@ -30,23 +30,6 @@ export default function MetricsPage() {
   const [alerts, setAlerts] = useState<AlertRule[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
 
-  useEffect(() => {
-    fetchMetrics();
-    fetchAlerts();
-
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/api/admin/metrics`);
-    ws.onopen = () => setWsConnected(true);
-    ws.onclose = () => setWsConnected(false);
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'metric') {
-        setMetrics((prev) => [...prev.slice(-100), data.payload]);
-      }
-    };
-
-    return () => ws.close();
-  }, []);
-
   const fetchMetrics = async () => {
     try {
       const res = await fetch('/api/admin/metrics/history');
@@ -66,6 +49,23 @@ export default function MetricsPage() {
       console.error('Failed to fetch alerts:', error);
     }
   };
+
+  useEffect(() => {
+    fetchMetrics();
+    fetchAlerts();
+
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/api/admin/metrics`);
+    ws.onopen = () => setWsConnected(true);
+    ws.onclose = () => setWsConnected(false);
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'metric') {
+        setMetrics((prev) => [...prev.slice(-100), data.payload]);
+      }
+    };
+
+    return () => ws.close();
+  }, []);
 
   const getLatestValue = (key: keyof MetricData) => {
     if (metrics.length === 0) return 0;

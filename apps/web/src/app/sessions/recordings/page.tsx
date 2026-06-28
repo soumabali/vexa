@@ -60,10 +60,6 @@ export default function RecordingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchRecordings();
-  }, [currentPage]);
-
   const fetchRecordings = async () => {
     try {
       setLoading(true);
@@ -77,6 +73,10 @@ export default function RecordingsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchRecordings();
+  }, [currentPage]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {

@@ -42,10 +42,6 @@ export function FilePreview({ file, host, onDownload }: FilePreviewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadPreview();
-  }, [file]);
-
   const loadPreview = async () => {
     setIsLoading(true);
     setError(null);
@@ -92,6 +88,11 @@ export function FilePreview({ file, host, onDownload }: FilePreviewProps) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadPreview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file]);
 
   const getFileType = () => {
     const ext = file.name.split('.').pop()?.toLowerCase();

@@ -115,6 +115,24 @@ export default function DiscoveryPage() {
     }
   }
 
+  const fetchScanResults = async (scanId: string) => {
+    try {
+      const response: any = await api(`/discovery/scan/${scanId}/results`)
+      setScanResults(response.results || [])
+    } catch (error) {
+      console.error('Failed to fetch results:', error)
+    }
+  }
+
+  const fetchScanHistory = async () => {
+    try {
+      const response: any = await api('/api/v1/discovery/scan')
+      setScanHistory(response.jobs || [])
+    } catch (error) {
+      console.error('Failed to fetch history:', error)
+    }
+  }
+
   const pollScanStatus = useCallback(async (scanId: string) => {
     const interval = setInterval(async () => {
       try {
@@ -139,24 +157,6 @@ export default function DiscoveryPage() {
 
     return () => clearInterval(interval)
   }, [])
-
-  const fetchScanResults = async (scanId: string) => {
-    try {
-      const response: any = await api(`/discovery/scan/${scanId}/results`)
-      setScanResults(response.results || [])
-    } catch (error) {
-      console.error('Failed to fetch results:', error)
-    }
-  }
-
-  const fetchScanHistory = async () => {
-    try {
-      const response: any = await api('/api/v1/discovery/scan')
-      setScanHistory(response.jobs || [])
-    } catch (error) {
-      console.error('Failed to fetch history:', error)
-    }
-  }
 
   const cancelScan = async (scanId: string) => {
     try {

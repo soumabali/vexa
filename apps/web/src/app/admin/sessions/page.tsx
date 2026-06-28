@@ -23,10 +23,6 @@ export default function SessionManagement() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeTab, setActiveTab] = useState('active');
 
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
   const fetchSessions = async () => {
     try {
       const res = await fetch('/api/admin/sessions');
@@ -36,6 +32,10 @@ export default function SessionManagement() {
       console.error('Failed to fetch sessions:', error);
     }
   };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
 
   const handleKillSession = async (id: string) => {
     if (!confirm('Are you sure you want to terminate this session?')) return;

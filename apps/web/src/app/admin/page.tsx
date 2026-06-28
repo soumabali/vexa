@@ -65,6 +65,16 @@ export default function AdminDashboard() {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
 
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/admin/stats');
+      const data = await res.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+  };
+
   useEffect(() => {
     // Fetch initial stats
     fetchStats();
@@ -90,16 +100,6 @@ export default function AdminDashboard() {
     };
     return () => ws.close();
   }, []);
-
-  const fetchStats = async () => {
-    try {
-      const res = await fetch('/api/admin/stats');
-      const data = await res.json();
-      setStats(data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    }
-  };
 
   const statItems = [
     { title: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-500' },
