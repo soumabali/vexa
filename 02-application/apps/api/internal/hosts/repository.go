@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -157,4 +158,50 @@ func (r *Repository) Delete(ctx context.Context, id uuid.UUID, ownerID uuid.UUID
 		return fmt.Errorf("failed to delete host: %w", err)
 	}
 	return nil
+}
+
+// HostStats aggregates per-host connection + tunnel metrics.
+// All queries are scoped by (host_id, user_id) to prevent cross-tenant leaks.
+type HostStats struct {
+	TotalSessions    int        `json:"total_sessions"`
+	LastConnectedAt  *time.Time `json:"last_connected_at,omitempty"`
+	TunnelCount      int        `json:"tunnel_count"`
+	ActiveTunnels    int        `json:"active_tunnels"`
+}
+
+// GetStats returns aggregate stats for a single host. Caller must verify
+// the host exists for the user before calling (returns 404 propagation).
+func (r *Repository) GetStats(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*HostStats, error) {
+	stats := &HostStats{}
+
+	// Sessions + last connected
+	sessionsQuery := `
+		SELECT COUNT(*), MAX(started_at)
+		FROM connection_history
+		WHERE host_id = $1 AND user_id = $2
+	`
+	var lastConnected sql.NullTime
+	if err := r.db.QueryRowContext(ctx, sessionsQuery, id.String(), ownerID.String()).
+		Scan(&stats.TotalSessions, &lastConnected); err != nil {
+		return nil, fmt.Errorf("failed to query sessions: %w", err)
+	}
+	if lastConnected.Valid {
+		t := lastConnected.Time
+		stats.LastConnectedAt = &t
+	}
+
+	// Tunnels (total + active)
+	tunnelQuery := `
+		SELECT
+			COUNT(*),
+			COUNT(*) FILTER (WHERE status = 'connected' AND is_enabled = true)
+		FROM wireguard_tunnels
+		WHERE host_id = $1 AND user_id = $2
+	`
+	if err := r.db.QueryRowContext(ctx, tunnelQuery, id.String(), ownerID.String()).
+		Scan(&stats.TunnelCount, &stats.ActiveTunnels); err != nil {
+		return nil, fmt.Errorf("failed to query tunnels: %w", err)
+	}
+
+	return stats, nil
 }
