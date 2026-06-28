@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import {
@@ -58,6 +59,7 @@ export default function SecuritySettingsPage() {
   const [setupOpen, setSetupOpen] = useState(false);
   const [disableOpen, setDisableOpen] = useState(false);
   const [disableLoading, setDisableLoading] = useState(false);
+  const [disableTotpCode, setDisableTotpCode] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -119,8 +121,9 @@ export default function SecuritySettingsPage() {
   const handleDisableMFA = async () => {
     setDisableLoading(true);
     try {
-      await authApi.disable2FA();
+      await authApi.disable2FA(disableTotpCode);
       toast.success("MFA disabled");
+      setDisableTotpCode("");
       await refreshProfile();
       setDisableOpen(false);
     } catch (err) {
@@ -305,14 +308,36 @@ export default function SecuritySettingsPage() {
           <DialogHeader>
             <DialogTitle>Disable MFA</DialogTitle>
             <DialogDescription>
-              This will remove two-factor authentication from your account and lower your security. Are you sure?
+              Enter a current TOTP code to confirm disabling two-factor authentication.
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="disable-totp-code">Verification code</Label>
+            <Input
+              id="disable-totp-code"
+              name="totp_code"
+              inputMode="numeric"
+              maxLength={6}
+              autoComplete="one-time-code"
+              placeholder="000000"
+              value={disableTotpCode}
+              onChange={(e) =>
+                setDisableTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              disabled={disableLoading}
+              autoFocus
+              className="text-center text-2xl tracking-widest font-mono"
+            />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDisableOpen(false)} disabled={disableLoading}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDisableMFA} disabled={disableLoading}>
+            <Button
+              variant="destructive"
+              onClick={handleDisableMFA}
+              disabled={disableLoading || disableTotpCode.length !== 6}
+            >
               {disableLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Disable MFA
             </Button>
