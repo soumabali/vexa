@@ -3,7 +3,9 @@ import {
   startAuthentication,
 } from "@simplewebauthn/browser";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RegistrationJSON = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AuthenticationJSON = any;
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080") + "/api/v1";
