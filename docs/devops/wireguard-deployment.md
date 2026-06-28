@@ -83,3 +83,79 @@ docker compose -f docker-compose.prod.yml up -d
 | UDP ports blocked | Firewall: `ufw allow 51820:51830/udp` |
 | Privilege error | Docker privileged mode enabled? |
 | Mock mode aktif | Check logs: "running in mock mode" → install WG kernel module |
+
+## Key Rotation (P4 #3)
+
+The server's WireGuard private key should be rotated on a regular cadence
+to limit the blast radius of any leaked key material.
+
+### Schedule
+
+**Recommended: quarterly.** The script lives at
+`scripts/rotate-wireguard-keys.sh` and is safe to run unattended.
+
+### Manual run (on the WG host)
+
+```bash
+# As root (or with sudo) on the WG host
+sudo /home/ubuntu/projects/vexa/02-application/scripts/rotate-wireguard-keys.sh
+```
+
+What it does:
+
+1. Backs up the current `wg0.conf` + private/public keys to
+   `backups/wireguard/keys_<unix_ts>/`.
+2. Generates a fresh keypair.
+3. Rewrites `wg0.conf` with the new private key (atomic `mv` from a
+   sibling temp file — `set -euo pipefail` aborts on any failure).
+4. Validates the new config with `wg-quick strip` BEFORE swapping.
+5. Calls `wg syncconf wg0 <(wg-quick strip wg0)` to push the change to
+   the running interface without dropping existing peer handshakes.
+6. Appends a structured `ROTATE_OK` line to `logs/wireguard-rotation.log`.
+
+### Trigger via API (admin only)
+
+```bash
+TOKEN=$(admin-login-and-jwt)
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8080/api/v1/admin/wg/rotate
+```
+
+The endpoint shells out to the same script and writes an audit entry
+(`event=admin.wg.rotate`).
+
+### Client notification
+
+After rotation, the **server** public key changes. Active peers keep
+working until their next handshake (~2 minutes) because `wg syncconf`
+preserves existing peer configs. However, the rotation script leaves the
+**peer entries untouched** — clients do NOT need a new config unless the
+operator chose to reissue.
+
+If you do reissue peer configs:
+
+```bash
+# Pull the new server public key
+sudo wg show wg0 public-key
+# Distribute via your standard peer onboarding flow
+```
+
+### Rollback
+
+If the new interface state is bad:
+
+```bash
+sudo ls /home/ubuntu/projects/vexa/02-application/backups/wireguard/
+# pick the most recent timestamped dir
+sudo cp backups/wireguard/keys_<TS>/wg0.conf.bak /etc/wireguard/wg0.conf
+sudo chmod 600 /etc/wireguard/wg0.conf
+sudo wg syncconf wg0 <(wg-quick strip wg0)
+```
+
+### Failure modes
+
+- `wg-quick strip` validation failed → config NOT replaced. Restore from
+  backup if the live interface is stale.
+- `wg syncconf` failed → live interface keeps old keys, config on disk is
+  new. Manual rollback per above.
+- Permission denied → run as root or via sudo.
