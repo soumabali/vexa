@@ -113,21 +113,25 @@ func (ts *TeamService) CreateTeam(ownerID uuid.UUID, req *CreateTeamRequest) (*T
 		IsActive:    true,
 	}
 
-	// Sprint 4: Persist to database
-	// For now, stub implementation
-	// _, err := ts.db.Exec(
-	//     "INSERT INTO teams (id, name, description, owner_id, created_at, updated_at, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-	//     team.ID, team.Name, team.Description, team.OwnerID, team.CreatedAt, team.UpdatedAt, team.IsActive,
-	// )
-	// if err != nil {
-	//     return nil, fmt.Errorf("failed to create team: %w", err)
-	// }
+	// Persist team to database (skip when DB unavailable — test/boot path)
+	if ts.db != nil {
+		_, err := ts.db.Exec(
+			"INSERT INTO teams (id, name, description, owner_id, created_at, updated_at, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+			team.ID, team.Name, team.Description, team.OwnerID, team.CreatedAt, team.UpdatedAt, team.IsActive,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create team: %w", err)
+		}
 
-	// Add owner as first member
-	// _, err = ts.db.Exec(
-	//     "INSERT INTO team_members (id, team_id, user_id, role, joined_at, added_by) VALUES ($1, $2, $3, $4, $5, $6)",
-	//     uuid.New(), team.ID, ownerID, TeamRoleOwner, team.CreatedAt, ownerID,
-	// )
+		// Add owner as first member
+		_, err = ts.db.Exec(
+			"INSERT INTO team_members (id, team_id, user_id, role, joined_at, added_by) VALUES ($1, $2, $3, $4, $5, $6)",
+			uuid.New(), team.ID, ownerID, TeamRoleOwner, team.CreatedAt, ownerID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add owner as member: %w", err)
+		}
+	}
 
 	ts.logAudit(ownerID, "team_created", map[string]interface{}{
 		"team_id": team.ID.String(),
