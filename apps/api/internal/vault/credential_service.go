@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/soumabali/vexa/internal/audit"
 	"github.com/soumabali/vexa/internal/crypto"
 )
 
@@ -23,17 +25,19 @@ import (
 // This is the service layer that the HTTP handlers use. The handlers expect
 // these methods in the exact signature below.
 type CredentialService struct {
-	db    *sql.DB
-	redis *redis.Client
-	vault *crypto.Vault
+	db          *sql.DB
+	redis       *redis.Client
+	vault       *crypto.Vault
+	auditLogger *audit.Logger
 }
 
 // NewCredentialService creates a new CredentialService backed by PostgreSQL and Redis.
-func NewCredentialService(db *sql.DB, redisClient *redis.Client) *CredentialService {
+func NewCredentialService(db *sql.DB, redisClient *redis.Client, auditLogger *audit.Logger) *CredentialService {
 	return &CredentialService{
-		db:    db,
-		redis: redisClient,
-		vault: crypto.NewVault(),
+		db:          db,
+		redis:       redisClient,
+		vault:       crypto.NewVault(),
+		auditLogger: auditLogger,
 	}
 }
 
@@ -627,14 +631,152 @@ func decodeParams(data []byte) crypto.Argon2Params {
 	return p
 }
 
-// ShareWithTeam is a placeholder for team credential sharing.
+// ShareWithTeam shares a credential with an entire team.
+// Verifies caller owns credential, has team access, then inserts a
+// credential_shares row per team member using ShareRepository.CreateShare.
+// For team shares we skip E2E crypto (team is trusted boundary) and write
+// directly via the underlying repository helpers.
 func (s *CredentialService) ShareWithTeam(ctx context.Context, userID uuid.UUID, credID uuid.UUID, teamID uuid.UUID, permissions string) error {
-	return fmt.Errorf("ShareWithTeam not yet implemented")
+	// 1. Verify credential ownership
+	var ownerID uuid.UUID
+	var credentialData []byte
+	err := s.db.QueryRowContext(ctx,
+		`SELECT user_id, encrypted_data FROM credentials WHERE id = $1 AND deleted_at IS NULL`,
+		credID,
+	).Scan(&ownerID, &credentialData)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("credential not found")
+	}
+	if err != nil {
+		return fmt.Errorf("lookup credential: %w", err)
+	}
+	if ownerID != userID {
+		return fmt.Errorf("credential not owned by caller")
+	}
+
+	// 2. Verify team exists
+	var teamExists bool
+	err = s.db.QueryRowContext(ctx,
+		`SELECT EXISTS(SELECT 1 FROM teams WHERE id = $1)`,
+		teamID,
+	).Scan(&teamExists)
+	if err != nil {
+		return fmt.Errorf("lookup team: %w", err)
+	}
+	if !teamExists {
+		return fmt.Errorf("team not found")
+	}
+
+	// 3. Verify caller is admin/owner of team
+	var callerRole string
+	err = s.db.QueryRowContext(ctx,
+		`SELECT role FROM team_members WHERE team_id = $1 AND user_id = $2`,
+		teamID, userID,
+	).Scan(&callerRole)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("caller is not a team member")
+	}
+	if err != nil {
+		return fmt.Errorf("lookup team role: %w", err)
+	}
+	if callerRole != "owner" && callerRole != "admin" {
+		return fmt.Errorf("insufficient permissions to share with team")
+	}
+
+	// 4. Get team members (exclude caller)
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT user_id FROM team_members WHERE team_id = $1 AND user_id <> $2`,
+		teamID, userID,
+	)
+	if err != nil {
+		return fmt.Errorf("list team members: %w", err)
+	}
+	defer rows.Close()
+
+	var memberIDs []uuid.UUID
+	for rows.Next() {
+		var memberID uuid.UUID
+		if err := rows.Scan(&memberID); err != nil {
+			return fmt.Errorf("scan member: %w", err)
+		}
+		memberIDs = append(memberIDs, memberID)
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("iterate members: %w", err)
+	}
+
+	// 5. Insert share row per member (idempotent on conflict)
+	for _, memberID := range memberIDs {
+		_, err := s.db.ExecContext(ctx, `
+			INSERT INTO credential_shares
+				(credential_id, owner_id, recipient_id, permission, status, sender_id, created_at)
+			VALUES ($1, $2, $3, $4, 'accepted', $2, NOW())
+			ON CONFLICT (credential_id, recipient_id) DO UPDATE
+				SET permission = EXCLUDED.permission,
+				    revoked_at = NULL,
+				    status = 'accepted'
+		`, credID, userID, memberID, permissions)
+		if err != nil {
+			return fmt.Errorf("insert share for member %s: %w", memberID, err)
+		}
+	}
+
+	// 6. Audit log
+	if s.auditLogger != nil {
+		uid := userID
+		_ = s.auditLogger.Log(audit.EventCredentialShare, &uid, nil, "", map[string]interface{}{
+			"credential_id": credID.String(),
+			"team_id":       teamID.String(),
+			"permission":    permissions,
+			"member_count":  len(memberIDs),
+		})
+	}
+
+	return nil
 }
 
-// RevokeTeamShare is a placeholder for revoking team credential share.
+// RevokeTeamShare revokes a credential share for all team members.
 func (s *CredentialService) RevokeTeamShare(ctx context.Context, userID uuid.UUID, credID uuid.UUID, teamID uuid.UUID) error {
-	return fmt.Errorf("RevokeTeamShare not yet implemented")
+	// Verify ownership
+	var ownerID uuid.UUID
+	err := s.db.QueryRowContext(ctx,
+		`SELECT user_id FROM credentials WHERE id = $1 AND deleted_at IS NULL`,
+		credID,
+	).Scan(&ownerID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("credential not found")
+	}
+	if err != nil {
+		return fmt.Errorf("lookup credential: %w", err)
+	}
+	if ownerID != userID {
+		return fmt.Errorf("credential not owned by caller")
+	}
+
+	// Soft-revoke all shares for this credential that belong to team members
+	res, err := s.db.ExecContext(ctx, `
+		UPDATE credential_shares cs
+		SET revoked_at = NOW(), status = 'revoked'
+		WHERE cs.credential_id = $1
+		  AND cs.recipient_id IN (
+		      SELECT user_id FROM team_members WHERE team_id = $2
+		  )
+	`, credID, teamID)
+	if err != nil {
+		return fmt.Errorf("revoke shares: %w", err)
+	}
+	rows, _ := res.RowsAffected()
+
+	if s.auditLogger != nil {
+		uid := userID
+		_ = s.auditLogger.Log(audit.EventCredentialRevoke, &uid, nil, "", map[string]interface{}{
+			"credential_id": credID.String(),
+			"team_id":       teamID.String(),
+			"revoked_count": rows,
+		})
+	}
+
+	return nil
 }
 
 // CreateCredentialRequest is the request body for creating a credential.
