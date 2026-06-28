@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useAsyncData } from '@/hooks/useAsyncData'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -107,14 +108,10 @@ export default function DiscoveryPage() {
     }
   }
 
-  const fetchScanHistory = async () => {
-    try {
-      const response: ScanHistoryResponse = await api<ScanHistoryResponse>('/api/v1/discovery/scan')
-      setScanHistory(response.jobs || [])
-    } catch (error) {
-      console.error('Failed to fetch history:', error)
-    }
-  }
+  const { data: historyData, reload: refetchHistory } = useAsyncData<ScanJob[]>(async () => {
+    const response: ScanHistoryResponse = await api<ScanHistoryResponse>('/api/v1/discovery/scan')
+    return response.jobs || []
+  })
 
   const pollScanStatus = useCallback(async (scanId: string) => {
     const interval = setInterval(async () => {
@@ -130,7 +127,7 @@ export default function DiscoveryPage() {
             fetchScanResults(scanId)
             toast({ title: 'Scan Complete', description: `Found ${data.found_hosts} hosts` })
           }
-          fetchScanHistory()
+          refetchHistory()
         }
       } catch (error) {
         clearInterval(interval)
@@ -196,8 +193,12 @@ export default function DiscoveryPage() {
   }
 
   useEffect(() => {
-    fetchScanHistory()
-  }, [])
+    if (historyData) {
+      Promise.resolve().then(() => {
+        if (historyData) setScanHistory(historyData);
+      });
+    }
+  }, [historyData]);
 
   return (
     <div className="container mx-auto p-6 space-y-6">

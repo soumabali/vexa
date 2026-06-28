@@ -132,7 +132,7 @@ export function FileManager({
   }, [currentPath, type, host, toast]);
 
   useEffect(() => {
-    fetchFiles();
+    Promise.resolve().then(() => fetchFiles());
   }, [fetchFiles]);
 
   const navigateTo = useCallback((path: string) => {

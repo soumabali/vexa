@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DataTable from '@/components/admin/tables/data-table';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import { Server, Activity, AlertTriangle } from 'lucide-react';
 
 interface Host {
@@ -21,26 +22,17 @@ interface Host {
 }
 
 export default function HostManagement() {
-  const [hosts, setHosts] = useState<Host[]>([]);
-
-  const fetchHosts = async () => {
-    try {
-      const res = await fetch('/api/admin/hosts');
-      const data = await res.json();
-      setHosts(data.hosts || []);
-    } catch (error) {
-      console.error('Failed to fetch hosts:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchHosts();
-  }, []);
+  const { data: hostsResp, reload: reloadHosts } = useAsyncData(async () => {
+    const res = await fetch('/api/admin/hosts');
+    const data = await res.json();
+    return data.hosts || [];
+  });
+  const hosts = (hostsResp as Host[] | null) ?? [];
 
   const handleRunHealthCheck = async (id: string) => {
     try {
       await fetch(`/api/admin/hosts/${id}/health-check`, { method: 'POST' });
-      fetchHosts();
+      reloadHosts();
     } catch (error) {
       console.error('Failed to run health check:', error);
     }

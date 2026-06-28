@@ -27,6 +27,18 @@ export function FileUpload({ onUpload }: FileUploadProps) {
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
+  const addFiles = (newFiles: File[]) => {
+    const fileArray = newFiles.map((file) => ({
+      id: generateId(),
+      file,
+      name: file.name,
+      size: file.size,
+      progress: 0,
+      status: 'pending' as const,
+    }));
+    setFiles((prev) => [...prev, ...fileArray]);
+  };
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -49,17 +61,6 @@ export function FileUpload({ onUpload }: FileUploadProps) {
     const selectedFiles = Array.from(e.target.files || []);
     addFiles(selectedFiles);
   }, []);
-
-  const addFiles = (newFiles: File[]) => {
-    const uploadFiles: UploadFile[] = newFiles.map((file) => ({
-      file,
-      id: generateId(),
-      progress: 0,
-      status: 'pending',
-    }));
-
-    setFiles((prev) => [...prev, ...uploadFiles]);
-  };
 
   const removeFile = (id: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));

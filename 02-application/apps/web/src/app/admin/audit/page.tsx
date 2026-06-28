@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import DataTable from '@/components/admin/tables/data-table';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import { Search, Download } from 'lucide-react';
 
 interface AuditLog {
@@ -22,23 +23,14 @@ interface AuditLog {
 }
 
 export default function AuditLogs() {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const { data: logsResp } = useAsyncData(async () => {
+    const res = await fetch('/api/admin/audit-logs');
+    const data = await res.json();
+    return data.logs || [];
+  });
+  const logs = (logsResp as AuditLog[] | null) ?? [];
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
-
-  const fetchLogs = async () => {
-    try {
-      const res = await fetch('/api/admin/audit-logs');
-      const data = await res.json();
-      setLogs(data.logs || []);
-    } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLogs();
-  }, []);
 
   const handleExport = () => {
     const csv = [

@@ -282,7 +282,7 @@ export function HealthCheckPanel({
 
   React.useEffect(() => {
     if (pause) return;
-    fetchHealth();
+    Promise.resolve().then(() => fetchHealth());
     const id = window.setInterval(fetchHealth, refreshIntervalMs);
     return () => window.clearInterval(id);
   }, [fetchHealth, refreshIntervalMs, pause]);

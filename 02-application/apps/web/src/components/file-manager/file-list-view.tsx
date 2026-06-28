@@ -35,6 +35,18 @@ const fileIconMap: Record<string, React.ReactNode> = {
   link: <Link className="h-5 w-5 text-cyan-500" />,
 };
 
+type SortBy = FileListViewProps['sortBy'];
+type SortOrder = FileListViewProps['sortOrder'];
+
+function SortIcon({ column, sortBy, sortOrder }: { column: SortBy; sortBy: SortBy; sortOrder: SortOrder }) {
+  if (sortBy !== column) return null;
+  return sortOrder === 'asc' ? (
+    <ChevronUp className="h-3 w-3 ml-1" />
+  ) : (
+    <ChevronDown className="h-3 w-3 ml-1" />
+  );
+}
+
 export function FileListView({
   items,
   selected,
@@ -44,15 +56,6 @@ export function FileListView({
   onItemClick,
   onItemDoubleClick,
 }: FileListViewProps) {
-  const SortIcon = ({ column }: { column: typeof sortBy }) => {
-    if (sortBy !== column) return null;
-    return sortOrder === 'asc' ? (
-      <ChevronUp className="h-3 w-3 ml-1" />
-    ) : (
-      <ChevronDown className="h-3 w-3 ml-1" />
-    );
-  };
-
   return (
     <div className="w-full">
       {/* Header */}
@@ -62,28 +65,28 @@ export function FileListView({
           onClick={() => onSort('name')}
         >
           Name
-          <SortIcon column="name" />
+          <SortIcon column="name" sortBy={sortBy} sortOrder={sortOrder} />
         </div>
         <div
           className="flex items-center w-24 cursor-pointer hover:text-foreground transition-colors"
           onClick={() => onSort('size')}
         >
           Size
-          <SortIcon column="size" />
+          <SortIcon column="size" sortBy={sortBy} sortOrder={sortOrder} />
         </div>
         <div
           className="flex items-center w-36 cursor-pointer hover:text-foreground transition-colors"
           onClick={() => onSort('date')}
         >
           Modified
-          <SortIcon column="date" />
+          <SortIcon column="date" sortBy={sortBy} sortOrder={sortOrder} />
         </div>
         <div
           className="flex items-center w-20 cursor-pointer hover:text-foreground transition-colors"
           onClick={() => onSort('permissions')}
         >
           Perms
-          <SortIcon column="permissions" />
+          <SortIcon column="permissions" sortBy={sortBy} sortOrder={sortOrder} />
         </div>
       </div>
 

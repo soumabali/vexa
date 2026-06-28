@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,8 +51,14 @@ interface Recording {
 
 export default function RecordingsPage() {
   const router = useRouter();
-  const [recordings, setRecordings] = useState<Recording[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: recordingsResp, loading, reload: refetchRecordings } = useAsyncData<{ recordings: Recording[]; total: number }>(
+    async () => {
+      const response = await fetch(`/api/recordings?limit=50&offset=0`);
+      return await response.json();
+    },
+    []
+  );
+  const [recordings, setRecordings] = useState<Recording[]>(recordingsResp?.recordings ?? []);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(
     null
@@ -60,39 +67,18 @@ export default function RecordingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchRecordings = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/recordings?limit=50&offset=${(currentPage - 1) * 50}`);
-      const data = await response.json();
-      setRecordings(data.recordings || []);
-      setTotalPages(Math.ceil((data.total || 0) / 50));
-    } catch (error) {
-      console.error("Failed to fetch recordings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRecordings();
-  }, [currentPage]);
-
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      fetchRecordings();
+      refetchRecordings();
       return;
     }
 
     try {
-      setLoading(true);
       const response = await fetch(`/api/recordings/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await response.json();
       setRecordings(data.recordings || []);
     } catch (error) {
       console.error("Search failed:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -178,7 +164,7 @@ export default function RecordingsPage() {
         </div>
         <Button onClick={handleSearch}>Search</Button>
         {searchQuery && (
-          <Button variant="outline" onClick={() => { setSearchQuery(""); fetchRecordings(); }}>
+          <Button variant="outline" onClick={() => { setSearchQuery(""); refetchRecordings(); }}>
             Clear
           </Button>
         )}

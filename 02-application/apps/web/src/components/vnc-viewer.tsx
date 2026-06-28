@@ -65,6 +65,9 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [quality, setQuality] = useState('high');
   const [viewOnly, setViewOnly] = useState(false);
+  const handleBinaryMessageRef = useRef<(data: ArrayBuffer) => void>(() => {});
+  const renderScreenUpdateRef = useRef<(data: Uint8Array) => void>(() => {});
+  const handleClipboardRef = useRef<(data: Uint8Array) => void>(() => {});
   const [scaleMode, setScaleMode] = useState<'fit' | 'stretch' | 'original'>('fit');
   
   // Framebuffer state
@@ -108,7 +111,7 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
           setConnecting(false);
         }
       } else {
-        handleBinaryMessage(event.data as ArrayBuffer);
+        handleBinaryMessageRef.current(event.data as ArrayBuffer);
       }
     };
 
@@ -134,10 +137,10 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
 
     switch (frameType) {
       case 0x01: // Screen update
-        renderScreenUpdate(payload);
+        renderScreenUpdateRef.current(payload);
         break;
       case 0x05: // Clipboard
-        handleClipboard(payload);
+        handleClipboardRef.current(payload);
         break;
       case 0xFF: // Error
         setError(new TextDecoder().decode(payload));
@@ -182,6 +185,14 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
     const text = new TextDecoder().decode(data);
     navigator.clipboard.writeText(text).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    handleBinaryMessageRef.current = handleBinaryMessage;
+  });
+  useEffect(() => {
+    renderScreenUpdateRef.current = renderScreenUpdate;
+    handleClipboardRef.current = handleClipboard;
+  });
 
   const sendInput = useCallback((inputData: Uint8Array) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;

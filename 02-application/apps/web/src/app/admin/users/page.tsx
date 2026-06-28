@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Search, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import DataTable from '@/components/admin/tables/data-table';
+import { useAsyncData } from '@/hooks/useAsyncData';
 
 interface User {
   id: string;
@@ -35,25 +36,13 @@ interface User {
 }
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([]);
+  const { data: usersResp, loading } = useAsyncData<User[]>(async () => {
+    const res = await fetch('/api/admin/users');
+    const data = await res.json();
+    return data.users || [];
+  });
+  const users = usersResp ?? [];
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch('/api/admin/users');
-      const data = await res.json();
-      setUsers(data.users || []);
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   const filteredUsers = users.filter(
     (user) =>

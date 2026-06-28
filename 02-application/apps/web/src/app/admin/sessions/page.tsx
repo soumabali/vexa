@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/admin/tables/data-table';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import { Power, Eye, PlayCircle } from 'lucide-react';
 
 interface Session {
@@ -20,28 +21,19 @@ interface Session {
 }
 
 export default function SessionManagement() {
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const { data: sessionsResp, reload: reloadSessions } = useAsyncData<Session[]>(async () => {
+    const res = await fetch('/api/admin/sessions');
+    const data = await res.json();
+    return data.sessions || [];
+  });
+  const sessions = sessionsResp ?? [];
   const [activeTab, setActiveTab] = useState('active');
-
-  const fetchSessions = async () => {
-    try {
-      const res = await fetch('/api/admin/sessions');
-      const data = await res.json();
-      setSessions(data.sessions || []);
-    } catch (error) {
-      console.error('Failed to fetch sessions:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchSessions();
-  }, []);
 
   const handleKillSession = async (id: string) => {
     if (!confirm('Are you sure you want to terminate this session?')) return;
     try {
       await fetch(`/api/admin/sessions/${id}/kill`, { method: 'POST' });
-      fetchSessions();
+      reloadSessions();
     } catch (error) {
       console.error('Failed to kill session:', error);
     }
