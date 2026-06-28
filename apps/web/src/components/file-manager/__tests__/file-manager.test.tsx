@@ -3,11 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { FileManager } from '../file-manager';
 import { FileList } from '../file-list';
 import { FileTree } from '../file-tree';
-
-// file-grid.tsx doesn't exist in the codebase (file-grid-view.tsx is the actual file)
-vi.mock('../file-grid', () => ({
-  FileGrid: () => null,
-}));
+import { FileGridView } from '../file-grid-view';
 import { FilePreview } from '../file-preview';
 import { FileUpload } from '../file-upload';
 import { FileToolbar } from '../file-toolbar';
@@ -18,6 +14,7 @@ global.fetch = vi.fn();
 
 const mockFiles = [
   {
+    id: '1',
     name: 'test.txt',
     path: '/test.txt',
     size: 1024,
@@ -29,6 +26,7 @@ const mockFiles = [
     mimeType: 'text/plain',
   },
   {
+    id: '2',
     name: 'folder',
     path: '/folder',
     size: 4096,
@@ -202,16 +200,11 @@ describe('FileList', () => {
 describe('FileGrid', () => {
   it('renders file grid', () => {
     render(
-      <FileGrid
-        files={mockFiles}
-        selectedFiles={new Set()}
-        onSelect={() => {}}
-        onFileClick={() => {}}
-        onDownload={() => {}}
-        onRename={() => {}}
-        onChmod={() => {}}
-        onBookmarkToggle={() => {}}
-        bookmarks={[]}
+      <FileGridView
+        items={mockFiles}
+        selected={new Set()}
+        onItemClick={() => {}}
+        onItemDoubleClick={() => {}}
       />
     );
 
@@ -221,16 +214,11 @@ describe('FileGrid', () => {
 
   it('shows bookmark indicator', () => {
     render(
-      <FileGrid
-        files={mockFiles}
-        selectedFiles={new Set()}
-        onSelect={() => {}}
-        onFileClick={() => {}}
-        onDownload={() => {}}
-        onRename={() => {}}
-        onChmod={() => {}}
-        onBookmarkToggle={() => {}}
-        bookmarks={['/test.txt']}
+      <FileGridView
+        items={mockFiles}
+        selected={new Set()}
+        onItemClick={() => {}}
+        onItemDoubleClick={() => {}}
       />
     );
 

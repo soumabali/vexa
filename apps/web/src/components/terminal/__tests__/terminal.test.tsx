@@ -65,7 +65,7 @@ describe('Terminal', () => {
   beforeEach(() => {
     global.WebSocket = class MockWebSocket {
       url: string;
-      readyState = WebSocket.CONNECTING;
+      readyState: number = 0; // CONNECTING
       binaryType: BinaryType = 'arraybuffer';
       onopen: (() => void) | null = null;
       onmessage: ((event: MessageEvent) => void) | null = null;
@@ -75,14 +75,14 @@ describe('Terminal', () => {
       constructor(url: string) {
         this.url = url;
         setTimeout(() => {
-          this.readyState = WebSocket.OPEN;
+          this.readyState = 1; // OPEN
           this.onopen?.();
         }, 10);
       }
 
       send() {}
       close() {
-        this.readyState = WebSocket.CLOSED;
+        this.readyState = 3; // CLOSED
         this.onclose?.();
       }
     } as unknown as typeof WebSocket;
@@ -112,7 +112,7 @@ describe('Terminal', () => {
     render(<Terminal id="test" wsUrl={mockWsUrl} onBinary={onBinary} />);
 
     await waitFor(() => {
-      const wsInstance = (global.WebSocket as unknown as typeof MockWebSocket).prototype;
+      const wsInstance = (global.WebSocket as unknown as new (url: string) => WebSocket).prototype;
       // This test would need more sophisticated mocking
     });
   });

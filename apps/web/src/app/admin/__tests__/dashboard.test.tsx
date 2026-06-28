@@ -13,7 +13,7 @@ global.WebSocket = vi.fn().mockImplementation(() => ({
   onmessage: null,
   close: vi.fn(),
   send: vi.fn(),
-}));
+})) as unknown as typeof WebSocket;
 
 // Mock fetch
 global.fetch = vi.fn().mockImplementation((url) => {

@@ -74,16 +74,24 @@ export function joinPaths(...parts: string[]): string {
     .join('/');
 }
 
+export interface FileEntry {
+  name: string;
+  type: 'file' | 'directory' | 'symlink' | string;
+  size?: number;
+  modified?: string | Date;
+  permissions?: string;
+}
+
 export function sortFiles(
-  files: any[],
+  files: FileEntry[],
   sortBy: 'name' | 'size' | 'date' | 'permissions',
   sortOrder: 'asc' | 'desc'
-): any[] {
+): FileEntry[] {
   const sorted = [...files].sort((a, b) => {
     // Directories first
     if (a.type === 'directory' && b.type !== 'directory') return -1;
     if (b.type === 'directory' && a.type !== 'directory') return 1;
-    
+
     let comparison = 0;
     switch (sortBy) {
       case 'name':
@@ -93,7 +101,7 @@ export function sortFiles(
         comparison = (a.size || 0) - (b.size || 0);
         break;
       case 'date':
-        comparison = new Date(a.modified).getTime() - new Date(b.modified).getTime();
+        comparison = new Date(a.modified as string).getTime() - new Date(b.modified as string).getTime();
         break;
       case 'permissions':
         comparison = (a.permissions || '').localeCompare(b.permissions || '');
@@ -101,11 +109,11 @@ export function sortFiles(
     }
     return comparison;
   });
-  
+
   return sortOrder === 'desc' ? sorted.reverse() : sorted;
 }
 
-export function filterFiles(files: any[], filterText: string): any[] {
+export function filterFiles(files: FileEntry[], filterText: string): FileEntry[] {
   if (!filterText) return files;
   const lowerFilter = filterText.toLowerCase();
   return files.filter(file =>

@@ -251,9 +251,10 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
     
     let filtered = filterFiles(items, filter.text);
     if (filter.types) {
-      filtered = filtered.filter(f => filter.types?.includes(f.type));
+      const types = filter.types;
+      filtered = filtered.filter(f => types.includes(f.type as 'file' | 'directory' | 'symlink'));
     }
-    return sortFiles(filtered, sortBy, sortOrder);
+    return sortFiles(filtered, sortBy, sortOrder) as FileItem[];
   }, [localItems, localSortBy, localSortOrder, localFilter, remoteItems, remoteSortBy, remoteSortOrder, remoteFilter]);
 
   return (
