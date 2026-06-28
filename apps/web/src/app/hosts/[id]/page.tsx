@@ -39,9 +39,8 @@ import { toast } from "sonner";
 export default function HostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
+  const id: string = params.id as string;
 
-  const [editingHost, setEditingHost] = useState<HostResponse | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showTunnelDialog, setShowTunnelDialog] = useState(false);
@@ -69,10 +68,8 @@ export default function HostDetailPage() {
     return await hostsApi.getStats(id);
   });
 
-  // Sync edit form when host loads
-  useEffect(() => {
-    if (host) setEditingHost(host);
-  }, [host]);
+  // Derive editingHost instead of effect (avoids set-state-in-effect)
+  const editingHost: HostResponse | null = host;
 
   const handleCopyHost = async () => {
     if (!host) return;
