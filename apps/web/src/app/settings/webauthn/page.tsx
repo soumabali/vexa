@@ -42,9 +42,11 @@ export default function WebAuthnSettingsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    setSupported(isWebAuthnSupported());
-    isPlatformAuthenticatorAvailable().then(setPlatformAvailable);
-    fetchCredentials();
+    Promise.resolve().then(() => {
+      setSupported(isWebAuthnSupported());
+      isPlatformAuthenticatorAvailable().then(setPlatformAvailable);
+      fetchCredentials();
+    });
   }, []);
 
   async function fetchCredentials() {

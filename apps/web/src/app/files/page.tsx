@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FileManager } from '@/components/file-manager';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from "@/hooks/use-auth";
+import { useAsyncData } from '@/hooks/useAsyncData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,9 +82,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
   const { toast } = useToast();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('local');
-  const [hosts, setHosts] = useState<FileSystem[]>([]);
   const [activeHost, setActiveHost] = useState<FileSystem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [newHostDialog, setNewHostDialog] = useState(false);
@@ -95,34 +94,17 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
     eta: string;
   } | null>(null);
 
-  const fetchHosts = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/files/hosts');
-      const data = await response.json();
-      setHosts(data.hosts || []);
-
-      if (initialHostId) {
-        const host = data.hosts?.find((h: FileSystem) => h.host === initialHostId);
-        if (host) {
-          setActiveHost(host);
-          setActiveTab('remote');
-        }
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch hosts',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+  const { data: hostsData, loading: isLoading, reload: refetchHosts } = useAsyncData<{ hosts: FileSystem[]; initialHost: FileSystem | null }>(async () => {
+    const response = await fetch('/api/files/hosts');
+    const data = await response.json();
+    const hosts = data.hosts || [];
+    let initialHost: FileSystem | null = null;
+    if (initialHostId) {
+      initialHost = hosts.find((h: FileSystem) => h.host === initialHostId) || null;
     }
-  };
-
-  useEffect(() => {
-    fetchHosts();
-  }, []);
+    return { hosts, initialHost };
+  });
+  const [hosts, setHosts] = useState<FileSystem[]>(hostsData?.hosts ?? []);
 
   const connectToHost = async (host: FileSystem) => {
     setIsConnecting(true);
@@ -197,7 +179,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
             <Plus className="h-4 w-4 mr-2" />
             Add Host
           </Button>
-          <Button variant="outline" onClick={fetchHosts}>
+          <Button variant="outline" onClick={refetchHosts}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -446,7 +428,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(host),
               });
-              await fetchHosts();
+              await refetchHosts();
               setNewHostDialog(false);
             }}
           />

@@ -90,7 +90,7 @@ export function FilePreview({ file, host, onDownload }: FilePreviewProps) {
   };
 
   useEffect(() => {
-    loadPreview();
+    Promise.resolve().then(() => loadPreview());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 

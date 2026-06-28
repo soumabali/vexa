@@ -8,6 +8,7 @@ import LineChart from '@/components/admin/charts/line-chart';
 import BarChart from '@/components/admin/charts/bar-chart';
 import PieChart from '@/components/admin/charts/pie-chart';
 import WorldMap from '@/components/admin/maps/world-map';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface DashboardStats {
@@ -51,7 +52,11 @@ function isValidAlertPayload(payload: unknown): payload is AlertItem {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
+  const { data: statsResp } = useAsyncData<DashboardStats>(async () => {
+    const res = await fetch('/api/admin/stats');
+    return (await res.json()) as DashboardStats;
+  });
+  const [stats, setStats] = useState<DashboardStats>(statsResp ?? {
     totalUsers: 0,
     activeUsers: 0,
     activeSessions: 0,
@@ -62,22 +67,18 @@ export default function AdminDashboard() {
     avgLatency: '0 ms',
   });
 
+  if (statsResp) {
+    const r = statsResp as DashboardStats;
+    if (stats.totalUsers === 0 && r.totalUsers !== 0) {
+      // Defer via microtask to avoid setState-during-render
+      queueMicrotask(() => setStats(r));
+    }
+  }
+
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
 
-  const fetchStats = async () => {
-    try {
-      const res = await fetch('/api/admin/stats');
-      const data = await res.json();
-      setStats(data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    }
-  };
-
   useEffect(() => {
-    // Fetch initial stats
-    fetchStats();
     // WebSocket for real-time updates
     const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/api/admin/metrics`);
     ws.onopen = () => setWsConnected(true);

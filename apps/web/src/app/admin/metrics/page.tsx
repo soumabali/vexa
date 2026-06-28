@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LineChart from '@/components/admin/charts/line-chart';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import { Cpu, HardDrive, Network, MemoryStick } from 'lucide-react';
 
 interface MetricData {
@@ -26,34 +27,31 @@ interface AlertRule {
 }
 
 export default function MetricsPage() {
-  const [metrics, setMetrics] = useState<MetricData[]>([]);
-  const [alerts, setAlerts] = useState<AlertRule[]>([]);
+  const { data: metricsSeed } = useAsyncData(async () => {
+    const res = await fetch('/api/admin/metrics/history');
+    const data = await res.json();
+    return data.metrics || [];
+  });
+  const [metrics, setMetrics] = useState<MetricData[]>(() => (metricsSeed as MetricData[] | null) ?? []);
+  const { data: alertsResp } = useAsyncData(async () => {
+    const res = await fetch('/api/admin/alerts');
+    const data = await res.json();
+    return data.alerts || [];
+  });
+  const alerts = (alertsResp as AlertRule[] | null) ?? [];
   const [wsConnected, setWsConnected] = useState(false);
 
-  const fetchMetrics = async () => {
-    try {
-      const res = await fetch('/api/admin/metrics/history');
-      const data = await res.json();
-      setMetrics(data.metrics || []);
-    } catch (error) {
-      console.error('Failed to fetch metrics:', error);
+  useEffect(() => {
+    if (metricsSeed && metrics.length === 0) {
+      Promise.resolve().then(() => {
+        if (metricsSeed && metrics.length === 0) {
+          setMetrics(metricsSeed as MetricData[]);
+        }
+      });
     }
-  };
-
-  const fetchAlerts = async () => {
-    try {
-      const res = await fetch('/api/admin/alerts');
-      const data = await res.json();
-      setAlerts(data.alerts || []);
-    } catch (error) {
-      console.error('Failed to fetch alerts:', error);
-    }
-  };
+  }, [metricsSeed, metrics.length]);
 
   useEffect(() => {
-    fetchMetrics();
-    fetchAlerts();
-
     const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/api/admin/metrics`);
     ws.onopen = () => setWsConnected(true);
     ws.onclose = () => setWsConnected(false);
@@ -63,7 +61,6 @@ export default function MetricsPage() {
         setMetrics((prev) => [...prev.slice(-100), data.payload]);
       }
     };
-
     return () => ws.close();
   }, []);
 

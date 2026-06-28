@@ -30,7 +30,16 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
   const [quality, setQuality] = useState(80);
   const [fps, setFps] = useState(0);
   const fpsRef = useRef(0);
-  const lastTimeRef = useRef(Date.now());
+  const lastTimeRef = useRef<number>(0);
+  useEffect(() => {
+    if (lastTimeRef.current === 0) {
+      lastTimeRef.current = Date.now();
+    }
+  }, []);
+
+  const handleBinaryMessageRef = useRef<(data: ArrayBuffer) => void>(() => {});
+  const renderScreenRef = useRef<(data: Uint8Array) => void>(() => {});
+  const handleClipboardRef = useRef<(data: Uint8Array) => void>(() => {});
 
   const connect = useCallback(async (params: {
     hostname: string;
@@ -71,7 +80,7 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
         }
       } else {
         // Binary data - screen update
-        handleBinaryMessage(event.data as ArrayBuffer);
+        handleBinaryMessageRef.current(event.data as ArrayBuffer);
       }
     };
 
@@ -97,10 +106,10 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
 
     switch (frameType) {
       case 0x01: // Screen update
-        renderScreen(payload);
+        renderScreenRef.current(payload);
         break;
       case 0x05: // Clipboard
-        handleClipboard(payload);
+        handleClipboardRef.current(payload);
         break;
       case 0xFF: // Error
         setError(new TextDecoder().decode(payload));
@@ -110,7 +119,7 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
     // Update FPS
     fpsRef.current++;
     const now = Date.now();
-    if (now - lastTimeRef.current >= 1000) {
+    if (lastTimeRef.current !== 0 && now - lastTimeRef.current >= 1000) {
       setFps(fpsRef.current);
       fpsRef.current = 0;
       lastTimeRef.current = now;
@@ -141,6 +150,14 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
     const text = new TextDecoder().decode(data);
     navigator.clipboard.writeText(text).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    handleBinaryMessageRef.current = handleBinaryMessage;
+  });
+  useEffect(() => {
+    renderScreenRef.current = renderScreen;
+    handleClipboardRef.current = handleClipboard;
+  });
 
   const sendInput = useCallback((inputData: Uint8Array) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
