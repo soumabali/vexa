@@ -8,39 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import type { ScanJob, ScanResult, StartScanResponse, ScanResultsResponse, ScanHistoryResponse, ImportResultsResponse } from '@/types/discovery'
 import { useToast } from '@/components/ui/use-toast'
 import { api } from "@/lib/api"
-import { Loader2, Search, Plus, Pause, Play, Download, Server, Globe, Shield } from 'lucide-react'
-
-interface ScanJob {
-  id: string
-  network: string
-  status: string
-  progress: number
-  total_hosts: number
-  scanned_hosts: number
-  found_hosts: number
-  created_at: string
-  started_at?: string
-  completed_at?: string
-}
-
-interface ScanResult {
-  id: string
-  ip_address: string
-  hostname?: string
-  status: string
-  os_guess?: string
-  response_time_ms: number
-  open_ports: PortResult[]
-}
-
-interface PortResult {
-  port: number
-  service?: string
-  protocol: string
-  tls?: boolean
-}
+import { Loader2, Search, Plus, Pause, Download, Server, Globe, Shield } from 'lucide-react'
 
 const defaultPorts = [
   { port: 22, service: 'SSH', checked: true },
@@ -88,7 +59,7 @@ export default function DiscoveryPage() {
 
     setLoading(true)
     try {
-      const response: any = await api('/api/v1/discovery/scan', { method: 'POST', body: JSON.stringify({
+      const response: StartScanResponse = await api<StartScanResponse>('/api/v1/discovery/scan', { method: 'POST', body: JSON.stringify({
         network,
         ports: selectedPorts,
         options: {
@@ -102,14 +73,26 @@ export default function DiscoveryPage() {
       }) })
 
       const data = response
-      setCurrentScan(data)
+      setCurrentScan({
+        id: data.id,
+        network: data.network,
+        ports: [],
+        status: 'pending',
+        progress: 0,
+        results: [],
+        total_hosts: 0,
+        scanned_hosts: 0,
+        created_at: data.created_at,
+        options: { timeout_ms: 0, rate_limit_ms: 0, concurrency: 0, icmp_first: false, os_scan: false, resolve_hostname: false },
+      })
       setIsScanning(true)
       toast({ title: 'Scan Started', description: `Scanning ${network}...` })
 
       // Start polling
       pollScanStatus(data.id)
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to start scan', variant: 'destructive' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to start scan'
+      toast({ title: 'Error', description: message, variant: 'destructive' })
     } finally {
       setLoading(false)
     }
@@ -117,7 +100,7 @@ export default function DiscoveryPage() {
 
   const fetchScanResults = async (scanId: string) => {
     try {
-      const response: any = await api(`/discovery/scan/${scanId}/results`)
+      const response: ScanResultsResponse = await api<ScanResultsResponse>(`/discovery/scan/${scanId}/results`)
       setScanResults(response.results || [])
     } catch (error) {
       console.error('Failed to fetch results:', error)
@@ -126,7 +109,7 @@ export default function DiscoveryPage() {
 
   const fetchScanHistory = async () => {
     try {
-      const response: any = await api('/api/v1/discovery/scan')
+      const response: ScanHistoryResponse = await api<ScanHistoryResponse>('/api/v1/discovery/scan')
       setScanHistory(response.jobs || [])
     } catch (error) {
       console.error('Failed to fetch history:', error)
@@ -136,7 +119,7 @@ export default function DiscoveryPage() {
   const pollScanStatus = useCallback(async (scanId: string) => {
     const interval = setInterval(async () => {
       try {
-        const response: any = await api(`/api/v1/discovery/scan/${scanId}/status`)
+        const response: ScanJob = await api<ScanJob>(`/api/v1/discovery/scan/${scanId}/status`)
         const data = response
         setCurrentScan(data)
 
@@ -163,22 +146,24 @@ export default function DiscoveryPage() {
       await api(`/api/v1/discovery/scan/${scanId}/cancel`, { method: 'POST' })
       toast({ title: 'Scan Cancelled' })
       setIsScanning(false)
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to cancel', variant: 'destructive' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to cancel'
+      toast({ title: 'Error', description: message, variant: 'destructive' })
     }
   }
 
   const importResults = async (scanId: string, importAll: boolean) => {
     try {
       const ips = importAll ? [] : Array.from(selectedResults)
-      const response: any = await api(`/api/v1/discovery/scan/${scanId}/import`, { method: 'POST', body: JSON.stringify({
+      const response: ImportResultsResponse = await api<ImportResultsResponse>(`/api/v1/discovery/scan/${scanId}/import`, { method: 'POST', body: JSON.stringify({
         import_all: importAll,
         selected_ips: ips,
       }) })
       toast({ title: 'Import Successful', description: `Imported ${response.imported_count} hosts` })
       router.push('/hosts')
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to import', variant: 'destructive' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to import'
+      toast({ title: 'Error', description: message, variant: 'destructive' })
     }
   }
 

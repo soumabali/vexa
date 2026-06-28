@@ -7,9 +7,9 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "wss://localhost:8080/ws"
 
 export function useTunnelWebSocket(tunnelIds: string[]) {
   const wsRef = useRef<WebSocket | null>(null)
-  const setStats = useTunnelStore((s: any) => s.setStats)
-  const addConnected = useTunnelStore((s: any) => s.addConnected)
-  const removeConnected = useTunnelStore((s: any) => s.removeConnected)
+  const setStats = useTunnelStore((s) => s.setStats)
+  const addConnected = useTunnelStore((s) => s.addConnected)
+  const removeConnected = useTunnelStore((s) => s.removeConnected)
 
   useEffect(() => {
     if (tunnelIds.length === 0) return

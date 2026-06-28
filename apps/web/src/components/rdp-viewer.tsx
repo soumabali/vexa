@@ -151,7 +151,7 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
     wsRef.current.send(frame);
   }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<Element>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -170,11 +170,11 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
   }, [width, height, sendInput]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    handleMouseMove(e as any);
+    handleMouseMove(e);
   }, [handleMouseMove]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    handleMouseMove(e as any);
+    handleMouseMove(e);
   }, [handleMouseMove]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -297,11 +297,11 @@ export function RDPViewer({ sessionId, width = 1920, height = 1080, onDisconnect
 }
 
 // RDP Connect Form Component
-function RDPConnectForm({ 
-  onConnect, 
-  connecting 
-}: { 
-  onConnect: (params: any) => void;
+function RDPConnectForm({
+  onConnect,
+  connecting
+}: {
+  onConnect: (params: { hostname: string; port: number; username: string; password: string; domain?: string }) => void;
   connecting: boolean;
 }) {
   const [hostname, setHostname] = useState('');

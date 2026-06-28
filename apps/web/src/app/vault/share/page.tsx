@@ -52,7 +52,7 @@ export default function ShareManagementPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/vault/shares?sent=${sent}`, {
-        headers: { Authorization: `Bearer ${(session as any)?.accessToken}` },
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
       if (!res.ok) throw new Error("Failed to fetch shares");
       const data = await res.json();
@@ -65,7 +65,7 @@ export default function ShareManagementPage() {
   };
 
   useEffect(() => {
-    const token = (session as any)?.accessToken;
+    const token = session?.accessToken;
     if (!token) return;
     // Defer the async state-setting call out of the effect body to avoid cascading renders.
     const handle = setTimeout(() => {
@@ -82,7 +82,7 @@ export default function ShareManagementPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${(session as any)?.accessToken}`,
+          Authorization: `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify({
           credential_id: shareForm.credential_id,
@@ -105,7 +105,7 @@ export default function ShareManagementPage() {
     try {
       const res = await fetch(`/api/vault/shares/${shareId}/accept`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${(session as any)?.accessToken}` },
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
       if (!res.ok) throw new Error("Failed to accept");
       toast.success("Share accepted!");
@@ -120,7 +120,7 @@ export default function ShareManagementPage() {
     try {
       const res = await fetch(`/api/vault/shares/${shareId}/revoke`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${(session as any)?.accessToken}` },
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
       if (!res.ok) throw new Error("Failed to revoke");
       toast.success("Share revoked!");

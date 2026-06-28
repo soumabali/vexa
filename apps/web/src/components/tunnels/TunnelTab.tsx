@@ -41,7 +41,7 @@ interface TunnelTabProps {
 export function TunnelTab({ hostId, tunnel }: TunnelTabProps) {
   const [rotating, setRotating] = useState(false)
   const [enabling, setEnabling] = useState(false)
-  const stats = useTunnelStore((s: any) =>
+  const stats = useTunnelStore((s) =>
     tunnel ? s.tunnelStats[tunnel.id] : undefined
   )
 

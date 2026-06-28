@@ -12,19 +12,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface Column {
+interface Column<T = Record<string, unknown>> {
   key: string;
   header: string;
-  render?: (row: any) => React.ReactNode;
+  render?: (row: T) => React.ReactNode;
 }
 
-interface DataTableProps {
-  data: any[];
-  columns: Column[];
+interface DataTableProps<T = Record<string, unknown>> {
+  data: T[];
+  columns: Column<T>[];
   pageSize?: number;
 }
 
-export default function DataTable({ data, columns, pageSize = 10 }: DataTableProps) {
+export default function DataTable<T = Record<string, unknown>>({ data, columns, pageSize = 10 }: DataTableProps<T>) {
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(data.length / pageSize);
   const paginatedData = data.slice(page * pageSize, (page + 1) * pageSize);
@@ -52,7 +52,7 @@ export default function DataTable({ data, columns, pageSize = 10 }: DataTablePro
                 <TableRow key={index}>
                   {columns.map((col) => (
                     <TableCell key={col.key}>
-                      {col.render ? col.render(row) : row[col.key]}
+                      {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                     </TableCell>
                   ))}
                 </TableRow>

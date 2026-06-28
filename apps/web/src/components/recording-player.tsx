@@ -170,7 +170,7 @@ export function RecordingPlayer({
             max={duration || 100}
             step={0.1}
             className="w-full"
-            onValueChange={(value: any) => setCurrentTime(Array.isArray(value) ? value[0] : value)}
+            onValueChange={(value: number[]) => setCurrentTime(value[0])}
           />
           <div className="flex justify-between text-xs text-gray-400 mt-1">
             <span>{formatTime(currentTime)}</span>

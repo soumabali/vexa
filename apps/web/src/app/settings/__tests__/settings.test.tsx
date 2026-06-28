@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import SettingsPage from '../page';
 import SecuritySettingsPage from '../security/page';
 import APIKeysPage from '../api-keys/page';
@@ -7,7 +8,7 @@ import AppearanceSettingsPage from '../appearance/page';
 
 // @/components/ui/radio-group doesn't exist in the codebase yet
 vi.mock('@/components/ui/radio-group', () => ({
-  RadioGroup: ({ children }: any) => <div>{children}</div>,
+  RadioGroup: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   RadioGroupItem: () => <div />,
 }));
 

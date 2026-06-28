@@ -82,7 +82,7 @@ describe('FileManager', () => {
     const mockResponse = {
       json: () => Promise.resolve({ files: mockFiles }),
     };
-    (global.fetch as any).mockResolvedValueOnce(mockResponse);
+    (global.fetch as unknown as { mockResolvedValueOnce: (r: unknown) => void; mockResolvedValue: (r: unknown) => void }).mockResolvedValueOnce(mockResponse);
 
     render(
       <FileManager
@@ -102,7 +102,7 @@ describe('FileManager', () => {
     const mockResponse = {
       json: () => Promise.resolve({ files: mockFiles }),
     };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    (global.fetch as unknown as { mockResolvedValueOnce: (r: unknown) => void; mockResolvedValue: (r: unknown) => void }).mockResolvedValue(mockResponse);
 
     render(
       <FileManager
@@ -286,7 +286,7 @@ describe('FilePreview', () => {
         get: () => 'application/octet-stream',
       },
     };
-    (global.fetch as any).mockResolvedValueOnce(mockResponse);
+    (global.fetch as unknown as { mockResolvedValueOnce: (r: unknown) => void; mockResolvedValue: (r: unknown) => void }).mockResolvedValueOnce(mockResponse);
 
     render(
       <FilePreview

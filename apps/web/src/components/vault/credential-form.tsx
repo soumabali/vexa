@@ -18,7 +18,7 @@ import type { Credential, CredentialType } from "./credential-list";
 
 interface CredentialFormProps {
   credential?: Credential;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Omit<Credential, "id" | "createdAt" | "updatedAt">) => void;
   onCancel: () => void;
 }
 
@@ -50,7 +50,7 @@ export function CredentialForm({ credential, onSubmit, onCancel }: CredentialFor
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const data: any = {
+    const data: Omit<Credential, "id" | "createdAt" | "updatedAt"> = {
       type,
       name,
       username: username || undefined,
