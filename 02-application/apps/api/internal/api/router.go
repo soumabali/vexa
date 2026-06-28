@@ -16,6 +16,7 @@ import (
 	"github.com/soumabali/vexa/internal/hosts"
 	"github.com/soumabali/vexa/internal/middleware"
 	"github.com/soumabali/vexa/internal/models"
+	"github.com/soumabali/vexa/internal/team"
 	"github.com/soumabali/vexa/internal/terminal"
 	"github.com/soumabali/vexa/internal/vault"
 	"github.com/soumabali/vexa/internal/wireguard"
@@ -105,6 +106,8 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	credHandler := handlers.NewCredentialHandler(credService, auditLogger)
 	shareRepo := vault.NewShareRepository(db)
 	shareHandler := vault.NewShareHandler(shareRepo)
+	teamService := team.NewTeamService(db, auditLogger)
+	teamHandler := handlers.NewTeamHandler(teamService, auditLogger)
 	terminalHandler := handlers.NewTerminalHandler(terminalManager, jwtManager, sessionStore, cfg.AllowedOrigins, hostRepo, credService, sshGateway, auditLogger)
 	auditHandler := handlers.NewAuditHandler(auditLogger)
 	adminWireguardHandler := handlers.NewAdminWireguardHandler(auditLogger, "")
@@ -162,6 +165,17 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 
 		// Vault credential sharing (E2E encrypted, ShareHandler)
 		vault.RegisterShareRoutes(authenticated, shareHandler)
+
+		// Teams
+		authenticated.POST("/teams", teamHandler.Create)
+		authenticated.GET("/teams", teamHandler.List)
+		authenticated.GET("/teams/:id", teamHandler.Get)
+		authenticated.PATCH("/teams/:id", teamHandler.Update)
+		authenticated.DELETE("/teams/:id", teamHandler.Delete)
+		authenticated.GET("/teams/:id/members", teamHandler.ListMembers)
+		authenticated.POST("/teams/:id/members", teamHandler.AddMember)
+		authenticated.PATCH("/teams/:id/members/:user_id", teamHandler.UpdateMemberRole)
+		authenticated.DELETE("/teams/:id/members/:user_id", teamHandler.RemoveMember)
 
 		// Hosts
 		authenticated.POST("/hosts", hostHandler.Create)
