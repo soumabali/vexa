@@ -207,3 +207,166 @@ export function HealthHistory({ history, maxItems = 24 }: HealthHistoryProps) {
     </div>
   );
 }
+
+// -----------------------------------------------------------------------------
+// HealthCheckPanel — per-dependency view of /health/ready (P4 #4)
+// -----------------------------------------------------------------------------
+
+export interface ReadyCheck {
+  ok: boolean;
+  latency_ms?: number;
+  error?: string;
+  path?: string;
+  free_pct?: number;
+  enabled?: boolean;
+  interface?: string;
+  checks?: Record<string, boolean>;
+}
+
+export interface ReadyPayload {
+  status: 'ready' | 'not_ready' | string;
+  timestamp?: string;
+  checks?: Record<string, ReadyCheck>;
+}
+
+interface HealthCheckPanelProps {
+  /** Override the API base URL; defaults to NEXT_PUBLIC_API_URL. */
+  apiUrl?: string;
+  /** Override auto-refresh interval in ms. Defaults to 30 000. */
+  refreshIntervalMs?: number;
+  /** Disable auto-refresh. */
+  pause?: boolean;
+}
+
+const CHECK_LABEL: Record<string, string> = {
+  db: 'Database',
+  redis: 'Redis',
+  config: 'Configuration',
+  disk: 'Disk',
+  wg: 'WireGuard',
+};
+
+function checkLabel(key: string): string {
+  return CHECK_LABEL[key] ?? key;
+}
+
+export function HealthCheckPanel({
+  apiUrl,
+  refreshIntervalMs = 30000,
+  pause = false,
+}: HealthCheckPanelProps) {
+  const [data, setData] = React.useState<ReadyPayload | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const [lastFetched, setLastFetched] = React.useState<Date | null>(null);
+
+  const base = React.useMemo(() => {
+    const url = apiUrl || process.env.NEXT_PUBLIC_API_URL || '';
+    return url.replace(/\/$/, '');
+  }, [apiUrl]);
+
+  const fetchHealth = React.useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const res = await fetch(`${base}/health/ready`, {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const body = (await res.json()) as ReadyPayload;
+      setData(body);
+      setError(null);
+      setLastFetched(new Date());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, [base]);
+
+  React.useEffect(() => {
+    if (pause) return;
+    fetchHealth();
+    const id = window.setInterval(fetchHealth, refreshIntervalMs);
+    return () => window.clearInterval(id);
+  }, [fetchHealth, refreshIntervalMs, pause]);
+
+  const checks = data?.checks ?? {};
+  const entries = Object.entries(checks);
+
+  return (
+    <div className="rounded-md border p-4 space-y-3" data-testid="health-check-panel">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold">System health</h3>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {lastFetched && (
+            <span>Updated {lastFetched.toLocaleTimeString()}</span>
+          )}
+          {error && (
+            <span className="text-destructive" title={error}>
+              fetch failed
+            </span>
+          )}
+        </div>
+      </div>
+
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {entries.length === 0 && (
+          <li className="text-xs text-muted-foreground">Loading…</li>
+        )}
+        {entries.map(([key, check]) => {
+          const ok = Boolean(check.ok);
+          const dot = ok ? 'bg-emerald-500' : 'bg-rose-500';
+          const text = ok ? 'text-emerald-600' : 'text-rose-600';
+          return (
+            <li
+              key={key}
+              className="flex items-start justify-between rounded border p-2"
+              data-check={key}
+              data-ok={ok}
+            >
+              <div className="flex items-start gap-2">
+                <span
+                  className={`mt-1 inline-block h-2 w-2 rounded-full ${dot}`}
+                  aria-hidden
+                />
+                <div>
+                  <div className={`text-sm font-medium ${text}`}>
+                    {checkLabel(key)}
+                  </div>
+                  {typeof check.latency_ms === 'number' && (
+                    <div className="text-xs text-muted-foreground">
+                      {check.latency_ms.toFixed(1)} ms
+                    </div>
+                  )}
+                  {typeof check.free_pct === 'number' && (
+                    <div className="text-xs text-muted-foreground">
+                      free {check.free_pct.toFixed(1)}%
+                      {check.path ? ` (${check.path})` : ''}
+                    </div>
+                  )}
+                  {check.enabled === false && (
+                    <div className="text-xs text-muted-foreground">disabled</div>
+                  )}
+                  {check.interface && check.enabled !== false && (
+                    <div className="text-xs text-muted-foreground">
+                      iface {check.interface}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {check.error && (
+                <div
+                  className="text-xs text-rose-600 max-w-[12rem] truncate"
+                  title={check.error}
+                >
+                  {check.error}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="text-xs text-muted-foreground">
+        Auto-refresh every {Math.round(refreshIntervalMs / 1000)}s.
+      </div>
+    </div>
+  );
+}
