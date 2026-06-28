@@ -17,6 +17,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+interface Team {
+  id: string;
+  name: string;
+}
+
 interface Share {
   id: string;
   credential_id: string;
@@ -40,9 +45,10 @@ export default function ShareManagementPage() {
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [shareForm, setShareForm] = useState({
     credential_id: "",
-    recipient_email: "",
+    team_id: "",
     permission: "read_only",
     expiry_days: "",
   });
@@ -64,12 +70,27 @@ export default function ShareManagementPage() {
     }
   };
 
+  // Fetch teams for share target selector
+  const fetchTeams = async () => {
+    try {
+      const res = await fetch(`/api/teams`, {
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setTeams(data.teams || []);
+    } catch (err) {
+      // non-fatal: dialog shows empty selector
+    }
+  };
+
   useEffect(() => {
     const token = session?.accessToken;
     if (!token) return;
     // Defer the async state-setting call out of the effect body to avoid cascading renders.
     const handle = setTimeout(() => {
       void fetchShares(activeTab === "sent");
+      void fetchTeams();
     }, 0);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,9 +106,9 @@ export default function ShareManagementPage() {
           Authorization: `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify({
-          credential_id: shareForm.credential_id,
-          recipient_email: shareForm.recipient_email,
-          permission: shareForm.permission,
+          team_id: shareForm.team_id,
+          // Backend expects permissions[]; wrap single-select value.
+          permissions: [shareForm.permission],
           expiry_days: shareForm.expiry_days ? parseInt(shareForm.expiry_days) : undefined,
         }),
       });
@@ -297,14 +318,30 @@ export default function ShareManagementPage() {
                 />
               </div>
               <div>
-                <Label>Recipient Email</Label>
-                <Input
-                  value={shareForm.recipient_email}
-                  onChange={(e) =>
-                    setShareForm({ ...shareForm, recipient_email: e.target.value })
+                <Label>Recipient Team</Label>
+                <Select
+                  value={shareForm.team_id}
+                  onValueChange={(val: string) =>
+                    setShareForm({ ...shareForm, team_id: val })
                   }
-                  placeholder="recipient@example.com"
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teams.length === 0 ? (
+                      <SelectItem value="__none__" disabled>
+                        No teams available
+                      </SelectItem>
+                    ) : (
+                      teams.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Permission</Label>
