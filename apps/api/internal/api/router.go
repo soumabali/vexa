@@ -50,14 +50,14 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	// User service for authentication
 	userService := auth.NewUserService(db, redisClient, cfg.EncryptionKey)
 
-	// Credential service (uses shared vault instance)
-	credService := vault.NewCredentialService(db, redisClient)
-
 	// Audit logger
 	auditLogger, err := audit.NewLogger(db, "logs/audit.log", []byte(cfg.EncryptionKey))
 	if err != nil {
 		panic(err)
 	}
+
+	// Credential service (uses shared vault instance)
+	credService := vault.NewCredentialService(db, redisClient, auditLogger)
 
 	// Repositories
 	hostRepo := hosts.NewRepository(db)
@@ -103,6 +103,8 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	authHandler := handlers.NewAuthHandler(userService, jwtManager, mfaService, sessionStore, auditLogger, loginRateLimiter)
 	hostHandler := handlers.NewHostHandler(hostRepo, auditLogger)
 	credHandler := handlers.NewCredentialHandler(credService, auditLogger)
+	shareRepo := vault.NewShareRepository(db)
+	shareHandler := vault.NewShareHandler(shareRepo)
 	terminalHandler := handlers.NewTerminalHandler(terminalManager, jwtManager, sessionStore, cfg.AllowedOrigins, hostRepo, credService, sshGateway, auditLogger)
 	auditHandler := handlers.NewAuditHandler(auditLogger)
 	adminWireguardHandler := handlers.NewAdminWireguardHandler(auditLogger, "")
@@ -157,6 +159,9 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 		authenticated.GET("/vault/credentials/:id/decrypt", credHandler.Decrypt)
 		authenticated.POST("/vault/credentials/:id/share", credHandler.Share)
 		authenticated.DELETE("/vault/credentials/:id/share", credHandler.Unshare)
+
+		// Vault credential sharing (E2E encrypted, ShareHandler)
+		vault.RegisterShareRoutes(authenticated, shareHandler)
 
 		// Hosts
 		authenticated.POST("/hosts", hostHandler.Create)
