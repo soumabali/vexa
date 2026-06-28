@@ -92,7 +92,7 @@ export function DeleteAccountForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmDelete">Type "DELETE" to confirm</Label>
+            <Label htmlFor="confirmDelete">Type &quot;DELETE&quot; to confirm</Label>
             <Input
               id="confirmDelete"
               placeholder="DELETE"
