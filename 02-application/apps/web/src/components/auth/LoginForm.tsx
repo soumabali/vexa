@@ -187,7 +187,7 @@ export function LoginForm() {
             <ShieldCheck className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <CardTitle className="text-2xl">
+        <CardTitle className="text-4xl font-bold">
           {step === "credentials" ? "Welcome Back" : "Two-Factor Authentication"}
         </CardTitle>
         <CardDescription>

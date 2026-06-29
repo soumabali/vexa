@@ -1,5 +1,5 @@
 {
-  "email": "test@example.com",
-  "password": "TestPassword123!",
-  "name": "Test User"
+  "email": "e2e-test@vexa.local",
+  "password": "E2ETestPass!Secure123",
+  "name": "E2E Test User"
 }
