@@ -22,6 +22,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
   }),
+  usePathname: () => '/settings/security',
 }));
 
 // Mock next/link
@@ -29,6 +30,27 @@ vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   ),
+}));
+
+// Mock the auth API surface used by security page
+vi.mock('@/lib/api/auth', () => ({
+  authApi: {
+    getUserProfile: vi.fn().mockResolvedValue({
+      id: 'u1',
+      email: 'user@example.com',
+      role: 'user',
+      mfa_enabled: true,
+      mfa_required: false,
+    }),
+    regenerateBackupCodes: vi.fn(),
+  },
+}));
+
+// Mock webauthn lib (security page imports it for credential listing)
+vi.mock('@/lib/webauthn', () => ({
+  isWebAuthnSupported: vi.fn().mockResolvedValue(false),
+  listCredentials: vi.fn().mockResolvedValue({ credentials: [] }),
+  deleteCredential: vi.fn(),
 }));
 
 describe('SettingsPage', () => {
@@ -110,5 +132,81 @@ describe('AppearanceSettingsPage (mocked)', () => {
   it('renders mocked appearance page', () => {
     render(<AppearanceSettingsPage />);
     expect(screen.getByText('Appearance')).toBeInTheDocument();
+  });
+});
+
+import { waitFor } from '@testing-library/react';
+import { authApi } from '@/lib/api/auth';
+
+describe('SecuritySettingsPage - backup codes dialog', () => {
+  beforeEach(() => {
+    vi.mocked(authApi.regenerateBackupCodes).mockReset();
+  });
+
+  it('opens the request dialog when regenerate is clicked', async () => {
+    render(<SecuritySettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('open-backup-codes')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('open-backup-codes'));
+    expect(
+      screen.getByRole('heading', { name: 'Regenerate backup codes' })
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('backup-codes-totp')).toBeInTheDocument();
+  });
+
+  it('shows one-time codes after a successful TOTP submit', async () => {
+    vi.mocked(authApi.regenerateBackupCodes).mockResolvedValueOnce({
+      backup_codes: ['AAAA-1111', 'BBBB-2222', 'CCCC-3333'],
+      message: 'codes generated',
+    });
+
+    render(<SecuritySettingsPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('open-backup-codes')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('open-backup-codes'));
+    fireEvent.change(screen.getByTestId('backup-codes-totp'), {
+      target: { value: '123456' },
+    });
+    fireEvent.click(screen.getByTestId('submit-backup-codes'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('backup-codes-list')).toBeInTheDocument();
+    });
+    expect(screen.getByText('AAAA-1111')).toBeInTheDocument();
+    expect(screen.getByText('BBBB-2222')).toBeInTheDocument();
+    expect(screen.getByText('CCCC-3333')).toBeInTheDocument();
+  });
+
+  it('clears codes from state when user closes the dialog', async () => {
+    vi.mocked(authApi.regenerateBackupCodes).mockResolvedValueOnce({
+      backup_codes: ['XXXX-9999'],
+      message: 'codes generated',
+    });
+
+    render(<SecuritySettingsPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('open-backup-codes')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('open-backup-codes'));
+    fireEvent.change(screen.getByTestId('backup-codes-totp'), {
+      target: { value: '123456' },
+    });
+    fireEvent.click(screen.getByTestId('submit-backup-codes'));
+
+    await waitFor(() => {
+      expect(screen.getByText('XXXX-9999')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('confirm-backup-codes'));
+
+    await waitFor(() => {
+      expect(screen.queryByText('XXXX-9999')).not.toBeInTheDocument();
+    });
   });
 });
