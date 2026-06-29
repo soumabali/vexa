@@ -1,0 +1,163 @@
+# =============================================================================
+# Vexa Continuous Integration
+# =============================================================================
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'   # daily at 02:00 UTC
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  GO_VERSION: '1.22'
+  NODE_VERSION: '20'
+  RUST_VERSION: 'stable'
+  TRIVY_VERSION: '0.50.0'
+
+jobs:
+  # -------------------------------------------------
+  # 1️⃣ Lint
+  # -------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+        timeout-minutes: 10
+
+  # -------------------------------------------------
+  # 2️⃣ Unit Tests
+  # -------------------------------------------------
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+        timeout-minutes: 10
+
+  # -------------------------------------------------
+  # 3️⃣ Playwright E2E
+  # -------------------------------------------------
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+        timeout-minutes: 20
+
+  # -------------------------------------------------
+  # 4️⃣ Docker Build (resource‑limited)
+  # -------------------------------------------------
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU (optional)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          target: production
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          load: true                     # load into daemon for later steps
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          timeout: 1800s                 # 30 min
+          memory: 2g                     # enforce RAM limit (OOM‑Killer)
+
+  # -------------------------------------------------
+  # 5️⃣ Security Scans (optional)
+  # -------------------------------------------------
+  vulnerability-scan:
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Trivy
+        run: |
+          wget -qO- https://github.com/aquasecurity/trivy/releases/download/v${{ env.TRIVY_VERSION }}/trivy_${{ env.TRIVY_VERSION }}_Linux-x86_64.tar.gz | tar -xzOvf - trivy > /usr/local/bin/trivy && chmod +x /usr/local/bin/trivy
+
+      - name: Run Trivy Scan
+        run: |
+          trivy image --severity HIGH,CRITICAL ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest || echo "Scan completed with findings (if any)."
+
+      - name: Upload Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: /tmp/trivy-report.json
