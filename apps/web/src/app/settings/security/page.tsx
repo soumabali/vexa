@@ -30,6 +30,9 @@ import {
   AlertTriangle,
   Loader2,
   Smartphone,
+  KeyRound,
+  Download,
+  Copy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -60,6 +63,10 @@ export default function SecuritySettingsPage() {
   const [disableOpen, setDisableOpen] = useState(false);
   const [disableLoading, setDisableLoading] = useState(false);
   const [disableTotpCode, setDisableTotpCode] = useState("");
+  const [codesOpen, setCodesOpen] = useState(false);
+  const [codesTotp, setCodesTotp] = useState("");
+  const [codesLoading, setCodesLoading] = useState(false);
+  const [codes, setCodes] = useState<string[] | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -133,6 +140,51 @@ export default function SecuritySettingsPage() {
     }
   };
 
+  const handleRegenerateCodes = async () => {
+    setCodesLoading(true);
+    try {
+      const res = await authApi.regenerateBackupCodes(codesTotp);
+      setCodes(res.backup_codes);
+      toast.success("Backup codes generated");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to regenerate backup codes"
+      );
+    } finally {
+      setCodesLoading(false);
+    }
+  };
+
+  const handleCopyCodes = async () => {
+    if (!codes) return;
+    try {
+      await navigator.clipboard.writeText(codes.join("\n"));
+      toast.success("Codes copied to clipboard");
+    } catch {
+      toast.error("Could not copy to clipboard");
+    }
+  };
+
+  const handleDownloadCodes = () => {
+    if (!codes) return;
+    const blob = new Blob([codes.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "vexa-backup-codes.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCloseCodes = () => {
+    // One-time-show: drop codes from state on close so they cannot leak back.
+    setCodes(null);
+    setCodesTotp("");
+    setCodesOpen(false);
+  };
+
   const mfaEnabled = profile?.mfa_enabled ?? false;
 
   return (
@@ -183,14 +235,25 @@ export default function SecuritySettingsPage() {
                   </div>
                   <Badge variant="outline" className="text-green-600 border-green-200">Enabled</Badge>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDisableOpen(true)}
-                >
-                  <Key className="h-4 w-4 mr-2" />
-                  Disable MFA
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setDisableOpen(true)}
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    Disable MFA
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setCodesOpen(true)}
+                    data-testid="open-backup-codes"
+                  >
+                    <KeyRound className="h-4 w-4 mr-2" />
+                    Regenerate backup codes
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="rounded-md border p-4 space-y-3">
@@ -342,6 +405,116 @@ export default function SecuritySettingsPage() {
               Disable MFA
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request backup codes (one-time-show) */}
+      <Dialog
+        open={codesOpen}
+        onOpenChange={(open) => {
+          if (open) return;
+          if (codesLoading) return;
+          if (codes !== null) {
+            // Once codes are shown the user must press the explicit
+            // "I have saved them" button — no other close path.
+            return;
+          }
+          setCodesOpen(false);
+          setCodesTotp("");
+        }}
+      >
+        <DialogContent>
+          {codes === null ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Regenerate backup codes</DialogTitle>
+                <DialogDescription>
+                  These codes will replace any existing codes. Save them now —
+                  they will only be shown once.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <Label htmlFor="backup-codes-totp">Verification code</Label>
+                <Input
+                  id="backup-codes-totp"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  autoFocus
+                  value={codesTotp}
+                  onChange={(e) =>
+                    setCodesTotp(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                  disabled={codesLoading}
+                  data-testid="backup-codes-totp"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setCodesOpen(false)}
+                  disabled={codesLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleRegenerateCodes}
+                  disabled={codesLoading || codesTotp.length !== 6}
+                  data-testid="submit-backup-codes"
+                >
+                  {codesLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Generate codes
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Save your new backup codes</DialogTitle>
+                <DialogDescription>
+                  These codes will only be shown once. Store them in a safe
+                  place — they are the only way to recover access if you lose
+                  your authenticator.
+                </DialogDescription>
+              </DialogHeader>
+              <div
+                className="rounded-md border bg-muted/30 p-3 font-mono text-sm grid grid-cols-2 gap-x-4 gap-y-1"
+                data-testid="backup-codes-list"
+              >
+                {codes.map((code) => (
+                  <span key={code}>{code}</span>
+                ))}
+              </div>
+              <DialogFooter className="gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyCodes}
+                  data-testid="copy-backup-codes"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadCodes}
+                  data-testid="download-backup-codes"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download .txt
+                </Button>
+                <Button
+                  onClick={handleCloseCodes}
+                  data-testid="confirm-backup-codes"
+                >
+                  I have saved them
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </DashboardLayout>
