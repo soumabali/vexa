@@ -13,6 +13,7 @@ import {
   Globe,
   Keyboard,
   Fingerprint,
+  Monitor,
 } from "lucide-react";
 
 const settingsSections = [
@@ -27,6 +28,12 @@ const settingsSections = [
     description: "Two-factor authentication, WebAuthn, and security settings",
     icon: Shield,
     href: "/settings/security",
+  },
+  {
+    title: "Active Sessions",
+    description: "Review and revoke devices signed in to your account",
+    icon: Monitor,
+    href: "/settings/sessions",
   },
   {
     title: "WebAuthn",
