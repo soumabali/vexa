@@ -34,7 +34,7 @@ export function useDeleteAccount() {
 export function useSessions() {
   return useQuery({
     queryKey: ["sessions"],
-    queryFn: authApi.getSessions,
+    queryFn: authApi.listSessions,
   });
 }
 
