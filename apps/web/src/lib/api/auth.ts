@@ -268,16 +268,15 @@ export const authApi = {
 
   // ─── Sessions ────────────────────────────────────────────────────────────────
 
-  getSessions: () =>
+  listSessions: () =>
     apiRequest<
       {
-        id: string;
-        device: string;
-        browser: string;
-        ip: string;
-        location: string;
-        lastActive: string;
-        isCurrent: boolean;
+        session_id: string;
+        ip_address: string;
+        user_agent: string;
+        created_at: string;
+        last_active_at: string;
+        is_current: boolean;
       }[]
     >("/api/v1/auth/sessions"),
 
