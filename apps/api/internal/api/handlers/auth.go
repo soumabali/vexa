@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -516,20 +517,44 @@ func (h *AuthHandler) DisableMFA(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "MFA disabled successfully"})
 }
 
-// GetActiveSessions returns all active sessions for the authenticated user.
+// GetActiveSessions returns metadata for all active sessions of the authenticated user.
 func (h *AuthHandler) GetActiveSessions(c *gin.Context) {
-	userIDVal, _ := c.Get("user_id"); userID := userIDVal.(uuid.UUID)
+	userIDVal, _ := c.Get("user_id")
+	userID := userIDVal.(uuid.UUID)
+	ctx := c.Request.Context()
 
-	count, err := h.sessionStore.CountUserSessions(c.Request.Context(), userID)
+	sessions, err := h.sessionStore.ListUserSessions(ctx, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get sessions"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list sessions"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"active_sessions": count,
-		"message":        "session list endpoint - implement session enumeration",
-	})
+	clientIP := c.ClientIP()
+	clientUA := c.GetHeader("User-Agent")
+
+	type SessionMetadata struct {
+		SessionID    string    `json:"session_id"`
+		IPAddress    string    `json:"ip_address"`
+		UserAgent    string    `json:"user_agent"`
+		CreatedAt    time.Time `json:"created_at"`
+		LastActiveAt time.Time `json:"last_active_at"`
+		IsCurrent    bool      `json:"is_current"`
+	}
+
+	out := make([]SessionMetadata, 0, len(sessions))
+	for _, s := range sessions {
+		isCurrent := s.IPAddress == clientIP && s.UserAgent == clientUA
+		out = append(out, SessionMetadata{
+			SessionID:    s.ID,
+			IPAddress:    s.IPAddress,
+			UserAgent:    s.UserAgent,
+			CreatedAt:    s.CreatedAt,
+			LastActiveAt: s.LastActivity,
+			IsCurrent:    isCurrent,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"sessions": out})
 }
 
 // RevokeSession revokes a specific refresh token / session.

@@ -150,6 +150,51 @@ func (s *SessionStore) CountUserSessions(ctx context.Context, userID uuid.UUID) 
 	return s.redis.SCard(ctx, s.prefix+"user:"+userID.String()).Result()
 }
 
+// ListUserSessions returns metadata for all non-expired sessions belonging to userID.
+// Expired sessions (idle or lifetime exceeded) are filtered out. The Redis index is
+// best-effort: members that cannot be loaded are silently dropped.
+func (s *SessionStore) ListUserSessions(ctx context.Context, userID uuid.UUID) ([]*Session, error) {
+	memberKey := s.prefix + "user:" + userID.String()
+	sessionIDs, err := s.redis.SMembers(ctx, memberKey).Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user sessions: %w", err)
+	}
+
+	sessions := make([]*Session, 0, len(sessionIDs))
+	now := time.Now().UTC()
+	for _, id := range sessionIDs {
+		key := s.prefix + id
+		data, err := s.redis.Get(ctx, key).Bytes()
+		if err != nil {
+			// Either gone or transient — drop silently and clean index.
+			if errors.Is(err, redis.Nil) {
+				s.redis.SRem(ctx, memberKey, id)
+			}
+			continue
+		}
+
+		var sess Session
+		if err := json.Unmarshal(data, &sess); err != nil {
+			continue
+		}
+
+		if now.Sub(sess.LastActivity) > s.idleTimeout {
+			s.redis.Del(ctx, key)
+			s.redis.SRem(ctx, memberKey, id)
+			continue
+		}
+		if now.Sub(sess.CreatedAt) > s.maxLifetime {
+			s.redis.Del(ctx, key)
+			s.redis.SRem(ctx, memberKey, id)
+			continue
+		}
+
+		sessions = append(sessions, &sess)
+	}
+
+	return sessions, nil
+}
+
 func (s *SessionStore) RevokeToken(ctx context.Context, tokenID string, ttl time.Duration) error {
 	return s.redis.Set(ctx, s.prefix+"revoked:"+tokenID, "1", ttl).Err()
 }
