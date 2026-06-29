@@ -1,9 +1,9 @@
 package api
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +16,7 @@ import (
 	"github.com/soumabali/vexa/internal/hosts"
 	"github.com/soumabali/vexa/internal/middleware"
 	"github.com/soumabali/vexa/internal/models"
+	"github.com/soumabali/vexa/internal/team"
 	"github.com/soumabali/vexa/internal/terminal"
 	"github.com/soumabali/vexa/internal/vault"
 	"github.com/soumabali/vexa/internal/wireguard"
@@ -50,14 +51,14 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	// User service for authentication
 	userService := auth.NewUserService(db, redisClient, cfg.EncryptionKey)
 
-	// Credential service (uses shared vault instance)
-	credService := vault.NewCredentialService(db, redisClient)
-
 	// Audit logger
 	auditLogger, err := audit.NewLogger(db, "logs/audit.log", []byte(cfg.EncryptionKey))
 	if err != nil {
 		panic(err)
 	}
+
+	// Credential service (uses shared vault instance)
+	credService := vault.NewCredentialService(db, redisClient, auditLogger)
 
 	// Repositories
 	hostRepo := hosts.NewRepository(db)
@@ -103,8 +104,13 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	authHandler := handlers.NewAuthHandler(userService, jwtManager, mfaService, sessionStore, auditLogger, loginRateLimiter)
 	hostHandler := handlers.NewHostHandler(hostRepo, auditLogger)
 	credHandler := handlers.NewCredentialHandler(credService, auditLogger)
+	shareRepo := vault.NewShareRepository(db)
+	shareHandler := vault.NewShareHandler(shareRepo)
+	teamService := team.NewTeamService(db, auditLogger)
+	teamHandler := handlers.NewTeamHandler(teamService, auditLogger)
 	terminalHandler := handlers.NewTerminalHandler(terminalManager, jwtManager, sessionStore, cfg.AllowedOrigins, hostRepo, credService, sshGateway, auditLogger)
 	auditHandler := handlers.NewAuditHandler(auditLogger)
+	adminWireguardHandler := handlers.NewAdminWireguardHandler(auditLogger, "")
 	gatewayHandler := handlers.NewGatewayHandler(sshGateway, rdpGateway, vncGateway, auditLogger)
 	userHandler := handlers.NewUserHandler(userService, auditLogger)
 
@@ -129,6 +135,7 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 		authenticated.POST("/auth/logout", authHandler.Logout)
 		authenticated.POST("/auth/mfa/setup", authHandler.SetupMFA)
 		authenticated.POST("/auth/mfa/enable", authHandler.VerifyMFAEnable)
+		authenticated.POST("/auth/mfa/backup-codes/regenerate", authHandler.RegenerateBackupCodes)
 		authenticated.DELETE("/auth/mfa/disable", authHandler.DisableMFA)
 		authenticated.GET("/auth/sessions", authHandler.GetActiveSessions)
 		authenticated.POST("/auth/sessions/revoke", authHandler.RevokeSession)
@@ -156,6 +163,20 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 		authenticated.POST("/vault/credentials/:id/share", credHandler.Share)
 		authenticated.DELETE("/vault/credentials/:id/share", credHandler.Unshare)
 
+		// Vault credential sharing (E2E encrypted, ShareHandler)
+		vault.RegisterShareRoutes(authenticated, shareHandler)
+
+		// Teams
+		authenticated.POST("/teams", teamHandler.Create)
+		authenticated.GET("/teams", teamHandler.List)
+		authenticated.GET("/teams/:id", teamHandler.Get)
+		authenticated.PATCH("/teams/:id", teamHandler.Update)
+		authenticated.DELETE("/teams/:id", teamHandler.Delete)
+		authenticated.GET("/teams/:id/members", teamHandler.ListMembers)
+		authenticated.POST("/teams/:id/members", teamHandler.AddMember)
+		authenticated.PATCH("/teams/:id/members/:user_id", teamHandler.UpdateMemberRole)
+		authenticated.DELETE("/teams/:id/members/:user_id", teamHandler.RemoveMember)
+
 		// Hosts
 		authenticated.POST("/hosts", hostHandler.Create)
 		authenticated.GET("/hosts", hostHandler.List)
@@ -163,6 +184,7 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 		authenticated.PATCH("/hosts/:id", hostHandler.Update)
 		authenticated.DELETE("/hosts/:id", hostHandler.Delete)
 		authenticated.GET("/hosts/:id/health", hostHandler.HealthCheck)
+		authenticated.GET("/hosts/:id/stats", hostHandler.GetStats)
 
 		// Terminal
 		authenticated.GET("/ws/terminal", terminalHandler.HandleTerminal)
@@ -186,6 +208,8 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 			admin.GET("/users/:id", userHandler.GetUser)
 			admin.PATCH("/users/:id", userHandler.UpdateUser)
 			admin.DELETE("/users/:id", userHandler.DeleteUser)
+			// WireGuard rotation (admin only) — P4 #3
+			admin.POST("/wg/rotate", adminWireguardHandler.RotateWireguardKeys)
 		}
 	}
 
@@ -226,51 +250,11 @@ func SetupRouter(cfg *config.Config, db *sql.DB, redisClient *redis.Client) *gin
 	}
 
 	// Health check - Kubernetes liveness probe
-	r.GET("/health/live", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "alive",
-			"timestamp": time.Now().UTC().Format(time.RFC3339),
-		})
-	})
-
-	// Health check - Kubernetes readiness probe
-	r.GET("/health/ready", func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
-		defer cancel()
-
-		checks := gin.H{}
-		allOK := true
-
-		// Database check
-		if err := db.PingContext(ctx); err != nil {
-			checks["database"] = gin.H{"status": "unhealthy", "error": err.Error()}
-			allOK = false
-		} else {
-			checks["database"] = gin.H{"status": "healthy"}
-		}
-
-		// Redis check
-		if err := redisClient.Ping(ctx).Err(); err != nil {
-			checks["redis"] = gin.H{"status": "unhealthy", "error": err.Error()}
-			allOK = false
-		} else {
-			checks["redis"] = gin.H{"status": "healthy"}
-		}
-
-		if !allOK {
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"status": "not_ready",
-				"checks": checks,
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "ready",
-			"timestamp": time.Now().UTC().Format(time.RFC3339),
-			"checks":    checks,
-		})
-	})
+	healthHandler := handlers.NewHealthHandler(db, redisClient, os.Getenv("DATA_DIR"))
+	metricsHandler := handlers.NewMetricsHandler()
+	r.Use(metricsHandler.PrometheusMiddleware())
+	r.GET("/health/live", healthHandler.Live)
+	r.GET("/health/ready", healthHandler.Ready)
 
 	// Legacy /health redirect
 	r.GET("/health", func(c *gin.Context) {

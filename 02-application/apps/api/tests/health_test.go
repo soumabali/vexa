@@ -2,13 +2,21 @@ package tests
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/soumabali/vexa/internal/api/handlers"
 	"github.com/soumabali/vexa/internal/health"
 )
 
@@ -147,4 +155,121 @@ func TestICMPHealthChecker(t *testing.T) {
 		// Will likely fail or timeout
 		assert.NotNil(t, result)
 	})
+}
+
+// ----- /health/live & /health/ready handler tests (P4 #4) -----
+
+// We need a real *sql.DB because PingContext dereferences internals even
+// when called on a zero value. Open a sqlite memory DB? vexa only ships
+// postgres drivers; instead, build a real DB via the standard sql package
+// against an unreachable driver — but PingContext will still segfault on
+// the nil mutex inside (*DB).conn.
+//
+// Workaround: skip the test if we can't open any DB. Use sql.Open with
+// the postgres driver and a dummy DSN; PingContext will return an error
+// rather than panic, which is fine for shape assertions.
+func newTestHealthHandler(t *testing.T) *handlers.HealthHandler {
+	t.Helper()
+	db, err := sql.Open("postgres", "host=127.0.0.1 port=1 user=u dbname=d sslmode=disable connect_timeout=1")
+	if err != nil {
+		t.Skipf("postgres driver unavailable: %v", err)
+	}
+	return handlers.NewHealthHandler(db, redis.NewClient(&redis.Options{Addr: "127.0.0.1:1"}), os.TempDir())
+}
+
+func TestHealthHandler_LiveAlwaysOK(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := newTestHealthHandler(t)
+	r := gin.New()
+	r.GET("/health/live", h.Live)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/health/live", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	assert.Equal(t, "alive", body["status"])
+}
+
+func TestHealthHandler_ReadyShape(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := newTestHealthHandler(t)
+	r := gin.New()
+	r.GET("/health/ready", h.Ready)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/health/ready", nil)
+	r.ServeHTTP(w, req)
+
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	require.Contains(t, body, "status")
+	require.Contains(t, body, "checks")
+	checks, _ := body["checks"].(map[string]interface{})
+	require.NotNil(t, checks)
+	for _, key := range []string{"db", "redis", "config", "disk", "wg"} {
+		_, ok := checks[key]
+		assert.True(t, ok, "missing check key: %s", key)
+	}
+}
+
+func TestHealthHandler_ReadyFailsWhenJWTMissing(t *testing.T) {
+	t.Setenv("JWT_SECRET", "")
+	t.Setenv("DB_NAME", "vexa")
+	gin.SetMode(gin.TestMode)
+	h := newTestHealthHandler(t)
+	r := gin.New()
+	r.GET("/health/ready", h.Ready)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/health/ready", nil)
+	r.ServeHTTP(w, req)
+
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	checks := body["checks"].(map[string]interface{})
+	cfg := checks["config"].(map[string]interface{})
+	cfgChecks := cfg["checks"].(map[string]interface{})
+	assert.Equal(t, false, cfgChecks["jwt_secret"])
+}
+
+func TestHealthHandler_DiskCheckNonEmpty(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := newTestHealthHandler(t)
+	r := gin.New()
+	r.GET("/health/ready", h.Ready)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/health/ready", nil)
+	r.ServeHTTP(w, req)
+
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	checks := body["checks"].(map[string]interface{})
+	disk := checks["disk"].(map[string]interface{})
+	_, hasPath := disk["path"]
+	_, hasPct := disk["free_pct"]
+	assert.True(t, hasPath)
+	assert.True(t, hasPct)
+}
+
+func TestHealthHandler_WGDisabledByDefault(t *testing.T) {
+	t.Setenv("WG_CHECK_ENABLED", "")
+	gin.SetMode(gin.TestMode)
+	h := newTestHealthHandler(t)
+	r := gin.New()
+	r.GET("/health/ready", h.Ready)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/health/ready", nil)
+	r.ServeHTTP(w, req)
+
+	var body map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	checks := body["checks"].(map[string]interface{})
+	wg := checks["wg"].(map[string]interface{})
+	assert.Equal(t, false, wg["enabled"])
+	assert.Equal(t, true, wg["ok"])
 }

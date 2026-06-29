@@ -37,4 +37,34 @@ test.describe("Terminal Page", () => {
     await page.locator(".tab-bar").getByText("Local").click();
     await expect(page.locator(".tab-bar").getByText("Local").first()).toBeVisible();
   });
+
+  // Real command-input smoke test. Requires the API + mock SSH backend
+  // running (docker-compose up). Skipped automatically when the desktop
+  // shell backend isn't reachable — see tests/e2e/README.md.
+  test("user dapat mengetik command dan lihat output", async ({ page, request }) => {
+    // Optional pre-flight: confirm backend is up. Skip gracefully if not.
+    try {
+      const res = await request.get("http://127.0.0.1:18080/health", { timeout: 2000 });
+      if (!res.ok()) test.skip(true, "API not healthy on :18080");
+    } catch {
+      test.skip(true, "API not reachable on :18080 — start docker-compose first");
+    }
+
+    const terminal = page.locator(".xterm").first();
+    await expect(terminal).toBeVisible({ timeout: 15000 });
+
+    // Focus the terminal canvas before typing — xterm.js needs a focused
+    // surface to receive keyboard events.
+    await terminal.click();
+
+    const marker = `vexa-e2e-${Date.now()}`;
+    await page.keyboard.type(`echo ${marker}`);
+    await page.keyboard.press("Enter");
+
+    // xterm renders to a canvas; we assert on a screen-line DOM node
+    // that mirrors the terminal buffer for assertions.
+    await expect(
+      page.locator(".xterm").getByText(marker, { exact: false })
+    ).toBeVisible({ timeout: 10000 });
+  });
 });

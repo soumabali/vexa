@@ -56,7 +56,7 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
         return {
           data: result.success ? (result.data as CreateHostInput) : ({} as CreateHostInput),
           valid: result.success,
-          errors: result.success ? [] : (result.error as any).issues.map((e: any) => `${e.path.join(".")}: ${e.message}`),
+          errors: result.success ? [] : result.error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
           original: h,
         };
       });

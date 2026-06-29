@@ -129,6 +129,7 @@ export default function Terminal({
   const sanitizerRef = useRef<TerminalSanitizer>(new TerminalSanitizer());
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectRef = useRef<() => void>(() => {});
   const [status, setStatus] = useState<TerminalStatus>('connecting');
 
   const updateStatus = useCallback(
@@ -185,7 +186,7 @@ export default function Terminal({
           reconnectAttemptsRef.current += 1;
           reconnectTimeoutRef.current = setTimeout(() => {
             termRef.current?.writeln(`\r\n\x1b[33m[Reconnecting (${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})...]\x1b[0m`);
-            connect();
+            connectRef.current();
           }, delay);
         } else {
           termRef.current?.writeln('\r\n\x1b[31m[Max reconnect attempts reached. Please refresh to reconnect.]\x1b[0m');
@@ -204,6 +205,10 @@ export default function Terminal({
       termRef.current?.writeln(`\r\n\x1b[31m[Connection failed: ${err}]\x1b[0m`);
     }
   }, [wsUrl, updateStatus, onData, onBinary, onTitleChange]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  });
 
   useEffect(() => {
     if (!containerRef.current) return;

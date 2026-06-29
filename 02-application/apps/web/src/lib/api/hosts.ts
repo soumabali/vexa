@@ -4,6 +4,7 @@ import {
   HostFilterInput,
   HostResponse,
   HostListResponse,
+  HostType,
   SSHOptions,
   RDPOptions,
   VNCOptions,
@@ -76,22 +77,87 @@ export interface HostStats {
   offline: number;
 }
 
+/**
+ * Per-host aggregate stats returned by GET /api/v1/hosts/:id/stats.
+ * Distinct from HostStats (the global dashboard summary).
+ */
+export interface HostDetailStats {
+  total_sessions: number;
+  last_connected_at: string | null;
+  tunnel_count: number;
+  active_tunnels: number;
+}
+
+/** Backend host response shape (snake_case). Used internally for mapping. */
+interface BackendHostRaw {
+  id: string;
+  name: string;
+  address: string;
+  protocol?: string;
+  port: number;
+  username?: string;
+  tags?: string[];
+  description?: string;
+  group_path?: string;
+  is_active?: boolean;
+  status?: string;
+  os?: string;
+  last_connected_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+/** Map a backend host payload to the frontend HostResponse shape. */
+function mapBackendHost(raw: BackendHostRaw): HostResponse {
+  const protocol = ((raw.protocol ?? "ssh").toLowerCase() === "rdp"
+    ? HostType.RDP
+    : (raw.protocol ?? "ssh").toLowerCase() === "vnc"
+      ? HostType.VNC
+      : HostType.SSH);
+  const status = (raw.status ?? "unknown") as "online" | "offline" | "unknown";
+  return {
+    id: raw.id,
+    name: raw.name,
+    address: raw.address,
+    host: raw.address,
+    hostType: protocol,
+    type: protocol,
+    port: raw.port,
+    username: raw.username,
+    tags: raw.tags,
+    description: raw.description,
+    groupId: raw.group_path,
+    groupName: raw.group_path,
+    status,
+    favorite: raw.is_active ?? false,
+    lastConnected: raw.last_connected_at ?? undefined,
+    createdAt: raw.created_at ?? new Date().toISOString(),
+    updatedAt: raw.updated_at ?? new Date().toISOString(),
+  };
+}
+
 export const hostsApi = {
   // List hosts with filtering, sorting, pagination
   list: async (filters?: HostFilterInput): Promise<HostListResponse> => {
-    const resp = await apiRequest<HostListResponse>("/api/v1/hosts", { method: "GET" });
-    const hosts = (resp.hosts || resp.data || []).map((h) => ({
-      ...h,
-      host: h.host ?? h.address ?? "",
-      hostType: h.hostType ?? (h as { protocol?: string }).protocol ?? "ssh",
-      status: h.status ?? "unknown",
-    }));
-    return { ...resp, hosts };
+    const resp = await apiRequest<{ hosts?: BackendHostRaw[]; data?: BackendHostRaw[] } & Record<string, unknown>>(
+      "/api/v1/hosts",
+      { method: "GET" },
+    );
+    const raws = (resp.hosts || resp.data || []) as BackendHostRaw[];
+    const hosts = raws.map(mapBackendHost);
+    return { ...resp, hosts } as unknown as HostListResponse;
   },
 
-  // Get single host
-  get: (id: string): Promise<HostResponse> =>
-    apiRequest<HostResponse>(`/api/v1/hosts/${id}`),
+  // Get single host — maps backend snake_case fields to frontend camelCase.
+  get: async (id: string): Promise<HostResponse> => {
+    const raw = await apiRequest<Record<string, unknown>>(`/api/v1/hosts/${id}`);
+    return mapBackendHost(raw as BackendHostRaw);
+  },
+
+  // Get per-host aggregate stats (sessions, tunnels, last connected).
+  getStats: (id: string): Promise<HostDetailStats> =>
+    apiRequest<HostDetailStats>(`/api/v1/hosts/${id}/stats`),
 
   // Create host
   create: (data: CreateHostInput | Record<string, unknown>): Promise<HostResponse> => {

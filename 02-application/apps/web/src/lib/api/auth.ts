@@ -198,10 +198,20 @@ export const authApi = {
       body: JSON.stringify({ totp_code }),
     }),
 
-  disable2FA: () =>
+  disable2FA: (totp_code: string) =>
     apiRequest<{ message: string }>("/api/v1/auth/mfa/disable", {
       method: "DELETE",
+      body: JSON.stringify({ totp_code }),
     }),
+
+  regenerateBackupCodes: (totp_code: string) =>
+    apiRequest<{ backup_codes: string[]; message: string }>(
+      "/api/v1/auth/mfa/backup-codes/regenerate",
+      {
+        method: "POST",
+        body: JSON.stringify({ totp_code }),
+      }
+    ),
 
   // ─── WebAuthn (security key) ──────────────────────────────────────────────────
 

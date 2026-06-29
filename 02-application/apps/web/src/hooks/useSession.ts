@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { authApi } from "@/lib/api/auth";
 
 const DEFAULT_ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000;   // 15 minutes
@@ -74,6 +74,15 @@ export function useSession(
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scheduleRefreshRef = useRef<(expiresAt: number) => void>(() => {});
+  const timeNowRef = useRef<number>(0);
+  useEffect(() => {
+    timeNowRef.current = Date.now();
+    const id = setInterval(() => {
+      timeNowRef.current = Date.now();
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -98,7 +107,7 @@ export function useSession(
           expiresAt: newExpiry,
         }));
         expiresAtRef.current = newExpiry;
-        scheduleRefresh(newExpiry);
+        scheduleRefreshRef.current(newExpiry);
       } catch (err) {
         // Refresh token invalid — force logout
         onAuthError?.(err instanceof Error ? err : new Error("Session expired"));
@@ -106,6 +115,10 @@ export function useSession(
       }
     }, delay);
   }, [accessTokenTtlMs, refreshThresholdMs, clearAllTimers, onAuthError]);
+
+  useEffect(() => {
+    scheduleRefreshRef.current = scheduleRefresh;
+  });
 
   const scheduleWarning = useCallback((expiresAt: number) => {
     clearAllTimers();
@@ -134,7 +147,21 @@ export function useSession(
     scheduleRefresh(expiresAt);
   }, [warningBeforeMs, clearAllTimers, scheduleRefresh]);
 
-  const timeRemaining = session.expiresAt ? Math.max(0, session.expiresAt - Date.now()) : 0;
+  const expiresAt = session.expiresAt;
+  // timeRemaining is exposed as a state value updated by the warning interval.
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      if (!expiresAt) {
+        setTimeRemaining(0);
+        return;
+      }
+      const tick = () => setTimeRemaining(Math.max(0, expiresAt - Date.now()));
+      tick();
+      const id = setInterval(tick, 1000);
+      return () => clearInterval(id);
+    });
+  }, [expiresAt]);
 
   // ── Public API ────────────────────────────────────────────────────────────
 
@@ -178,22 +205,23 @@ export function useSession(
 
   // ── Mount: restore session from sessionStorage ──────────────────────────────
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem("ssh_session");
-      if (stored) {
-        const parsed = JSON.parse(stored) as { token: string; expiresAt: number; user: { id: string; email: string; name: string } };
-        if (parsed.expiresAt > Date.now()) {
-          setSession({ isAuthenticated: true, accessToken: parsed.token, expiresAt: parsed.expiresAt, user: parsed.user });
-          expiresAtRef.current = parsed.expiresAt;
-          scheduleWarning(parsed.expiresAt);
-        } else {
-          sessionStorage.removeItem("ssh_session");
+    Promise.resolve().then(() => {
+      try {
+        const stored = sessionStorage.getItem("ssh_session");
+        if (stored) {
+          const parsed = JSON.parse(stored) as { token: string; expiresAt: number; user: { id: string; email: string; name: string } };
+          if (parsed.expiresAt > Date.now()) {
+            setSession({ isAuthenticated: true, accessToken: parsed.token, expiresAt: parsed.expiresAt, user: parsed.user });
+            expiresAtRef.current = parsed.expiresAt;
+          } else {
+            sessionStorage.removeItem("ssh_session");
+          }
         }
+      } catch {
+        // Ignore parse errors
       }
-    } catch {
-      // Ignore parse errors
-    }
-  }, [scheduleWarning]);
+    });
+  }, []);
 
   // ── Persist session to sessionStorage on change ───────────────────────────
   useEffect(() => {

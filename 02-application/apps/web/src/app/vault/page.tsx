@@ -308,11 +308,13 @@ function AddCredentialDialog({
 
   useEffect(() => {
     if (!open) {
-      setName("");
-      setType("password");
-      setData("");
-      setTags("");
-      setExpiresAt("");
+      Promise.resolve().then(() => {
+        setName("");
+        setType("password");
+        setData("");
+        setTags("");
+        setExpiresAt("");
+      });
     }
   }, [open]);
 

@@ -49,7 +49,7 @@ export function SessionTimeoutModal({
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setOpen(showTimeoutWarning);
+    Promise.resolve().then(() => setOpen(showTimeoutWarning));
   }, [showTimeoutWarning]);
 
   const handleStayLoggedIn = () => {

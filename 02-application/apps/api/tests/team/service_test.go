@@ -136,6 +136,43 @@ func TestAddMemberRequest_Structure(t *testing.T) {
 	assert.Equal(t, team.TeamRoleMember, req.Role)
 }
 
+func TestTeamService_AddMember_NilDB(t *testing.T) {
+	ts := team.NewTeamService(nil, nil)
+	teamID := uuid.New()
+	adminID := uuid.New()
+	newUserID := uuid.New()
+	req := &team.AddMemberRequest{UserID: newUserID, Role: team.TeamRoleMember}
+
+	member, err := ts.AddMember(teamID, adminID, req)
+	require.NoError(t, err)
+	require.NotNil(t, member)
+	assert.Equal(t, teamID, member.TeamID)
+	assert.Equal(t, newUserID, member.UserID)
+	assert.Equal(t, adminID, member.AddedBy)
+	assert.Equal(t, team.TeamRoleMember, member.Role)
+	assert.False(t, member.JoinedAt.IsZero())
+}
+
+func TestTeamService_RemoveMember_NilDB(t *testing.T) {
+	ts := team.NewTeamService(nil, nil)
+	teamID := uuid.New()
+	adminID := uuid.New()
+	memberID := uuid.New()
+
+	err := ts.RemoveMember(teamID, adminID, memberID)
+	require.NoError(t, err)
+}
+
+func TestTeamService_UpdateMemberRole_NilDB(t *testing.T) {
+	ts := team.NewTeamService(nil, nil)
+	teamID := uuid.New()
+	adminID := uuid.New()
+	memberID := uuid.New()
+
+	err := ts.UpdateMemberRole(teamID, adminID, memberID, team.TeamRoleAdmin)
+	require.NoError(t, err)
+}
+
 func TestUpdateMemberRequest_Structure(t *testing.T) {
 	req := &team.UpdateMemberRequest{
 		Role: team.TeamRoleAdmin,

@@ -65,6 +65,9 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [quality, setQuality] = useState('high');
   const [viewOnly, setViewOnly] = useState(false);
+  const handleBinaryMessageRef = useRef<(data: ArrayBuffer) => void>(() => {});
+  const renderScreenUpdateRef = useRef<(data: Uint8Array) => void>(() => {});
+  const handleClipboardRef = useRef<(data: Uint8Array) => void>(() => {});
   const [scaleMode, setScaleMode] = useState<'fit' | 'stretch' | 'original'>('fit');
   
   // Framebuffer state
@@ -108,7 +111,7 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
           setConnecting(false);
         }
       } else {
-        handleBinaryMessage(event.data as ArrayBuffer);
+        handleBinaryMessageRef.current(event.data as ArrayBuffer);
       }
     };
 
@@ -134,10 +137,10 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
 
     switch (frameType) {
       case 0x01: // Screen update
-        renderScreenUpdate(payload);
+        renderScreenUpdateRef.current(payload);
         break;
       case 0x05: // Clipboard
-        handleClipboard(payload);
+        handleClipboardRef.current(payload);
         break;
       case 0xFF: // Error
         setError(new TextDecoder().decode(payload));
@@ -183,6 +186,14 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
     navigator.clipboard.writeText(text).catch(console.error);
   }, []);
 
+  useEffect(() => {
+    handleBinaryMessageRef.current = handleBinaryMessage;
+  });
+  useEffect(() => {
+    renderScreenUpdateRef.current = renderScreenUpdate;
+    handleClipboardRef.current = handleClipboard;
+  });
+
   const sendInput = useCallback((inputData: Uint8Array) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     if (viewOnly) return;
@@ -216,14 +227,14 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
     sendInput(data);
   }, [sendInput]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<Element>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = fbRef.current.width / rect.width;
     const scaleY = fbRef.current.height / rect.height;
-    
+
     const x = Math.floor((e.clientX - rect.left) * scaleX);
     const y = Math.floor((e.clientY - rect.top) * scaleY);
 
@@ -234,8 +245,8 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
     e.preventDefault();
     const buttonMap: Record<number, number> = { 0: 1, 1: 4, 2: 2 };
     const buttonMask = buttonMap[e.button] || 0;
-    handleMouseMove(e as any);
-    
+    handleMouseMove(e);
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -247,7 +258,7 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
   }, [handleMouseMove, sendPointerEvent]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    handleMouseMove(e as any);
+    handleMouseMove(e);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -383,7 +394,7 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
           
           <select
             value={scaleMode}
-            onChange={(e) => setScaleMode(e.target.value as any)}
+            onChange={(e) => setScaleMode(e.target.value as 'fit' | 'stretch' | 'original')}
             className="text-sm border rounded p-1"
           >
             <option value="fit">Fit</option>
@@ -423,11 +434,11 @@ export function VNCViewer({ sessionId, width = 1024, height = 768, onDisconnect 
 }
 
 // VNC Connect Form Component
-function VNCConnectForm({ 
-  onConnect, 
-  connecting 
-}: { 
-  onConnect: (params: any) => void;
+function VNCConnectForm({
+  onConnect,
+  connecting
+}: {
+  onConnect: (params: { hostname: string; port: number; password: string }) => void;
   connecting: boolean;
 }) {
   const [hostname, setHostname] = useState('');
