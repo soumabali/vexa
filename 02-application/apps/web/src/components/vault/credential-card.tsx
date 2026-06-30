@@ -11,18 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Lock,
-  Star,
-  Copy,
-  Eye,
-  EyeOff,
-  ExternalLink,
-  MoreHorizontal,
-  Trash2,
-  Edit,
-  Share2,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import type { Credential, CredentialType } from "./credential-list";
 
 interface CredentialCardProps {
@@ -34,12 +23,20 @@ interface CredentialCardProps {
   viewMode: "grid" | "list";
 }
 
-const typeColors: Record<CredentialType, string> = {
-  "ssh-key": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  password: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  "api-key": "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  certificate: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  note: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+const typeTint: Record<CredentialType, string> = {
+  "ssh-key": "bg-tertiary-container text-on-tertiary-container",
+  password: "bg-primary-container text-on-primary-container",
+  "api-key": "bg-secondary-container text-on-secondary-container",
+  certificate: "bg-surface-container-high text-on-surface-variant",
+  note: "bg-surface-container-high text-on-surface-variant",
+};
+
+const typeIcon: Record<CredentialType, string> = {
+  "ssh-key": "key",
+  password: "password",
+  "api-key": "code",
+  certificate: "verified",
+  note: "note",
 };
 
 const typeLabels: Record<CredentialType, string> = {
@@ -47,42 +44,43 @@ const typeLabels: Record<CredentialType, string> = {
   password: "Password",
   "api-key": "API Key",
   certificate: "Certificate",
-  note: "Secure Note",
+  note: "Note",
 };
 
 export function CredentialCard({
   credential,
-  onUpdate,
+  onUpdate: _onUpdate,
   onDelete,
   onFavorite,
   onClick,
   viewMode,
 }: CredentialCardProps) {
-  const [showSecret, setShowSecret] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    // Could show toast here
+  const handleCopy = (text: string) => {
+    navigator.clipboard?.writeText(text);
   };
 
   if (viewMode === "list") {
     return (
       <Card
-        className="cursor-pointer hover:shadow-md transition-shadow"
+        className="bg-surface-container border-outline-variant hover:border-primary cursor-pointer transition-all duration-200"
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <CardContent className="p-4 flex items-center gap-4">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${typeTint[credential.type]}`}>
+            <MaterialIcon name={typeIcon[credential.type]} className="text-[24px]" />
+          </div>
           <div className="flex items-center gap-3 flex-1">
-            <Badge className={typeColors[credential.type]}>
+            <Badge className={`${typeTint[credential.type]} border-0`}>
               {typeLabels[credential.type]}
             </Badge>
             <div className="flex-1">
-              <h3 className="font-medium">{credential.name}</h3>
+              <h3 className="font-medium text-on-surface">{credential.name}</h3>
               {credential.host && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-on-surface-variant">
                   {credential.username ? `${credential.username}@` : ""}
                   {credential.host}
                   {credential.port ? `:${credential.port}` : ""}
@@ -93,7 +91,7 @@ export function CredentialCard({
 
           <div className="flex items-center gap-2">
             {credential.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
+              <Badge key={tag} variant="outline" className="text-xs border-outline-variant text-on-surface-variant">
                 {tag}
               </Badge>
             ))}
@@ -103,36 +101,39 @@ export function CredentialCard({
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0"
               onClick={(e) => {
                 e.stopPropagation();
                 onFavorite(credential.id);
               }}
             >
-              <Star
-                className={`h-4 w-4 ${
-                  credential.isFavorite ? "fill-yellow-400 text-yellow-400" : ""
-                }`}
+              <MaterialIcon
+                name={credential.isFavorite ? "star" : "star_border"}
+                size="sm"
+                fill={credential.isFavorite}
+                className={credential.isFavorite ? "text-warning" : "text-on-surface-variant"}
               />
             </Button>
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0"
               onClick={(e) => {
                 e.stopPropagation();
-                // Share dialog
               }}
             >
-              <Share2 className="h-4 w-4" />
+              <MaterialIcon name="share" size="sm" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0 hover:bg-error/10"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(credential.id);
               }}
             >
-              <Trash2 className="h-4 w-4 text-destructive" />
+              <MaterialIcon name="delete" size="sm" className="text-error" />
             </Button>
           </div>
         </CardContent>
@@ -147,7 +148,7 @@ export function CredentialCard({
         whileTap={{ scale: 0.98 }}
       >
         <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 relative overflow-hidden"
+          className="glass-card cursor-pointer transition-all duration-200 relative overflow-hidden"
           onClick={onClick}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -155,25 +156,28 @@ export function CredentialCard({
           {/* Favorite indicator */}
           {credential.isFavorite && (
             <div className="absolute top-2 right-2">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <MaterialIcon name="star" size="sm" fill className="text-warning" />
             </div>
           )}
 
-          <CardContent className="p-4 space-y-3">
+          <CardContent className="p-5 space-y-3">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <Badge className={typeColors[credential.type]}>
+                <Badge className={`${typeTint[credential.type]} border-0`}>
                   {typeLabels[credential.type]}
                 </Badge>
-                <h3 className="font-semibold text-lg truncate">{credential.name}</h3>
+                <h3 className="text-body-lg font-bold text-on-surface truncate">{credential.name}</h3>
+              </div>
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${typeTint[credential.type]}`}>
+                <MaterialIcon name={typeIcon[credential.type]} className="text-[24px]" />
               </div>
             </div>
 
             {/* Host info */}
             {credential.host && (
-              <div className="text-sm text-muted-foreground">
-                <p>
+              <div className="text-body-md text-on-surface-variant">
+                <p className="font-mono-code">
                   {credential.username ? `${credential.username}@` : ""}
                   {credential.host}
                   {credential.port ? `:${credential.port}` : ""}
@@ -185,12 +189,12 @@ export function CredentialCard({
             {credential.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {credential.tags.slice(0, 3).map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
+                  <Badge key={tag} variant="outline" className="text-xs border-outline-variant text-on-surface-variant">
                     {tag}
                   </Badge>
                 ))}
                 {credential.tags.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs border-outline-variant text-on-surface-variant">
                     +{credential.tags.length - 3}
                   </Badge>
                 )}
@@ -198,24 +202,24 @@ export function CredentialCard({
             )}
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center justify-between pt-3 border-t border-outline-variant">
               <div className="flex items-center gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         onFavorite(credential.id);
                       }}
                     >
-                      <Star
-                        className={`h-4 w-4 ${
-                          credential.isFavorite
-                            ? "fill-yellow-400 text-yellow-400"
-                            : ""
-                        }`}
+                      <MaterialIcon
+                        name={credential.isFavorite ? "star" : "star_border"}
+                        size="sm"
+                        fill={credential.isFavorite}
+                        className={credential.isFavorite ? "text-warning" : "text-on-surface-variant"}
                       />
                     </Button>
                   </TooltipTrigger>
@@ -229,33 +233,33 @@ export function CredentialCard({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Open share dialog
                       }}
                     >
-                      <Share2 className="h-4 w-4" />
+                      <MaterialIcon name="share" size="sm" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Share</TooltipContent>
                 </Tooltip>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className={`flex items-center gap-1 transition-opacity ${isHovered ? "opacity-100" : "opacity-0"}`}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Copy connection string
                         handleCopy(
                           `${credential.username}@${credential.host}:${credential.port}`
                         );
                       }}
                     >
-                      <Copy className="h-4 w-4" />
+                      <MaterialIcon name="content_copy" size="sm" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Copy connection</TooltipContent>
@@ -266,12 +270,13 @@ export function CredentialCard({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0 hover:bg-error/10"
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete(credential.id);
                       }}
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <MaterialIcon name="delete" size="sm" className="text-error" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Delete</TooltipContent>
