@@ -25,14 +25,7 @@ import {
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { ErrorDisplay } from "@/components/auth/ErrorDisplay";
 import { cn } from "@/lib/utils";
-import {
-  ServerIcon,
-  MonitorIcon,
-  PlusIcon,
-  XIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface HostFormProps {
   host?: HostResponse;
@@ -41,9 +34,9 @@ interface HostFormProps {
 }
 
 const hostTypes = [
-  { value: "ssh", label: "SSH", icon: ServerIcon },
-  { value: "rdp", label: "RDP", icon: MonitorIcon },
-  { value: "vnc", label: "VNC", icon: MonitorIcon },
+  { value: "ssh", label: "SSH", icon: "dns" },
+  { value: "rdp", label: "RDP", icon: "computer" },
+  { value: "vnc", label: "VNC", icon: "computer" },
 ] as const;
 
 const colorPresets = [
@@ -52,12 +45,12 @@ const colorPresets = [
 ];
 
 const tagColors = [
-  "bg-red-100 text-red-800 border-red-200",
-  "bg-orange-100 text-orange-800 border-orange-200",
-  "bg-yellow-100 text-yellow-800 border-yellow-200",
-  "bg-green-100 text-green-800 border-green-200",
-  "bg-blue-100 text-blue-800 border-blue-200",
-  "bg-purple-100 text-purple-800 border-purple-200",
+  "bg-error/10 text-error border-error/20",
+  "bg-tertiary-container text-on-tertiary-container border-outline-variant",
+  "bg-primary-container text-on-primary-container border-outline-variant",
+  "bg-secondary-container text-on-secondary-container border-outline-variant",
+  "bg-primary-container text-on-primary-container border-outline-variant",
+  "bg-tertiary-container text-on-tertiary-container border-outline-variant",
 ];
 
 export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
@@ -173,9 +166,9 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
 
       {/* Host Type Selector */}
       <div className="space-y-2">
-        <Label>Connection Type</Label>
+        <Label className="text-label-md text-on-surface-variant">Connection Type</Label>
         <div className="grid grid-cols-3 gap-2">
-          {hostTypes.map(({ value, label, icon: Icon }) => (
+          {hostTypes.map(({ value, label, icon }) => (
             <button
               key={value}
               type="button"
@@ -185,14 +178,14 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                 setValue("hostType", value as HostType);
               }}
               className={cn(
-                "flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all",
+                "flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all bg-surface-container-low",
                 selectedHostType === value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
+                  ? "border-primary bg-primary-container text-on-primary-container"
+                  : "border-outline-variant text-on-surface-variant hover:border-primary"
               )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-sm font-medium">{label}</span>
+              <MaterialIcon name={icon} size="md" />
+              <span className="text-label-md">{label}</span>
             </button>
           ))}
         </div>
@@ -201,62 +194,63 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
       {/* Basic Info */}
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 space-y-2">
-          <Label htmlFor="name">Name *</Label>
+          <Label htmlFor="name" className="text-label-md text-on-surface-variant">Name *</Label>
           <Input
             id="name"
             placeholder="Production Server"
             {...register("name")}
-            className={errors.name ? "border-destructive" : ""}
+            className={cn("bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary", errors.name && "border-error")}
           />
           {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message as string}</p>
+            <p className="text-sm text-error">{errors.name.message as string}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="host">Host / IP *</Label>
+          <Label htmlFor="host" className="text-label-md text-on-surface-variant">Host / IP *</Label>
           <Input
             id="host"
             placeholder="192.168.1.100"
             {...register("host")}
-            className={errors.host ? "border-destructive" : ""}
+            className={cn("bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary", errors.host && "border-error")}
           />
           {errors.host && (
-            <p className="text-sm text-destructive">{errors.host.message as string}</p>
+            <p className="text-sm text-error">{errors.host.message as string}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="port">Port *</Label>
+          <Label htmlFor="port" className="text-label-md text-on-surface-variant">Port *</Label>
           <Input
             id="port"
             type="number"
             placeholder={selectedHostType === "ssh" ? "22" : selectedHostType === "rdp" ? "3389" : "5900"}
             {...register("port", { valueAsNumber: true })}
-            className={errors.port ? "border-destructive" : ""}
+            className={cn("bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary", errors.port && "border-error")}
           />
           {errors.port && (
-            <p className="text-sm text-destructive">{errors.port.message as string}</p>
+            <p className="text-sm text-error">{errors.port.message as string}</p>
           )}
         </div>
 
         <div className="col-span-2 space-y-2">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username" className="text-label-md text-on-surface-variant">Username</Label>
           <Input
             id="username"
             placeholder="root"
             {...register("username")}
+            className="bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
           />
         </div>
 
         <div className="col-span-2 space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description" className="text-label-md text-on-surface-variant">Description</Label>
           <textarea
             id="description"
             placeholder="Brief description of this host..."
             rows={2}
             className={cn(
-              "flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              "flex w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-md placeholder:text-on-surface-variant focus-visible:outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             )}
             {...register("description")}
           />
@@ -265,10 +259,10 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
 
       {/* Color Picker */}
       <div className="space-y-2">
-        <Label>Color Label</Label>
+        <Label className="text-label-md text-on-surface-variant">Color Label</Label>
         <div className="flex items-center gap-2">
           <div
-            className="h-6 w-6 rounded border"
+            className="h-6 w-6 rounded border border-outline-variant"
             style={{ backgroundColor: selectedColor }}
           />
           <div className="flex gap-1">
@@ -282,7 +276,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                 }}
                 className={cn(
                   "h-5 w-5 rounded border-2 transition-all",
-                  selectedColor === color ? "border-primary scale-110" : "border-transparent"
+                  selectedColor === color ? "border-primary scale-110" : "border-outline-variant"
                 )}
                 style={{ backgroundColor: color }}
               />
@@ -295,14 +289,14 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
               setSelectedColor(e.target.value);
               setValue("color", e.target.value);
             }}
-            className="h-8 w-16 cursor-pointer"
+            className="h-8 w-16 cursor-pointer bg-surface-container-low border border-outline-variant rounded-lg"
           />
         </div>
       </div>
 
       {/* Tags */}
       <div className="space-y-2">
-        <Label>Tags</Label>
+        <Label className="text-label-md text-on-surface-variant">Tags</Label>
         <div className="flex flex-wrap gap-2 mb-2">
           {tags.map((tag, i) => (
             <Badge key={tag} className={tagColors[i % tagColors.length]}>
@@ -310,9 +304,9 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
               <button
                 type="button"
                 onClick={() => handleRemoveTag(tag)}
-                className="ml-1 hover:text-destructive"
+                className="ml-1 hover:text-error"
               >
-                <XIcon className="h-3 w-3" />
+                <MaterialIcon name="close" size="sm" />
               </button>
             </Badge>
           ))}
@@ -323,26 +317,27 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             placeholder="Add tag and press Enter"
-            className="flex-1"
+            className="flex-1 bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
           />
-          <Button type="button" variant="outline" onClick={handleAddTag}>
-            <PlusIcon className="h-4 w-4" />
+          <Button type="button" variant="outline" onClick={handleAddTag} className="border border-outline-variant text-on-surface">
+            <MaterialIcon name="add" size="sm" />
           </Button>
         </div>
       </div>
 
       {/* SSH Options */}
       {selectedHostType === "ssh" && (
-        <div className="space-y-4 rounded-lg border p-4">
+        <div className="space-y-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-semibold">SSH Options</Label>
+            <Label className="text-label-md text-on-surface-variant">SSH Options</Label>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-on-surface-variant"
             >
-              {showAdvanced ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+              {showAdvanced ? <MaterialIcon name="expand_less" size="sm" /> : <MaterialIcon name="expand_more" size="sm" />}
               {showAdvanced ? "Hide" : "Show"} Options
             </Button>
           </div>
@@ -351,19 +346,21 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ssh.identityFile">Identity File</Label>
+                  <Label htmlFor="ssh.identityFile" className="text-label-md text-on-surface-variant">Identity File</Label>
                   <Input
                     id="ssh.identityFile"
                     placeholder="~/.ssh/id_ed25519"
                     {...register("sshOptions.identityFile")}
+                    className="bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ssh.jumpHost">Jump Host</Label>
+                  <Label htmlFor="ssh.jumpHost" className="text-label-md text-on-surface-variant">Jump Host</Label>
                   <Input
                     id="ssh.jumpHost"
                     placeholder="bastion@example.com"
                     {...register("sshOptions.jumpHost")}
+                    className="bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
                   />
                 </div>
               </div>
@@ -376,7 +373,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                       setValue("sshOptions.keepAlive", v as boolean)
                     }
                   />
-                  <Label htmlFor="ssh.keepAlive" className="text-sm">Keep Alive</Label>
+                  <Label htmlFor="ssh.keepAlive" className="text-label-md text-on-surface-variant">Keep Alive</Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch
@@ -386,7 +383,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                       setValue("sshOptions.compress", v as boolean)
                     }
                   />
-                  <Label htmlFor="ssh.compress" className="text-sm">Compress</Label>
+                  <Label htmlFor="ssh.compress" className="text-label-md text-on-surface-variant">Compress</Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch
@@ -396,7 +393,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                       setValue("sshOptions.forwardingAgent", v as boolean)
                     }
                   />
-                  <Label htmlFor="ssh.forwardingAgent" className="text-sm">Forward Agent</Label>
+                  <Label htmlFor="ssh.forwardingAgent" className="text-label-md text-on-surface-variant">Forward Agent</Label>
                 </div>
               </div>
             </div>
@@ -406,19 +403,20 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
 
       {/* RDP Options */}
       {selectedHostType === "rdp" && (
-        <div className="space-y-4 rounded-lg border p-4">
-          <Label className="text-sm font-semibold">RDP Options</Label>
+        <div className="space-y-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
+          <Label className="text-label-md text-on-surface-variant">RDP Options</Label>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rdp.domain">Domain</Label>
+              <Label htmlFor="rdp.domain" className="text-label-md text-on-surface-variant">Domain</Label>
               <Input
                 id="rdp.domain"
                 placeholder="WORKGROUP"
                 {...register("rdpOptions.domain")}
+                className="bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
               />
             </div>
             <div className="space-y-2">
-              <Label>Color Depth</Label>
+              <Label className="text-label-md text-on-surface-variant">Color Depth</Label>
               <Select
                 defaultValue={(host?.rdpOptions?.colorDepth as string) || "32"}
                 onValueChange={(v) => setValue("rdpOptions.colorDepth", v as "16" | "24" | "32")}
@@ -436,21 +434,23 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rdp.width">Width</Label>
+              <Label htmlFor="rdp.width" className="text-label-md text-on-surface-variant">Width</Label>
               <Input
                 id="rdp.width"
                 type="number"
                 defaultValue={host?.rdpOptions?.width as number ?? 1920}
                 {...register("rdpOptions.width", { valueAsNumber: true })}
+                className="bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rdp.height">Height</Label>
+              <Label htmlFor="rdp.height" className="text-label-md text-on-surface-variant">Height</Label>
               <Input
                 id="rdp.height"
                 type="number"
                 defaultValue={host?.rdpOptions?.height as number ?? 1080}
                 {...register("rdpOptions.height", { valueAsNumber: true })}
+                className="bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary"
               />
             </div>
           </div>
@@ -469,7 +469,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                 defaultChecked={(host?.rdpOptions?.driveRedirect as boolean) ?? false}
                 onCheckedChange={(v) => setValue("rdpOptions.driveRedirect", v)}
               />
-              <Label htmlFor="rdp.driveRedirect" className="text-sm">Drive Redirect</Label>
+              <Label htmlFor="rdp.driveRedirect" className="text-label-md text-on-surface-variant">Drive Redirect</Label>
             </div>
           </div>
         </div>
@@ -477,11 +477,11 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
 
       {/* VNC Options */}
       {selectedHostType === "vnc" && (
-        <div className="space-y-4 rounded-lg border p-4">
-          <Label className="text-sm font-semibold">VNC Options</Label>
+        <div className="space-y-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
+          <Label className="text-label-md text-on-surface-variant">VNC Options</Label>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Quality</Label>
+              <Label className="text-label-md text-on-surface-variant">Quality</Label>
               <Select
                 defaultValue={(host?.vncOptions?.quality as string) || "auto"}
                 onValueChange={(v) =>
@@ -500,7 +500,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Compression</Label>
+              <Label className="text-label-md text-on-surface-variant">Compression</Label>
               <Select
                 defaultValue={(host?.vncOptions?.compression as string) || "auto"}
                 onValueChange={(v) =>
@@ -526,7 +526,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                 defaultChecked={(host?.vncOptions?.viewOnly as boolean) ?? false}
                 onCheckedChange={(v) => setValue("vncOptions.viewOnly", v)}
               />
-              <Label htmlFor="vnc.viewOnly" className="text-sm">View Only</Label>
+              <Label htmlFor="vnc.viewOnly" className="text-label-md text-on-surface-variant">View Only</Label>
             </div>
             <div className="flex items-center gap-2">
               <Switch
@@ -534,7 +534,7 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
                 defaultChecked={(host?.vncOptions?.shared as boolean) ?? true}
                 onCheckedChange={(v) => setValue("vncOptions.shared", v)}
               />
-              <Label htmlFor="vnc.shared" className="text-sm">Shared Mode</Label>
+              <Label htmlFor="vnc.shared" className="text-label-md text-on-surface-variant">Shared Mode</Label>
             </div>
           </div>
         </div>
@@ -547,17 +547,17 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
           checked={watchedValues.favorite ?? false}
           onCheckedChange={(v) => setValue("favorite", v)}
         />
-        <Label htmlFor="favorite" className="text-sm">Add to favorites</Label>
+        <Label htmlFor="favorite" className="text-label-md text-on-surface-variant">Add to favorites</Label>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 border-t pt-4">
+      <div className="flex items-center justify-end gap-3 border-t border-outline-variant pt-4">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} className="border border-outline-variant text-on-surface rounded-lg">
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="bg-primary text-on-primary hover:opacity-90 rounded-lg">
           {isLoading ? (
             <>
               <LoadingSpinner className="h-4 w-4" />

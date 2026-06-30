@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
-import { X, Plus, GripVertical } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/material-icon';
 import Terminal, { TerminalProps, TerminalStatus } from './terminal';
 
 export interface Tab {
@@ -176,9 +176,9 @@ export default function TerminalTabs({
   const activeTab = tabs.find((t) => t.active);
 
   return (
-    <div className="terminal-tabs flex flex-col h-full bg-[#1e1e1e] rounded-lg overflow-hidden">
+    <div className="terminal-tabs flex flex-col h-full bg-black rounded-lg overflow-hidden">
       {/* Tab bar */}
-      <div className="tab-bar flex items-center bg-[#2d2d2d] border-b border-[#3c3c3c] overflow-x-auto">
+      <div className="tab-bar h-14 flex items-center bg-surface-container border-b border-outline-variant overflow-x-auto">
         {tabs.map((tab) => (
           <div
             key={tab.id}
@@ -187,14 +187,14 @@ export default function TerminalTabs({
             onDragOver={(e) => handleDragOver(e, tab.id)}
             onDrop={handleDrop}
             onClick={() => activateTab(tab.id)}
-            className={`tab flex items-center gap-1.5 px-3 py-2 min-w-[120px] max-w-[200px] cursor-pointer select-none text-sm transition-colors ${
+            className={`tab flex items-center gap-1.5 px-4 h-full min-w-[120px] max-w-[200px] cursor-pointer select-none text-sm transition-colors border-b-2 ${
               tab.active
-                ? 'bg-[#1e1e1e] text-white'
-                : 'bg-[#2d2d2d] text-gray-400 hover:bg-[#3c3c3c] hover:text-gray-200'
+                ? 'border-primary bg-surface-container-high text-on-surface'
+                : 'border-transparent text-on-surface-variant hover:bg-surface-variant'
             } ${draggedTab === tab.id ? 'opacity-50' : ''}`}
           >
-            <GripVertical className="w-3 h-3 text-gray-500 cursor-grab" />
-            
+            <MaterialIcon name="terminal" size="sm" className="text-on-surface-variant" />
+
             {/* Status indicator */}
             <span
               className={`w-2 h-2 rounded-full flex-shrink-0 ${
@@ -215,19 +215,19 @@ export default function TerminalTabs({
                 e.stopPropagation();
                 closeTab(tab.id);
               }}
-              className="p-0.5 rounded hover:bg-[#505050] text-gray-400 hover:text-white transition-colors"
+              className="p-0.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
             >
-              <X className="w-3.5 h-3.5" />
+              <MaterialIcon name="close" size="sm" />
             </button>
           </div>
         ))}
 
         <button
           onClick={addTab}
-          className="p-2 text-gray-400 hover:text-white hover:bg-[#3c3c3c] transition-colors"
+          className="w-8 h-8 ml-2 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-variant transition-colors"
           title="New tab"
         >
-          <Plus className="w-4 h-4" />
+          <MaterialIcon name="add" size="sm" />
         </button>
       </div>
 

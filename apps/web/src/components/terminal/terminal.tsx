@@ -290,10 +290,10 @@ export default function Terminal({
   }, []);
 
   return (
-    <div className={`terminal-container flex flex-col h-full ${className || ''}`}>
+    <div className={`terminal-container flex flex-col h-full bg-black p-4 font-mono-code ${className || ''}`}>
       <div
         ref={containerRef}
-        className="terminal-viewport flex-1 overflow-hidden"
+        className="terminal-viewport flex-1 overflow-hidden text-mono-code"
         style={{ backgroundColor: theme.background }}
       />
     </div>

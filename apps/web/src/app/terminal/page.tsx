@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Plus, X, TerminalSquare, Power, AlertCircle } from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -224,19 +224,20 @@ export default function TerminalPage() {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-7rem)] bg-background flex flex-col border border-border rounded-lg overflow-hidden">
-        <div className="tab-bar flex items-center gap-1 px-4 py-2 border-b border-border bg-surface-container shrink-0">
+      <div className="h-[calc(100vh-7rem)] bg-background flex flex-col border border-outline-variant rounded-lg overflow-hidden">
+        {/* Tab bar */}
+        <div className="tab-bar h-14 flex items-center gap-1 px-4 border-b border-outline-variant bg-surface-container shrink-0">
           {tabs.map((tab) => (
             <div
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`group flex items-center gap-2 px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors ${
+              className={`group flex items-center gap-2 px-4 h-full text-sm cursor-pointer transition-colors border-b-2 ${
                 activeTab === tab.id
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-surface-container-high hover:text-foreground"
+                  ? "border-primary bg-surface-container-high text-on-surface"
+                  : "border-transparent text-on-surface-variant hover:bg-surface-variant"
               }`}
             >
-              <TerminalSquare className="h-3.5 w-3.5" />
+              <MaterialIcon name="terminal" size="sm" className="text-on-surface-variant" />
               <span>{tab.hostName ?? tab.label}</span>
               {tabs.length > 1 && (
                 <button
@@ -245,34 +246,26 @@ export default function TerminalPage() {
                     e.stopPropagation();
                     closeTab(tab.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-destructive/10 rounded"
+                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <MaterialIcon name="close" size="sm" />
                 </button>
               )}
             </div>
           ))}
-          <Button variant="ghost" size="icon" className="h-7 w-7 ml-1" title="New tab" onClick={addTab}>
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+          <button
+            type="button"
+            className="w-8 h-8 ml-1 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-variant transition-colors"
+            title="New tab"
+            onClick={addTab}
+          >
+            <MaterialIcon name="add" size="sm" />
+          </button>
 
-        <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs border-b border-border bg-surface-container shrink-0">
-          <div className="flex items-center gap-2">
-            <span className={`inline-block h-2 w-2 rounded-full ${statusColor}`} />
-            <span className="text-muted-foreground capitalize">
-              {activeSession?.status ?? "idle"}
-            </span>
-            {activeSession?.error && (
-              <span className="text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {activeSession.error}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+          {/* Right side: host dropdown + connect */}
+          <div className="ml-auto flex items-center gap-2">
             <Select value={selectedHost} onValueChange={setSelectedHost}>
-              <SelectTrigger className="w-48 text-xs h-7">
+              <SelectTrigger className="w-48 text-xs h-8 bg-surface-container-highest border-outline-variant text-on-surface">
                 <SelectValue placeholder="Select host" />
               </SelectTrigger>
               <SelectContent>
@@ -285,19 +278,35 @@ export default function TerminalPage() {
             </Select>
             <Button
               size="sm"
-              className="h-7 text-xs"
+              className="h-8 text-xs bg-primary-container text-on-primary-container hover:bg-primary-container/90"
               disabled={!selectedHost || activeSession?.status === "connecting"}
               onClick={() => selectedHost && connectToHost(selectedHost)}
             >
-              <Power className="h-3.5 w-3.5 mr-1" />
+              <MaterialIcon name="power" size="sm" className="mr-1" />
               Connect
             </Button>
           </div>
         </div>
 
-        <Card className="flex-1 rounded-none border-0">
+        {/* Status bar */}
+        <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs border-b border-outline-variant bg-surface-container shrink-0">
+          <div className="flex items-center gap-2">
+            <span className={`inline-block h-2 w-2 rounded-full ${statusColor}`} />
+            <span className="text-on-surface-variant capitalize">
+              {activeSession?.status ?? "idle"}
+            </span>
+            {activeSession?.error && (
+              <span className="text-destructive flex items-center gap-1">
+                <MaterialIcon name="error" size="sm" />
+                {activeSession.error}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <Card className="flex-1 rounded-none border-0 bg-black">
           <CardContent className="p-0 h-full">
-            <div ref={terminalRef} className="h-full w-full bg-black" />
+            <div ref={terminalRef} className="h-full w-full bg-black p-4 font-mono-code" />
           </CardContent>
         </Card>
       </div>

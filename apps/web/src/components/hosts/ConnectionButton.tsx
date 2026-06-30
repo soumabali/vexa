@@ -5,7 +5,8 @@ import { hostsApi } from "@/lib/api/hosts";
 import { HostResponse } from "@/lib/validations/hosts";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
-import { TerminalIcon, LoaderIcon } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface ConnectionButtonProps {
   host: HostResponse;
@@ -51,7 +52,7 @@ export function ConnectionButton({
         size={size}
         onClick={handleConnect}
         disabled={isConnecting}
-        className={className}
+        className={`rounded-lg ${isConnecting ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       >
         {isConnecting ? (
           <>
@@ -60,11 +61,11 @@ export function ConnectionButton({
           </>
         ) : showLabel ? (
           <>
-            <TerminalIcon className="h-4 w-4 mr-1" />
+            <MaterialIcon name="terminal" className="h-4 w-4 mr-1" size="sm" />
             Connect
           </>
         ) : (
-          <TerminalIcon className="h-4 w-4" />
+          <MaterialIcon name="terminal" className="h-4 w-4" size="sm" />
         )}
       </Button>
       {error && (

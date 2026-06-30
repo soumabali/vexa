@@ -17,15 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { ErrorDisplay } from "@/components/auth/ErrorDisplay";
-import {
-  UploadIcon,
-  DownloadIcon,
-  FileJsonIcon,
-  AlertTriangleIcon,
-  CheckIcon,
-  XIcon,
-  ClipboardIcon,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface HostImportExportProps {
   mode: "import" | "export";
@@ -136,16 +128,16 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
   if (mode === "export") {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3 rounded-lg border bg-accent/50 p-4">
-          <FileJsonIcon className="h-8 w-8 text-muted-foreground" />
+        <div className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-4">
+          <MaterialIcon name="description" size="xl" className="text-on-surface-variant" />
           <div>
-            <p className="font-medium">Export all hosts to JSON</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-headline-sm text-on-surface">Export all hosts to JSON</p>
+            <p className="text-body-md text-on-surface-variant">
               Downloads a JSON file containing all your hosts with connection details
             </p>
           </div>
         </div>
-        <Button onClick={handleExportAll} disabled={isLoading} className="w-full">
+        <Button onClick={handleExportAll} disabled={isLoading} className="w-full border border-outline-variant text-on-surface">
           {isLoading ? (
             <>
               <LoadingSpinner className="h-4 w-4 mr-2" />
@@ -153,7 +145,7 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
             </>
           ) : (
             <>
-              <DownloadIcon className="h-4 w-4 mr-2" />
+              <MaterialIcon name="file_export" size="sm" className="mr-2" />
               Export All Hosts
             </>
           )}
@@ -168,13 +160,13 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
     <div className="space-y-4">
       {/* Upload method */}
       <div className="space-y-3">
-        <Label>Import Method</Label>
+        <Label className="text-label-md text-on-surface">Import Method</Label>
         <div className="flex gap-3">
           <label
-            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors hover:border-primary hover:bg-primary/5"
+            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-outline-variant p-4 transition-colors hover:border-outline hover:bg-surface-container-low"
           >
-            <UploadIcon className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm font-medium">Upload File</span>
+            <MaterialIcon name="upload" className="text-on-surface-variant" />
+            <span className="text-label-md text-on-surface">Upload File</span>
             <input
               type="file"
               accept=".json"
@@ -187,13 +179,13 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
 
       {/* Or paste JSON */}
       <div className="space-y-2">
-        <Label htmlFor="paste-json">Or paste JSON directly</Label>
+        <Label htmlFor="paste-json" className="text-label-md text-on-surface">Or paste JSON directly</Label>
         <textarea
           id="paste-json"
           onChange={handlePasteJSON}
           placeholder='[{"name": "Server 1", "hostType": "ssh", "host": "192.168.1.1", "port": 22}]'
           rows={5}
-          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="w-full rounded-md border border-outline-variant bg-surface-container px-3 py-2 text-body-md font-mono text-on-surface placeholder:text-on-surface-variant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
         />
       </div>
 
@@ -201,11 +193,11 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
       {parsedHosts.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>
+            <Label className="text-label-md text-on-surface">
               Preview ({parsedHosts.length} host{parsedHosts.length !== 1 ? "s" : ""})
             </Label>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge variant="default" className="bg-emerald-500">
+            <div className="flex items-center gap-2 text-label-md">
+              <Badge variant="default" className="bg-primary-container text-on-primary-container">
                 {parsedHosts.filter((h) => h.valid).length} valid
               </Badge>
               {parsedHosts.filter((h) => !h.valid).length > 0 && (
@@ -216,32 +208,32 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
             </div>
           </div>
 
-          <div className="max-h-[200px] overflow-y-auto rounded-md border">
+          <div className="max-h-[200px] overflow-y-auto rounded-md border border-outline-variant">
             <table className="w-full text-xs">
-              <thead className="bg-muted sticky top-0">
+              <thead className="bg-surface-container-low sticky top-0">
                 <tr>
-                  <th className="px-2 py-1.5 text-left font-medium">Status</th>
-                  <th className="px-2 py-1.5 text-left font-medium">Name</th>
-                  <th className="px-2 py-1.5 text-left font-medium">Type</th>
-                  <th className="px-2 py-1.5 text-left font-medium">Host</th>
+                  <th className="px-2 py-1.5 text-left text-label-md text-on-surface">Status</th>
+                  <th className="px-2 py-1.5 text-left text-label-md text-on-surface">Name</th>
+                  <th className="px-2 py-1.5 text-left text-label-md text-on-surface">Type</th>
+                  <th className="px-2 py-1.5 text-left text-label-md text-on-surface">Host</th>
                 </tr>
               </thead>
               <tbody>
                 {parsedHosts.map((h, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-2 py-1.5">
+                  <tr key={i} className="border-t border-outline-variant">
+                    <td className="px-2 py-1.5 text-on-surface">
                       {h.valid ? (
-                        <CheckIcon className="h-4 w-4 text-emerald-500" />
+                        <MaterialIcon name="check" size="sm" className="text-primary" />
                       ) : (
                         <div className="flex items-center gap-1">
-                          <XIcon className="h-4 w-4 text-red-500" />
-                          <span className="text-red-500">{h.errors[0]}</span>
+                          <MaterialIcon name="close" size="sm" className="text-error" />
+                          <span className="text-error">{h.errors[0]}</span>
                         </div>
                       )}
                     </td>
-                    <td className="px-2 py-1.5">{String((h.original as Record<string, unknown>)?.name || "-")}</td>
-                    <td className="px-2 py-1.5">{String((h.original as Record<string, unknown>)?.hostType || "-")}</td>
-                    <td className="px-2 py-1.5">{String((h.original as Record<string, unknown>)?.host || "-")}</td>
+                    <td className="px-2 py-1.5 text-on-surface">{String((h.original as Record<string, unknown>)?.name || "-")}</td>
+                    <td className="px-2 py-1.5 text-on-surface">{String((h.original as Record<string, unknown>)?.hostType || "-")}</td>
+                    <td className="px-2 py-1.5 text-on-surface">{String((h.original as Record<string, unknown>)?.host || "-")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -255,9 +247,9 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
               id="overwrite"
               checked={overwrite}
               onChange={(e) => setOverwrite(e.target.checked)}
-              className="h-4 w-4 rounded border-input"
+              className="h-4 w-4 rounded border-outline-variant"
             />
-            <Label htmlFor="overwrite" className="text-sm">
+            <Label htmlFor="overwrite" className="text-label-md text-on-surface">
               Overwrite existing hosts with same name
             </Label>
           </div>
@@ -266,7 +258,7 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
           <Button
             onClick={handleImport}
             disabled={isLoading || parsedHosts.filter((h) => h.valid).length === 0}
-            className="w-full"
+            className="w-full bg-primary-container text-on-primary-container rounded-lg"
           >
             {isLoading ? (
               <>
@@ -275,7 +267,7 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
               </>
             ) : (
               <>
-                <UploadIcon className="h-4 w-4 mr-2" />
+                <MaterialIcon name="file_import" size="sm" className="mr-2" />
                 Import {parsedHosts.filter((h) => h.valid).length} Host
                 {parsedHosts.filter((h) => h.valid).length !== 1 ? "s" : ""}
               </>
@@ -288,11 +280,11 @@ export function HostImportExport({ mode, onImportComplete, onExportComplete }: H
 
       {/* Import result */}
       {importResult && (
-        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <CheckIcon className="h-5 w-5 text-emerald-600" />
+        <div className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container p-4">
+          <MaterialIcon name="check" className="text-primary" />
           <div>
-            <p className="font-medium text-emerald-800">Import successful!</p>
-            <p className="text-sm text-emerald-700">
+            <p className="text-headline-sm text-on-surface">Import successful!</p>
+            <p className="text-body-md text-on-surface-variant">
               {importResult.imported} imported
               {importResult.skipped > 0 && `, ${importResult.skipped} skipped`}
             </p>
