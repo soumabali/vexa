@@ -21,19 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Shield,
-  Key,
-  Fingerprint,
-  Trash2,
-  Plus,
-  AlertTriangle,
-  Loader2,
-  Smartphone,
-  KeyRound,
-  Download,
-  Copy,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { useEffect, useState } from "react";
 import {
   WebAuthnCredential,
@@ -191,29 +179,31 @@ export default function SecuritySettingsPage() {
     <DashboardLayout>
       <div className="container mx-auto py-6 max-w-4xl space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Security Settings</h1>
-          <p className="text-muted-foreground">Manage authentication methods and account security</p>
+          <h1 className="text-headline-lg text-on-surface mb-2">Security Settings</h1>
+          <p className="text-body-lg text-on-surface-variant">
+            Manage authentication methods and account security
+          </p>
         </div>
 
-        {/* 2FA TOTP */}
-        <Card>
+        {/* MFA card */}
+        <Card className="bg-surface-container border border-outline-variant rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              <CardTitle>Two-Factor Authentication (TOTP)</CardTitle>
+              <MaterialIcon name="shield" className="text-primary" />
+              <CardTitle className="text-on-surface">Multi-Factor Authentication</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-on-surface-variant">
               Add an extra layer of security with an authenticator app
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Require 2FA at login</Label>
-                <p className="text-sm text-muted-foreground">Prompt for a verification code when signing in</p>
+                <Label className="text-on-surface">Require 2FA at login</Label>
+                <p className="text-sm text-on-surface-variant">Prompt for a verification code when signing in</p>
               </div>
               {profileLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <MaterialIcon name="progress_activity" className="animate-spin text-on-surface-variant" />
               ) : (
                 <Switch
                   checked={mfaEnabled}
@@ -223,84 +213,83 @@ export default function SecuritySettingsPage() {
               )}
             </div>
 
-            {mfaEnabled ? (
-              <div className="rounded-md border p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Smartphone className="h-5 w-5 text-green-600" />
-                  <div className="flex-1">
-                    <p className="font-medium">Authenticator app is active</p>
-                    <p className="text-sm text-muted-foreground">
-                      Your account is protected with TOTP at sign-in.
-                    </p>
+            {/* Methods list */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-4 rounded-lg border border-outline-variant bg-surface-container-lowest">
+                <MaterialIcon name="smartphone" className={mfaEnabled ? "text-success" : "text-on-surface-variant"} />
+                <div className="flex-1">
+                  <p className="font-medium text-on-surface">Authenticator app</p>
+                  <p className="text-sm text-on-surface-variant">
+                    {mfaEnabled ? "Your account is protected with TOTP at sign-in." : "Google Authenticator, Authy, Microsoft Authenticator, etc."}
+                  </p>
+                </div>
+                {mfaEnabled ? (
+                  <Badge className="bg-success/10 text-success border border-success/30">Enabled</Badge>
+                ) : (
+                  <Badge variant="outline" className="border-outline-variant text-on-surface-variant">Setup required</Badge>
+                )}
+                {mfaEnabled ? (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDisableOpen(true)}
+                      className="border-outline-variant text-on-surface"
+                    >
+                      <MaterialIcon name="key" size="sm" className="mr-2" />
+                      Disable
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCodesOpen(true)}
+                      className="border-outline-variant text-on-surface"
+                      data-testid="open-backup-codes"
+                    >
+                      <MaterialIcon name="vpn_key" size="sm" className="mr-2" />
+                      Backup codes
+                    </Button>
                   </div>
-                  <Badge variant="outline" className="text-green-600 border-green-200">Enabled</Badge>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setDisableOpen(true)}
-                  >
-                    <Key className="h-4 w-4 mr-2" />
-                    Disable MFA
+                ) : (
+                  <Button size="sm" onClick={() => setSetupOpen(true)} className="bg-primary text-on-primary hover:bg-primary/90">
+                    Configure
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setCodesOpen(true)}
-                    data-testid="open-backup-codes"
-                  >
-                    <KeyRound className="h-4 w-4 mr-2" />
-                    Regenerate backup codes
-                  </Button>
-                </div>
+                )}
               </div>
-            ) : (
-              <div className="rounded-md border p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Smartphone className="h-5 w-5 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="font-medium">Authenticator app</p>
-                    <p className="text-sm text-muted-foreground">
-                      Google Authenticator, Authy, Microsoft Authenticator, etc.
-                    </p>
-                  </div>
-                  <Badge variant="outline">Setup required</Badge>
-                </div>
-                <Button size="sm" onClick={() => setSetupOpen(true)}>Set up authenticator</Button>
-              </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* WebAuthn */}
-        <Card>
+        {/* WebAuthn / Passkeys */}
+        <Card className="bg-surface-container border border-outline-variant rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Fingerprint className="h-5 w-5" />
-              <CardTitle>Passkeys / WebAuthn</CardTitle>
+              <MaterialIcon name="fingerprint" className="text-primary" />
+              <CardTitle className="text-on-surface">Passkeys / WebAuthn</CardTitle>
             </div>
-            <CardDescription>Use biometrics or security keys for passwordless sign-in</CardDescription>
+            <CardDescription className="text-on-surface-variant">
+              Use biometrics or security keys for passwordless sign-in
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {webAuthnLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="flex items-center gap-2 text-on-surface-variant">
+                <MaterialIcon name="progress_activity" className="animate-spin" />
                 Loading passkeys...
               </div>
             ) : webAuthnCreds.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
+              <p className="text-sm text-on-surface-variant">No passkeys registered yet.</p>
             ) : (
               webAuthnCreds.map((cred) => (
                 <div
                   key={cred.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
+                  className="flex items-center justify-between rounded-lg border border-outline-variant bg-surface-container-lowest p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <Fingerprint className="h-5 w-5 text-primary" />
+                    <MaterialIcon name="fingerprint" className="text-primary" />
                     <div>
-                      <p className="font-medium">{cred.name || "Unnamed passkey"}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-medium text-on-surface">{cred.name || "Unnamed passkey"}</p>
+                      <p className="text-xs text-on-surface-variant">
                         {cred.authenticatorAttachment === "platform" ? "Platform" : "Roaming"} authenticator
                       </p>
                     </div>
@@ -309,37 +298,60 @@ export default function SecuritySettingsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemoveWebAuthn(cred.id)}
+                    className="text-error hover:text-error"
+                    aria-label="Remove passkey"
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <MaterialIcon name="delete" size="sm" />
                   </Button>
                 </div>
               ))
             )}
 
-            <Button asChild>
+            <Button asChild className="bg-primary text-on-primary hover:bg-primary/90">
               <Link href="/settings/webauthn">
-                <Plus className="h-4 w-4 mr-2" />
+                <MaterialIcon name="add" size="sm" className="mr-2" />
                 Manage passkeys
               </Link>
             </Button>
           </CardContent>
         </Card>
 
-        {/* Danger zone */}
-        <Card className="border-destructive">
+        {/* Security audit card */}
+        <Card className="bg-surface-container border border-outline-variant rounded-xl">
           <CardHeader>
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <div className="flex items-center gap-2">
+              <MaterialIcon name="verified_user" className="text-primary" />
+              <CardTitle className="text-on-surface">Security Audit</CardTitle>
+            </div>
+            <CardDescription className="text-on-surface-variant">
+              Checklist of recommended security practices
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <AuditRow ok={mfaEnabled} label="Two-factor authentication enabled" />
+            <AuditRow ok={webAuthnCreds.length > 0} label="Passkey registered" />
+            <AuditRow ok={!!profile?.email} label="Email verified" />
+            <AuditRow ok={false} label="Backup codes saved" warn />
+          </CardContent>
+        </Card>
+
+        {/* Danger zone */}
+        <Card className="bg-surface-container border border-error rounded-xl">
+          <CardHeader>
+            <div className="flex items-center gap-2 text-error">
+              <MaterialIcon name="warning" className="text-error" />
+              <CardTitle className="text-error">Danger Zone</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Delete account</p>
-                <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+                <p className="font-medium text-on-surface">Delete account</p>
+                <p className="text-sm text-on-surface-variant">Permanently delete your account and all data</p>
               </div>
-              <Button variant="destructive" disabled>Delete Account</Button>
+              <Button variant="destructive" disabled className="bg-error text-on-error hover:bg-error/90">
+                Delete Account
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -347,10 +359,10 @@ export default function SecuritySettingsPage() {
 
       {/* MFA setup dialog */}
       <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg bg-surface-container-high border-outline-variant">
           <DialogHeader>
-            <DialogTitle>Set up TOTP</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-on-surface">Set up TOTP</DialogTitle>
+            <DialogDescription className="text-on-surface-variant">
               Scan the QR code and verify a code to enable two-factor authentication.
             </DialogDescription>
           </DialogHeader>
@@ -367,15 +379,15 @@ export default function SecuritySettingsPage() {
 
       {/* Disable MFA confirmation dialog */}
       <Dialog open={disableOpen} onOpenChange={setDisableOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-surface-container-high border-outline-variant">
           <DialogHeader>
-            <DialogTitle>Disable MFA</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-on-surface">Disable MFA</DialogTitle>
+            <DialogDescription className="text-on-surface-variant">
               Enter a current TOTP code to confirm disabling two-factor authentication.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="disable-totp-code">Verification code</Label>
+            <Label htmlFor="disable-totp-code" className="text-on-surface">Verification code</Label>
             <Input
               id="disable-totp-code"
               name="totp_code"
@@ -389,19 +401,20 @@ export default function SecuritySettingsPage() {
               }
               disabled={disableLoading}
               autoFocus
-              className="text-center text-2xl tracking-widest font-mono"
+              className="text-center text-2xl tracking-widest font-mono bg-surface-container-lowest border-outline-variant text-on-surface focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDisableOpen(false)} disabled={disableLoading}>
+            <Button variant="outline" onClick={() => setDisableOpen(false)} disabled={disableLoading} className="border-outline-variant text-on-surface">
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleDisableMFA}
               disabled={disableLoading || disableTotpCode.length !== 6}
+              className="bg-error text-on-error hover:bg-error/90"
             >
-              {disableLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {disableLoading ? <MaterialIcon name="progress_activity" size="sm" className="animate-spin mr-2" /> : null}
               Disable MFA
             </Button>
           </DialogFooter>
@@ -423,18 +436,18 @@ export default function SecuritySettingsPage() {
           setCodesTotp("");
         }}
       >
-        <DialogContent>
+        <DialogContent className="bg-surface-container-high border-outline-variant">
           {codes === null ? (
             <>
               <DialogHeader>
-                <DialogTitle>Regenerate backup codes</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-on-surface">Regenerate backup codes</DialogTitle>
+                <DialogDescription className="text-on-surface-variant">
                   These codes will replace any existing codes. Save them now —
                   they will only be shown once.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-2">
-                <Label htmlFor="backup-codes-totp">Verification code</Label>
+                <Label htmlFor="backup-codes-totp" className="text-on-surface">Verification code</Label>
                 <Input
                   id="backup-codes-totp"
                   inputMode="numeric"
@@ -447,6 +460,7 @@ export default function SecuritySettingsPage() {
                   }
                   disabled={codesLoading}
                   data-testid="backup-codes-totp"
+                  className="bg-surface-container-lowest border-outline-variant text-on-surface focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
               <DialogFooter>
@@ -454,16 +468,18 @@ export default function SecuritySettingsPage() {
                   variant="outline"
                   onClick={() => setCodesOpen(false)}
                   disabled={codesLoading}
+                  className="border-outline-variant text-on-surface"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleRegenerateCodes}
                   disabled={codesLoading || codesTotp.length !== 6}
+                  className="bg-primary text-on-primary hover:bg-primary/90"
                   data-testid="submit-backup-codes"
                 >
                   {codesLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <MaterialIcon name="progress_activity" size="sm" className="animate-spin mr-2" />
                   ) : null}
                   Generate codes
                 </Button>
@@ -472,15 +488,15 @@ export default function SecuritySettingsPage() {
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle>Save your new backup codes</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-on-surface">Save your new backup codes</DialogTitle>
+                <DialogDescription className="text-on-surface-variant">
                   These codes will only be shown once. Store them in a safe
                   place — they are the only way to recover access if you lose
                   your authenticator.
                 </DialogDescription>
               </DialogHeader>
               <div
-                className="rounded-md border bg-muted/30 p-3 font-mono text-sm grid grid-cols-2 gap-x-4 gap-y-1"
+                className="rounded-md border border-outline-variant bg-surface-container-lowest p-3 font-mono text-sm grid grid-cols-2 gap-x-4 gap-y-1 text-on-surface"
                 data-testid="backup-codes-list"
               >
                 {codes.map((code) => (
@@ -493,8 +509,9 @@ export default function SecuritySettingsPage() {
                   size="sm"
                   onClick={handleCopyCodes}
                   data-testid="copy-backup-codes"
+                  className="border-outline-variant text-on-surface"
                 >
-                  <Copy className="h-4 w-4 mr-2" />
+                  <MaterialIcon name="content_copy" size="sm" className="mr-2" />
                   Copy
                 </Button>
                 <Button
@@ -502,12 +519,14 @@ export default function SecuritySettingsPage() {
                   size="sm"
                   onClick={handleDownloadCodes}
                   data-testid="download-backup-codes"
+                  className="border-outline-variant text-on-surface"
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <MaterialIcon name="download" size="sm" className="mr-2" />
                   Download .txt
                 </Button>
                 <Button
                   onClick={handleCloseCodes}
+                  className="bg-primary text-on-primary hover:bg-primary/90"
                   data-testid="confirm-backup-codes"
                 >
                   I have saved them
@@ -518,5 +537,20 @@ export default function SecuritySettingsPage() {
         </DialogContent>
       </Dialog>
     </DashboardLayout>
+  );
+}
+
+function AuditRow({ ok, label, warn }: { ok: boolean; label: string; warn?: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      {ok ? (
+        <MaterialIcon name="check_circle" className="text-success" />
+      ) : warn ? (
+        <MaterialIcon name="warning" className="text-warning" />
+      ) : (
+        <MaterialIcon name="error" className="text-error" />
+      )}
+      <span className={ok ? "text-on-surface" : "text-on-surface-variant"}>{label}</span>
+    </div>
   );
 }
