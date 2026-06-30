@@ -3,283 +3,216 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import {
-  Palette,
-  Monitor,
-  Moon,
-  Sun,
-  Type,
-  Layout,
-  Grid3X3,
-  List,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
+import { toast } from "sonner";
+
+type ThemeOption = "dark" | "light" | "system";
+type DensityOption = "comfortable" | "compact";
+
+const THEMES: { id: ThemeOption; label: string; icon: string; desc: string }[] = [
+  { id: "dark", label: "Dark", icon: "dark_mode", desc: "Always dark" },
+  { id: "light", label: "Light", icon: "light_mode", desc: "Always light" },
+  { id: "system", label: "System", icon: "desktop_windows", desc: "Follow OS" },
+];
+
+const ACCENT_COLORS: { id: string; label: string; class: string }[] = [
+  { id: "indigo", label: "Indigo", class: "bg-primary" },
+  { id: "blue", label: "Blue", class: "bg-blue-500" },
+  { id: "teal", label: "Teal", class: "bg-teal-500" },
+  { id: "green", label: "Green", class: "bg-success" },
+  { id: "amber", label: "Amber", class: "bg-amber-500" },
+  { id: "rose", label: "Rose", class: "bg-rose-500" },
+];
 
 export default function AppearanceSettingsPage() {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
-  const [fontSize, setFontSize] = useState(14);
-  const [fontFamily, setFontFamily] = useState("monospace");
-  const [showLineNumbers, setShowLineNumbers] = useState(true);
-  const [wordWrap, setWordWrap] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showGitBranch, setShowGitBranch] = useState(true);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [theme, setTheme] = useState<ThemeOption>("dark");
+  const [density, setDensity] = useState<DensityOption>("comfortable");
+  const [fontSize, setFontSize] = useState<number>(14);
+  const [accent, setAccent] = useState<string>("indigo");
 
-  const themes = [
-    { value: "light", label: "Light", icon: Sun, description: "Clean and bright" },
-    { value: "dark", label: "Dark", icon: Moon, description: "Easy on the eyes" },
-    { value: "system", label: "System", icon: Monitor, description: "Follow system preference" },
-  ];
-
-  const fontFamilies = [
-    { value: "monospace", label: "Monospace" },
-    { value: "jetbrains-mono", label: "JetBrains Mono" },
-    { value: "fira-code", label: "Fira Code" },
-    { value: "source-code-pro", label: "Source Code Pro" },
-    { value: "cascadia-code", label: "Cascadia Code" },
-  ];
+  const handleSave = () => {
+    toast.success("Appearance updated", {
+      icon: <MaterialIcon name="check" size="sm" className="text-primary" />,
+    });
+  };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Appearance</h1>
-        <p className="text-muted-foreground mt-2">
-          Customize the look and feel of the application
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-on-surface">Appearance</h1>
+        <p className="text-sm text-on-surface-variant">
+          Customize how Vexa looks. Changes apply to this device only.
         </p>
       </div>
 
       {/* Theme */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-on-surface">
+            <MaterialIcon name="palette" size="sm" className="text-on-surface-variant" />
             Theme
           </CardTitle>
-          <CardDescription>Choose your preferred color scheme</CardDescription>
+          <CardDescription>Choose a color scheme for the interface.</CardDescription>
         </CardHeader>
         <CardContent>
-          <RadioGroup
-            value={theme}
-            onValueChange={(v) => setTheme(v as "light" | "dark" | "system")}
-            className="grid grid-cols-3 gap-4"
-          >
-            {themes.map((t) => (
-              <div key={t.value}>
-                <RadioGroupItem
-                  value={t.value}
-                  id={t.value}
-                  className="peer sr-only"
-                />
-                <label
-                  htmlFor={t.value}
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {THEMES.map((option) => {
+              const active = theme === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setTheme(option.id)}
+                  className={`relative flex flex-col items-start gap-2 rounded-lg p-4 text-left transition-colors ${
+                    active
+                      ? "border-2 border-primary bg-primary/5"
+                      : "border border-outline-variant hover:border-outline"
+                  }`}
                 >
-                  <t.icon className="h-6 w-6 mb-2" />
-                  <span className="font-medium">{t.label}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t.description}
-                  </span>
-                </label>
-              </div>
-            ))}
-          </RadioGroup>
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                      active ? "bg-primary-container text-on-primary-container" : "bg-surface-container-high text-on-surface-variant"
+                    }`}
+                  >
+                    <MaterialIcon name={option.icon} size="md" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium text-on-surface">{option.label}</p>
+                    <p className="text-xs text-on-surface-variant">{option.desc}</p>
+                  </div>
+                  {active && (
+                    <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-on-primary">
+                      <MaterialIcon name="check" size="sm" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Font */}
-      <Card className="mb-6">
+      {/* Density */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Type className="h-5 w-5" />
-            Font
+          <CardTitle className="flex items-center gap-2 text-on-surface">
+            <MaterialIcon name="density_medium" size="sm" className="text-on-surface-variant" />
+            Density
           </CardTitle>
-          <CardDescription>Configure font settings for the terminal and UI</CardDescription>
+          <CardDescription>Control the spacing between elements.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label>Font Family</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {fontFamilies.map((font) => (
-                <Button
-                  key={font.value}
-                  variant={fontFamily === font.value ? "default" : "outline"}
-                  className="justify-start"
-                  onClick={() => setFontFamily(font.value)}
+        <CardContent>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {(
+              [
+                { id: "comfortable", label: "Comfortable", desc: "Relaxed spacing", icon: "format_indent_increase" },
+                { id: "compact", label: "Compact", desc: "Tighter rows", icon: "compress" },
+              ] as { id: DensityOption; label: string; desc: string; icon: string }[]
+            ).map((option) => {
+              const selected = density === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setDensity(option.id)}
+                  className={`flex items-center gap-3 rounded-lg p-4 text-left transition-colors ${
+                    selected
+                      ? "bg-secondary-container text-on-secondary-container"
+                      : "border border-outline-variant hover:border-outline text-on-surface"
+                  }`}
                 >
-                  <span style={{ fontFamily: font.value }}>Aa</span>
-                  <span className="ml-2">{font.label}</span>
-                </Button>
-              ))}
-            </div>
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${
+                      selected ? "border-on-secondary-container" : "border-outline-variant"
+                    }`}
+                  >
+                    {selected && (
+                      <span className="h-4 w-4 rounded-full bg-on-secondary-container" />
+                    )}
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium">{option.label}</p>
+                    <p className={`text-xs ${selected ? "text-on-secondary-container/80" : "text-on-surface-variant"}`}>
+                      {option.desc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Font Size</Label>
-              <span className="text-sm text-muted-foreground">{fontSize}px</span>
-            </div>
+      {/* Font size */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-on-surface">
+            <MaterialIcon name="text_fields" size="sm" className="text-on-surface-variant" />
+            Font Size
+          </CardTitle>
+          <CardDescription>Adjust the base text size for the interface.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <MaterialIcon name="format_size" size="sm" className="text-on-surface-variant" />
             <Slider
               value={[fontSize]}
-              onValueChange={(v) => {
-                const val = Array.isArray(v) ? v[0] : v;
-                setFontSize(typeof val === 'number' ? val : parseInt(val as string));
-              }}
-              min={10}
-              max={20}
+              min={12}
+              max={18}
               step={1}
+              onValueChange={(value) => setFontSize(value[0])}
+              className="flex-1"
             />
+            <span className="w-12 text-right text-sm font-medium tabular-nums text-on-surface">
+              {fontSize}px
+            </span>
+          </div>
+          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
+            <p
+              className="text-on-surface"
+              style={{ fontSize: `${fontSize}px`, lineHeight: 1.5 }}
+            >
+              The quick brown fox jumps over the lazy dog.
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Terminal */}
-      <Card className="mb-6">
+      {/* Accent color */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Layout className="h-5 w-5" />
-            Terminal
+          <CardTitle className="flex items-center gap-2 text-on-surface">
+            <MaterialIcon name="colorize" size="sm" className="text-on-surface-variant" />
+            Accent Color
           </CardTitle>
-          <CardDescription>Terminal display preferences</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Show Line Numbers</Label>
-              <p className="text-sm text-muted-foreground">
-                Display line numbers in the terminal
-              </p>
-            </div>
-            <Switch
-              checked={showLineNumbers}
-              onCheckedChange={setShowLineNumbers}
-            />
-          </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Word Wrap</Label>
-              <p className="text-sm text-muted-foreground">
-                Wrap long lines to fit the terminal width
-              </p>
-            </div>
-            <Switch
-              checked={wordWrap}
-              onCheckedChange={setWordWrap}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Layout */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Layout className="h-5 w-5" />
-            Layout
-          </CardTitle>
-          <CardDescription>Configure the application layout</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Compact Mode</Label>
-              <p className="text-sm text-muted-foreground">
-                Reduce padding and spacing for a denser UI
-              </p>
-            </div>
-            <Switch
-              checked={compactMode}
-              onCheckedChange={setCompactMode}
-            />
-          </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Collapsed Sidebar</Label>
-              <p className="text-sm text-muted-foreground">
-                Start with the sidebar collapsed
-              </p>
-            </div>
-            <Switch
-              checked={sidebarCollapsed}
-              onCheckedChange={setSidebarCollapsed}
-            />
-          </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Show Git Branch</Label>
-              <p className="text-sm text-muted-foreground">
-                Display current git branch in the status bar
-              </p>
-            </div>
-            <Switch
-              checked={showGitBranch}
-              onCheckedChange={setShowGitBranch}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Default View Mode */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Default View Mode</CardTitle>
-          <CardDescription>Choose your preferred default view</CardDescription>
+          <CardDescription>Pick the primary accent used for buttons and highlights.</CardDescription>
         </CardHeader>
         <CardContent>
-          <RadioGroup
-            value={viewMode}
-            onValueChange={(v) => setViewMode(v as "grid" | "list")}
-            className="grid grid-cols-2 gap-4"
-          >
-            <div>
-              <RadioGroupItem
-                value="grid"
-                id="grid"
-                className="peer sr-only"
-              />
-              <label
-                htmlFor="grid"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-              >
-                <Grid3X3 className="h-6 w-6 mb-2" />
-                <span className="font-medium">Grid</span>
-                <span className="text-xs text-muted-foreground">Card-based layout</span>
-              </label>
-            </div>
-            <div>
-              <RadioGroupItem
-                value="list"
-                id="list"
-                className="peer sr-only"
-              />
-              <label
-                htmlFor="list"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-              >
-                <List className="h-6 w-6 mb-2" />
-                <span className="font-medium">List</span>
-                <span className="text-xs text-muted-foreground">Compact rows</span>
-              </label>
-            </div>
-          </RadioGroup>
+          <div className="flex flex-wrap gap-3">
+            {ACCENT_COLORS.map((color) => {
+              const active = accent === color.id;
+              return (
+                <button
+                  key={color.id}
+                  type="button"
+                  onClick={() => setAccent(color.id)}
+                  aria-label={color.label}
+                  aria-pressed={active}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-offset-2 ring-offset-surface-container transition-all ${
+                    color.class
+                  } ${active ? "ring-on-surface" : "ring-transparent hover:ring-outline-variant"}`}
+                >
+                  {active && <MaterialIcon name="check" size="sm" className="text-on-primary" />}
+                </button>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button>Save Changes</Button>
+        <Button onClick={handleSave}>Save Changes</Button>
       </div>
     </div>
   );
