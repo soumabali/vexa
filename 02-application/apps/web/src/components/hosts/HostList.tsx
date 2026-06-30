@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { HostResponse } from "@/lib/validations/hosts";
 import { HostForm } from "./HostForm";
@@ -25,36 +25,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { ErrorDisplay } from "@/components/auth/ErrorDisplay";
-import {
-  SearchIcon,
-  PlusIcon,
-  ServerIcon,
-  MonitorIcon,
-  LayoutGridIcon,
-  ListIcon,
-  TrashIcon,
-  PencilIcon,
-  MoreHorizontalIcon,
-  StarIcon,
-  StarOffIcon,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 const hostTypeIcons = {
-  ssh: ServerIcon,
-  rdp: MonitorIcon,
-  vnc: MonitorIcon,
+  ssh: "server",
+  rdp: "monitor",
+  vnc: "monitor",
 };
 
 const hostTypeColors = {
-  ssh: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  rdp: "bg-green-500/20 text-green-400 border-green-500/30",
-  vnc: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  ssh: "bg-secondary-container text-on-secondary-container",
+  rdp: "bg-tertiary-container text-on-tertiary-container",
+  vnc: "bg-primary-container text-on-primary-container",
 };
 
 const statusColors = {
-  online: "bg-green-500",
-  offline: "bg-red-500",
-  unknown: "bg-gray-500",
+  online: "bg-success",
+  offline: "bg-error",
+  unknown: "bg-outline-variant",
 };
 
 export function HostList() {
@@ -123,9 +111,9 @@ export function HostList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Hosts</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your SSH, RDP, and VNC connections
+          <h1 className="text-headline-lg text-on-surface">Hosts</h1>
+          <p className="text-body-md text-on-surface-variant">
+            Securely manage remote environments across SSH, RDP, VNC.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -133,43 +121,51 @@ export function HostList() {
             variant="outline"
             size="sm"
             onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-            className="h-9"
+            className="h-9 border-outline-variant"
+            aria-label="Toggle view mode"
           >
-            {viewMode === "grid" ? (
-              <ListIcon className="h-4 w-4" />
-            ) : (
-              <LayoutGridIcon className="h-4 w-4" />
-            )}
+            <MaterialIcon name={viewMode === "grid" ? "list" : "grid_view"} size="sm" />
           </Button>
-          <Button onClick={() => setShowCreateDialog(true)} className="h-9">
-            <PlusIcon className="h-4 w-4 mr-2" />
+          <Button onClick={() => setShowCreateDialog(true)} className="h-9 bg-primary text-on-primary rounded-lg">
+            <MaterialIcon name="add" size="sm" className="mr-2" />
             Add Host
           </Button>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="relative flex-1 min-w-[240px] max-w-md">
+          <MaterialIcon name="search" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
           <Input
             placeholder="Search hosts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-surface-container border-outline"
+            className="pl-10 bg-surface-container-low border border-outline-variant"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <button
+            className="h-9 px-4 rounded-full text-label-md bg-secondary-container text-on-secondary-container"
+          >
+            All
+          </button>
           {["ssh", "rdp", "vnc"].map((type) => (
-            <Button
+            <button
               key={type}
-              variant="outline"
-              size="sm"
-              className={`h-9 capitalize ${hostTypeColors[type as keyof typeof hostTypeColors]}`}
+              className={`h-9 px-4 rounded-full text-label-md capitalize border border-outline-variant text-on-surface-variant hover:${hostTypeColors[type as keyof typeof hostTypeColors]}`}
             >
-              {type}
-            </Button>
+              {type.toUpperCase()}
+            </button>
           ))}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 border-outline-variant ml-2"
+          >
+            <MaterialIcon name="tune" size="sm" className="mr-2" />
+            Filters
+          </Button>
         </div>
       </div>
 
@@ -182,21 +178,21 @@ export function HostList() {
 
       {/* Hosts Grid/List */}
       {filteredHosts.length === 0 ? (
-        <Card className="border-dashed border-2 border-outline bg-surface-container">
+        <Card className="border-dashed border-2 border-outline-variant bg-surface-container">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <ServerIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium mb-2">No hosts found</p>
-            <p className="text-sm text-muted-foreground mb-4">
+            <MaterialIcon name="server" size="xl" className="text-on-surface-variant mb-4" />
+            <p className="text-headline-sm text-on-surface mb-2">No hosts found</p>
+            <p className="text-body-md text-on-surface-variant mb-4">
               Add your first host to get started
             </p>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <PlusIcon className="h-4 w-4 mr-2" />
+            <Button onClick={() => setShowCreateDialog(true)} className="bg-primary text-on-primary rounded-lg">
+              <MaterialIcon name="add" size="sm" className="mr-2" />
               Add Host
             </Button>
           </CardContent>
         </Card>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredHosts.map((host) => (
             <HostCard
               key={host.id}
@@ -206,6 +202,13 @@ export function HostList() {
               onEdit={(host) => setEditingHost(host)}
             />
           ))}
+          <button
+            onClick={() => setShowCreateDialog(true)}
+            className="border-2 border-dashed border-outline-variant hover:border-primary rounded-xl min-h-[160px] flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:text-primary transition-colors"
+          >
+            <MaterialIcon name="add" size="lg" />
+            <span className="text-label-md">Add Host</span>
+          </button>
         </div>
       ) : (
         <Card className="bg-surface-container border-outline">
@@ -224,6 +227,13 @@ export function HostList() {
           </CardContent>
         </Card>
       )}
+
+      {/* Footer stats */}
+      <div className="border-t border-outline-variant pt-4 flex items-center justify-between text-label-md text-on-surface-variant">
+        <span>Total Hosts: {filteredHosts.length}</span>
+        <span>Active Sessions: {hosts.filter((h) => h.status === "online").length}</span>
+        <span className="text-mono-code">v2.4.1-stable</span>
+      </div>
 
       {/* Create / Edit Host Dialog */}
       <Dialog
@@ -261,7 +271,7 @@ export function HostList() {
       <Dialog open={!!hostToDelete} onOpenChange={() => setHostToDelete(null)}>
         <DialogContent className="bg-surface-container border-outline">
           <DialogHeader>
-            <DialogTitle className="text-destructive">Delete Host</DialogTitle>
+            <DialogTitle className="text-error">Delete Host</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete{" "}
               <span className="font-semibold">{hostToDelete?.name}</span>? This action
@@ -276,7 +286,7 @@ export function HostList() {
               variant="destructive"
               onClick={() => hostToDelete && handleDelete(hostToDelete)}
             >
-              <TrashIcon className="h-4 w-4 mr-2" />
+              <MaterialIcon name="delete" size="sm" className="mr-2" />
               Delete
             </Button>
           </DialogFooter>
@@ -298,7 +308,7 @@ function HostCard({
   onToggleFavorite: (host: HostResponse) => void;
   onEdit: (host: HostResponse) => void;
 }) {
-  const Icon = hostTypeIcons[host.hostType as keyof typeof hostTypeIcons] || ServerIcon;
+  const iconName = hostTypeIcons[host.hostType as keyof typeof hostTypeIcons] || "server";
 
   return (
     <Card className="bg-surface-container border-outline hover:border-primary/50 transition-colors group" data-testid={`host-card-${host.id}`} data-host-id={host.id} data-host-name={host.name}>
@@ -306,11 +316,11 @@ function HostCard({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${hostTypeColors[host.hostType as keyof typeof hostTypeColors]}`}>
-              <Icon className="h-5 w-5" />
+              <MaterialIcon name={iconName} size="sm" />
             </div>
             <div>
-              <CardTitle className="text-base font-semibold">{host.name}</CardTitle>
-              <p className="text-xs text-muted-foreground font-mono">
+              <CardTitle className="text-base font-semibold text-on-surface">{host.name}</CardTitle>
+              <p className="text-xs text-on-surface-variant font-mono-code">
                 {host.host}:{host.port}
               </p>
             </div>
@@ -323,24 +333,24 @@ function HostCard({
               onClick={() => onToggleFavorite(host)}
             >
               {host.favorite ? (
-                <StarIcon className="h-4 w-4 text-yellow-400" />
+                <MaterialIcon name="star" size="sm" fill className="text-warning" />
               ) : (
-                <StarOffIcon className="h-4 w-4" />
+                <MaterialIcon name="star_border" size="sm" className="text-on-surface-variant" />
               )}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" data-testid={`host-actions-menu-${host.id}`}>
-                  <MoreHorizontalIcon className="h-4 w-4" />
+                  <MaterialIcon name="more_horiz" size="sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit(host)}>
-                  <PencilIcon className="h-4 w-4 mr-2" />
+                  <MaterialIcon name="edit" size="sm" className="mr-2" />
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(host)} className="text-destructive focus:text-destructive">
-                  <TrashIcon className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={() => onDelete(host)} className="text-error focus:text-error">
+                  <MaterialIcon name="delete" size="sm" className="mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -352,11 +362,11 @@ function HostCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${statusColors[host.status as keyof typeof statusColors] || statusColors.unknown}`} />
-            <span className="text-xs capitalize text-muted-foreground">
+            <span className="text-xs capitalize text-on-surface-variant">
               {host.status}
             </span>
           </div>
-          <Badge variant="outline" className="text-xs capitalize">
+          <Badge variant="outline" className="text-xs capitalize border-outline-variant text-on-surface-variant">
             {host.hostType}
           </Badge>
         </div>
@@ -377,17 +387,17 @@ function HostRow({
   onToggleFavorite: (host: HostResponse) => void;
   onEdit: (host: HostResponse) => void;
 }) {
-  const Icon = hostTypeIcons[host.hostType as keyof typeof hostTypeIcons] || ServerIcon;
+  const iconName = hostTypeIcons[host.hostType as keyof typeof hostTypeIcons] || "server";
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors group" data-testid={`host-row-${host.id}`} data-host-id={host.id} data-host-name={host.name}>
       <div className="flex items-center gap-4">
         <div className={`p-2 rounded-lg ${hostTypeColors[host.hostType as keyof typeof hostTypeColors]}`}>
-          <Icon className="h-5 w-5" />
+          <MaterialIcon name={iconName} size="sm" />
         </div>
         <div>
-          <p className="font-semibold">{host.name}</p>
-          <p className="text-sm text-muted-foreground font-mono">
+          <p className="font-semibold text-on-surface">{host.name}</p>
+          <p className="text-sm text-on-surface-variant font-mono-code">
             {host.host}:{host.port}
           </p>
         </div>
@@ -395,11 +405,11 @@ function HostRow({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${statusColors[host.status as keyof typeof statusColors] || statusColors.unknown}`} />
-          <span className="text-sm capitalize text-muted-foreground">
+          <span className="text-sm capitalize text-on-surface-variant">
             {host.status}
           </span>
         </div>
-        <Badge variant="outline" className="capitalize">
+        <Badge variant="outline" className="capitalize border-outline-variant text-on-surface-variant">
           {host.hostType}
         </Badge>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -410,24 +420,24 @@ function HostRow({
             onClick={() => onToggleFavorite(host)}
           >
             {host.favorite ? (
-              <StarIcon className="h-4 w-4 text-yellow-400" />
+              <MaterialIcon name="star" size="sm" fill className="text-warning" />
             ) : (
-              <StarOffIcon className="h-4 w-4" />
+              <MaterialIcon name="star_border" size="sm" className="text-on-surface-variant" />
             )}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8" data-testid={`host-actions-menu-${host.id}`}>
-                <MoreHorizontalIcon className="h-4 w-4" />
+                <MaterialIcon name="more_horiz" size="sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit(host)}>
-                <PencilIcon className="h-4 w-4 mr-2" />
+                <MaterialIcon name="edit" size="sm" className="mr-2" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(host)} className="text-destructive focus:text-destructive">
-                <TrashIcon className="h-4 w-4 mr-2" />
+              <DropdownMenuItem onClick={() => onDelete(host)} className="text-error focus:text-error">
+                <MaterialIcon name="delete" size="sm" className="mr-2" />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { MaterialIcon } from '@/components/ui/material-icon';
 import TerminalTabs, { Tab } from './terminal-tabs';
 
 export interface TerminalPane {
@@ -113,7 +114,7 @@ export default function TerminalPaneComponent({
     const flexDirection = localPane.direction === 'horizontal' ? 'flex-row' : 'flex-col';
 
     return (
-      <div className={`flex ${flexDirection} h-full gap-1`}>
+      <div className={`flex ${flexDirection} h-full gap-1 bg-black`}>
         {localPane.children.map((child, index) => (
           <div
             key={child.id}
@@ -140,7 +141,7 @@ export default function TerminalPaneComponent({
 
   // Terminal pane
   return (
-    <div className="h-full relative group">
+    <div className="h-full relative group bg-black">
       <TerminalTabs
         initialTabs={localPane.tabData?.tabs || []}
         defaultWsUrl={defaultWsUrl}
@@ -152,21 +153,17 @@ export default function TerminalPaneComponent({
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10">
         <button
           onClick={() => splitPane('horizontal')}
-          className="p-1.5 bg-[#3c3c3c] rounded text-gray-300 hover:text-white hover:bg-[#505050]"
+          className="p-1.5 bg-surface-container rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
           title="Split horizontal"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16" />
-          </svg>
+          <MaterialIcon name="grid_view" size="sm" />
         </button>
         <button
           onClick={() => splitPane('vertical')}
-          className="p-1.5 bg-[#3c3c3c] rounded text-gray-300 hover:text-white hover:bg-[#505050]"
+          className="p-1.5 bg-surface-container rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
           title="Split vertical"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12h16" />
-          </svg>
+          <MaterialIcon name="expand_more" size="sm" />
         </button>
       </div>
     </div>

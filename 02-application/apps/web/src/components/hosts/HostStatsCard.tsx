@@ -3,13 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import {
-  Activity,
-  Radio,
-  Shield,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { HostResponse } from "@/lib/validations/hosts";
 
 export interface HostDetailStats {
@@ -44,10 +38,10 @@ function formatRelative(iso: string | null): string {
 export function HostStatsCard({ host, stats, loading, error }: HostStatsCardProps) {
   if (loading) {
     return (
-      <Card>
+      <Card className="bg-surface-container-low border border-outline-variant">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Activity className="h-4 w-4" aria-hidden="true" />
+          <CardTitle className="flex items-center gap-2 text-label-md text-on-surface">
+            <MaterialIcon name="bolt" size="sm" className="text-primary" />
             Quick Stats
           </CardTitle>
         </CardHeader>
@@ -64,16 +58,16 @@ export function HostStatsCard({ host, stats, loading, error }: HostStatsCardProp
 
   if (error) {
     return (
-      <Card>
+      <Card className="bg-surface-container-low border border-outline-variant">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Activity className="h-4 w-4" aria-hidden="true" />
+          <CardTitle className="flex items-center gap-2 text-label-md text-on-surface">
+            <MaterialIcon name="bolt" size="sm" className="text-primary" />
             Quick Stats
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <AlertCircle className="h-4 w-4 text-destructive" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-body-md text-on-surface-variant">
+            <MaterialIcon name="error" size="sm" className="text-error" />
             <span>Stats unavailable: {error.message}</span>
           </div>
         </CardContent>
@@ -90,50 +84,52 @@ export function HostStatsCard({ host, stats, loading, error }: HostStatsCardProp
 
   const items = [
     {
-      icon: Clock,
+      icon: "schedule",
       label: "Last Connected",
       value: formatRelative(data.last_connected_at),
     },
     {
-      icon: Radio,
+      icon: "sensors",
       label: "Total Sessions",
       value: data.total_sessions,
     },
     {
-      icon: Shield,
+      icon: "shield",
       label: "Tunnels",
       value: `${data.active_tunnels}/${data.tunnel_count}`,
       sublabel: "active / total",
     },
     {
-      icon: Activity,
+      icon: "bolt",
       label: "Type",
       value: host.hostType?.toUpperCase() ?? "—",
     },
   ];
 
   return (
-    <Card>
+    <Card className="bg-surface-container-low border border-outline-variant">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Activity className="h-4 w-4" aria-hidden="true" />
+        <CardTitle className="flex items-center gap-2 text-label-md text-on-surface">
+          <MaterialIcon name="bolt" size="sm" className="text-primary" />
           Quick Stats
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {items.map((item) => {
-            const Icon = item.icon;
             return (
               <div
                 key={item.label}
-                className="flex flex-col gap-1 p-3 rounded-md bg-muted/30 border border-border"
+                className="flex flex-col gap-1 p-3 rounded-md bg-surface-container border border-outline-variant"
               >
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                <div className="flex items-center gap-2 text-label-md text-on-surface-variant">
+                  <MaterialIcon name={item.icon} size="sm" />
                   <span>{item.label}</span>
                 </div>
-                <div className="text-xl font-semibold truncate" title={String(item.value)}>
+                <div
+                  className="text-body-md font-semibold text-on-surface truncate"
+                  title={String(item.value)}
+                >
                   {item.value}
                 </div>
                 {item.sublabel && (

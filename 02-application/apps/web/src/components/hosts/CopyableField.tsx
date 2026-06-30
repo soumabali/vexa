@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, KeyboardEvent } from "react";
-import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface CopyableFieldProps {
   value: string;
@@ -61,10 +61,10 @@ export function CopyableField({
   return (
     <div className={`flex items-center gap-2 min-w-0 ${className}`}>
       {label && (
-        <span className="text-sm text-muted-foreground shrink-0">{label}:</span>
+        <span className="text-label-md text-on-surface-variant shrink-0">{label}:</span>
       )}
       <span
-        className={`truncate ${mono ? "font-mono text-sm" : "text-sm"}`}
+        className={`truncate ${mono ? "text-mono-code font-mono-code text-on-surface" : "text-on-surface"}`}
         onKeyDown={onKeyDown}
         title={value}
       >
@@ -76,12 +76,12 @@ export function CopyableField({
         size="sm"
         onClick={handleCopy}
         aria-label={buttonAriaLabel}
-        className="h-7 px-2 shrink-0"
+        className="h-7 px-2 shrink-0 border border-outline-variant rounded text-on-surface-variant hover:text-on-surface"
       >
         {copied ? (
-          <Check className="h-3.5 w-3.5 text-green-500" aria-hidden="true" />
+          <MaterialIcon name="check" className="h-3.5 w-3.5 text-success" size="sm" />
         ) : (
-          <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          <MaterialIcon name="content_copy" className="h-3.5 w-3.5" size="sm" />
         )}
       </Button>
       <span role="status" aria-live="polite" className="sr-only">
