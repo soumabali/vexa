@@ -2,117 +2,129 @@
 
 import React from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  User,
-  Shield,
-  Key,
-  Palette,
-  Bell,
-  ChevronRight,
-  Globe,
-  Keyboard,
-  Fingerprint,
-  Monitor,
-} from "lucide-react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
-const settingsSections = [
+interface SettingsSection {
+  title: string;
+  description: string;
+  icon: string;
+  href: string;
+}
+
+interface SettingsGroup {
+  label: string;
+  sections: SettingsSection[];
+}
+
+const settingsGroups: SettingsGroup[] = [
   {
-    title: "Profile",
-    description: "Manage your profile information and preferences",
-    icon: User,
-    href: "/settings/profile",
+    label: "Core Account",
+    sections: [
+      {
+        title: "Profile",
+        description: "Update identity, email, and public-facing details.",
+        icon: "person",
+        href: "/settings/profile",
+      },
+      {
+        title: "Security",
+        description: "Multi-factor authentication, login history, password audits.",
+        icon: "security",
+        href: "/settings/security",
+      },
+    ],
   },
   {
-    title: "Security",
-    description: "Two-factor authentication, WebAuthn, and security settings",
-    icon: Shield,
-    href: "/settings/security",
+    label: "Developer Access",
+    sections: [
+      {
+        title: "API Keys",
+        description: "Manage programmatic access and third-party integrations.",
+        icon: "key",
+        href: "/settings/api-keys",
+      },
+      {
+        title: "WebAuthn",
+        description: "Register security keys and passwordless authentication.",
+        icon: "verified_user",
+        href: "/settings/webauthn",
+      },
+    ],
   },
   {
-    title: "Active Sessions",
-    description: "Review and revoke devices signed in to your account",
-    icon: Monitor,
-    href: "/settings/sessions",
-  },
-  {
-    title: "WebAuthn",
-    description: "Manage passkeys and security keys",
-    icon: Fingerprint,
-    href: "/settings/webauthn",
-  },
-  {
-    title: "API Keys",
-    description: "Generate and manage API keys for programmatic access",
-    icon: Key,
-    href: "/settings/api-keys",
-  },
-  {
-    title: "Appearance",
-    description: "Theme, font, and visual preferences",
-    icon: Palette,
-    href: "/settings/appearance",
-  },
-  {
-    title: "Preferences",
-    description: "Terminal preferences, notifications, and behavior",
-    icon: Bell,
-    href: "/settings/preferences",
-  },
-  {
-    title: "Notifications",
-    description: "Email and in-app notification settings",
-    icon: Bell,
-    href: "/settings/notifications",
-  },
-  {
-    title: "Keyboard",
-    description: "Keyboard shortcuts and bindings",
-    icon: Keyboard,
-    href: "/settings/keyboard",
-  },
-  {
-    title: "Language & Region",
-    description: "Language, timezone, and date format",
-    icon: Globe,
-    href: "/settings/language",
+    label: "System",
+    sections: [
+      {
+        title: "Appearance",
+        description: "Customize theme, density, and typography preferences.",
+        icon: "palette",
+        href: "/settings/appearance",
+      },
+      {
+        title: "Notifications",
+        description: "Configure alerts, channels, and event triggers.",
+        icon: "notifications",
+        href: "/settings/notifications",
+      },
+      {
+        title: "Sessions",
+        description: "View and manage active and past sessions.",
+        icon: "history",
+        href: "/settings/sessions",
+      },
+    ],
   },
 ];
 
 export default function SettingsPage() {
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your account settings and preferences
-        </p>
-      </div>
+    <DashboardLayout>
+      <div className="container mx-auto py-8 px-4 max-w-4xl">
+        <div className="mb-10">
+          <h1 className="text-headline-lg text-on-surface mb-2">Settings</h1>
+          <p className="text-body-lg text-on-surface-variant">
+            Manage account configurations, security preferences, and system behavior.
+          </p>
+        </div>
 
-      <div className="grid gap-4">
-        {settingsSections.map((section) => (
-          <Link key={section.href} href={section.href}>
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <section.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{section.title}</h3>
+        <div className="space-y-10">
+          {settingsGroups.map((group) => (
+            <section key={group.label}>
+              <h2 className="text-label-md text-primary mb-3 uppercase tracking-[0.2em]">
+                {group.label}
+              </h2>
+              <div className="space-y-4">
+                {group.sections.map((section) => (
+                  <Link
+                    key={section.href}
+                    href={section.href}
+                    className="group flex items-center justify-between p-5 rounded-xl bg-surface-container border border-outline-variant hover:border-primary hover:-translate-y-px transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-surface-container-high text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <MaterialIcon name={section.icon} className="text-[28px]" />
+                      </div>
+                      <div>
+                        <h3 className="text-body-lg font-bold text-on-surface">
+                          {section.title}
+                        </h3>
+                        <p className="text-body-md text-on-surface-variant">
+                          {section.description}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {section.description}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                    <MaterialIcon
+                      name="chevron_right"
+                      className="text-on-surface-variant group-hover:translate-x-1 transition-transform"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

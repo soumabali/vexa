@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -16,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { Lock, Unlock, Plus, Search, Trash2, Eye, EyeOff, RotateCcw } from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { toast } from "sonner";
 
 interface VaultCredential {
@@ -68,6 +67,18 @@ function useVaultCredentials(enabled: boolean) {
   });
 }
 
+const typeIcon: Record<string, string> = {
+  password: "password",
+  ssh_key: "key",
+  api_token: "code",
+};
+
+const typeTint: Record<string, string> = {
+  password: "bg-primary-container text-on-primary-container",
+  ssh_key: "bg-tertiary-container text-on-tertiary-container",
+  api_token: "bg-secondary-container text-on-secondary-container",
+};
+
 export default function VaultPage() {
   const queryClient = useQueryClient();
   const [masterPassword, setMasterPassword] = useState("");
@@ -108,7 +119,6 @@ export default function VaultPage() {
       apiFetch("/api/v1/vault/credentials", { method: "POST", body: JSON.stringify(payload) }),
     onSuccess: () => {
       toast.success("Credential created");
-      setShowAddDialog(false);
       queryClient.invalidateQueries({ queryKey: ["vault-credentials"] });
     },
     onError: (err: Error) => toast.error(err.message),
@@ -122,7 +132,6 @@ export default function VaultPage() {
     },
     onError: (err: Error) => toast.error(err.message),
   });
-
   const rotateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: string }) =>
       apiFetch(`/api/v1/vault/credentials/${id}`, {
@@ -161,132 +170,215 @@ export default function VaultPage() {
     }
   };
 
+  const handleCopy = (cred: VaultCredential) => {
+    const value = revealId === cred.id && decrypted
+      ? Object.values(decrypted).map((v) => (v ? String(v) : "—")).join("\n")
+      : cred.name;
+    navigator.clipboard?.writeText(value).then(() => toast.success("Copied to clipboard"));
+  };
+
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto py-8 px-4 space-y-8">
+        {/* Header */}
+        <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Lock className="h-6 w-6" />
-              Vault
-            </h1>
-            <p className="text-muted-foreground">Manage encrypted credentials</p>
+            <div className="flex items-center gap-3 mb-2">
+              <MaterialIcon name="encrypted" className="text-primary text-[40px]" />
+              <h1 className="text-headline-lg text-on-surface">Secure Vault</h1>
+            </div>
+            <p className="text-body-lg text-on-surface-variant">
+              Manage and organize your encrypted credentials and private SSH keys.
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex gap-3">
             {unlocked ? (
-              <Button variant="outline" size="sm" onClick={() => lockMutation.mutate()}>
-                <Lock className="h-4 w-4 mr-1" /> Lock Vault
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2">
+              <>
+                <Button
+                  variant="outline"
+                  className="border-outline-variant hover:bg-surface-container-highest text-label-md"
+                  onClick={() => lockMutation.mutate()}
+                >
+                  <MaterialIcon name="lock" size="sm" className="mr-2" /> Lock Vault
+                </Button>
+                <Button
+                  className="bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] text-label-md"
+                  onClick={() => setShowAddDialog(true)}
+                >
+                  <MaterialIcon name="add" size="sm" className="mr-2" /> Add Credential
+                </Button>
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Locked State */}
+        {!unlocked ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="glass-card p-xl rounded-xl w-full max-w-md flex flex-col items-center text-center shadow-2xl">
+              <div className="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center mb-lg">
+                <MaterialIcon name="shield" className="text-primary text-[40px]" />
+              </div>
+              <h2 className="text-headline-sm text-on-surface mb-2">Vault Locked</h2>
+              <p className="text-body-md text-on-surface-variant mb-xl">
+                Your credentials are protected with AES-256 encryption. Enter your master password
+                to decrypt and access the vault.
+              </p>
+              <form
+                className="w-full space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (masterPassword) unlockMutation.mutate(masterPassword);
+                }}
+              >
                 <Input
                   type="password"
-                  placeholder="Master password"
-                  className="w-48"
+                  placeholder="Master Password"
+                  className="bg-surface-container-low border border-outline-variant text-on-surface placeholder:text-on-surface-variant focus:border-primary"
                   value={masterPassword}
                   onChange={(e) => setMasterPassword(e.target.value)}
                 />
-                <Button size="sm" onClick={() => unlockMutation.mutate(masterPassword)} disabled={!masterPassword}>
-                  <Unlock className="h-4 w-4 mr-1" /> Unlock
+                <Button
+                  type="submit"
+                  className="w-full py-3 bg-primary text-on-primary hover:bg-primary-container font-bold"
+                  disabled={!masterPassword || unlockMutation.isPending}
+                >
+                  <MaterialIcon name="lock_open" size="sm" className="mr-2" /> Unlock Vault
                 </Button>
+              </form>
+              <div className="mt-xl flex items-center gap-2 text-label-md text-on-surface-variant">
+                <MaterialIcon name="verified_user" size="sm" /> Hardware Security Module Active
               </div>
-            )}
-            <Button size="sm" disabled={!unlocked} onClick={() => setShowAddDialog(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Add
-            </Button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Toolbar */}
+            <div className="relative">
+              <MaterialIcon
+                name="search"
+                size="sm"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+              />
+              <Input
+                placeholder="Search credentials..."
+                className="pl-10 bg-surface-container-low border border-outline-variant text-on-surface placeholder:text-on-surface-variant"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-        {!unlocked && (
-          <Card className="bg-yellow-50 dark:bg-yellow-950/20">
-            <CardContent className="py-6">
-              <p className="text-sm text-muted-foreground">Vault is locked. Enter master password to view and manage credentials.</p>
-            </CardContent>
-          </Card>
+            {/* Credential Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {credsLoading && <p className="text-on-surface-variant col-span-full">Loading credentials...</p>}
+              {filtered.map((cred) => (
+                <div key={cred.id} className="glass-card rounded-xl p-5 flex flex-col gap-3 group">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          typeTint[cred.type] ?? "bg-surface-container-high text-on-surface-variant"
+                        }`}
+                      >
+                        <MaterialIcon name={typeIcon[cred.type] ?? "lock"} className="text-[24px]" />
+                      </div>
+                      <div>
+                        <h3 className="text-body-lg font-bold text-on-surface truncate max-w-[180px]">
+                          {cred.name}
+                        </h3>
+                        <p className="text-label-md text-on-surface-variant capitalize">{cred.type.replace("_", " ")}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="border-outline-variant text-on-surface-variant capitalize">
+                      {cred.type.replace("_", " ")}
+                    </Badge>
+                  </div>
+
+                  {cred.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {cred.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {revealId === cred.id && decrypted && (
+                    <div className="bg-surface-container-high rounded p-2 text-xs font-mono space-y-1">
+                      {Object.entries(decrypted).map(([k, v]) => (
+                        <div key={k}>
+                          <span className="font-semibold">{k}: </span>
+                          {v ? String(v).slice(0, 80) : "—"}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Actions — reveal on hover */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleCopy(cred)}
+                    >
+                      <MaterialIcon name="content_copy" size="sm" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleReveal(cred.id)}
+                    >
+                      <MaterialIcon name={revealId === cred.id ? "visibility_off" : "visibility"} size="sm" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        const data = prompt("Enter new secret value to rotate credential data:");
+                        if (data) rotateMutation.mutate({ id: cred.id, data });
+                      }}
+                    >
+                      <MaterialIcon name="autorenew" size="sm" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-error/10"
+                      onClick={() => {
+                        if (confirm("Delete this credential?")) deleteMutation.mutate(cred.id);
+                      }}
+                    >
+                      <MaterialIcon name="delete" size="sm" className="text-error" />
+                    </Button>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="border-t border-outline-variant pt-3 mt-auto flex items-center justify-between text-label-md text-on-surface-variant">
+                    <span>Last modified {new Date(cred.updated_at).toLocaleDateString()}</span>
+                    {cred.expires_at && (
+                      <span className="text-error">Expires {new Date(cred.expires_at).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {filtered.length === 0 && !credsLoading && (
+                <p className="text-on-surface-variant col-span-full">No credentials found.</p>
+              )}
+            </div>
+          </>
         )}
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search credentials..."
-            className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            disabled={!unlocked}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {credsLoading && unlocked && (
-            <p className="text-muted-foreground col-span-full">Loading credentials...</p>
-          )}
-          {filtered.map((cred) => (
-            <Card key={cred.id}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center justify-between">
-                  <span className="truncate">{cred.name}</span>
-                  <Badge variant="outline">{cred.type}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex flex-wrap gap-1">
-                  {cred.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">Updated {new Date(cred.updated_at).toLocaleString()}</p>
-                {cred.expires_at && (
-                  <p className="text-xs text-destructive">Expires {new Date(cred.expires_at).toLocaleString()}</p>
-                )}
-                {revealId === cred.id && decrypted && (
-                  <div className="bg-muted rounded p-2 text-xs font-mono space-y-1">
-                    {Object.entries(decrypted).map(([k, v]) => (
-                      <div key={k}>
-                        <span className="font-semibold">{k}: </span>
-                        {v ? String(v).slice(0, 80) : "—"}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex items-center gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={() => handleReveal(cred.id)}>
-                    {revealId === cred.id ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                    {revealId === cred.id ? "Hide" : "Reveal"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const data = prompt("Enter new secret value to rotate credential data:");
-                      if (data) rotateMutation.mutate({ id: cred.id, data });
-                    }}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-1" /> Rotate
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      if (confirm("Delete this credential?")) deleteMutation.mutate(cred.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          {filtered.length === 0 && unlocked && !credsLoading && (
-            <p className="text-muted-foreground col-span-full">No credentials found.</p>
-          )}
-        </div>
+        <AddCredentialDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          onSubmit={(values) => createMutation.mutate(values)}
+        />
       </div>
-
-      <AddCredentialDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onSubmit={(values) => createMutation.mutate(values)}
-      />
     </DashboardLayout>
   );
 }
@@ -320,9 +412,9 @@ function AddCredentialDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-surface-container border-outline-variant">
         <DialogHeader>
-          <DialogTitle>Add Credential</DialogTitle>
+          <DialogTitle className="text-on-surface">Add Credential</DialogTitle>
         </DialogHeader>
         <form
           className="space-y-4"
@@ -338,11 +430,11 @@ function AddCredentialDialog({
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name" className="text-on-surface">Name</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type" className="text-on-surface">Type</Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger id="type">
                 <SelectValue />
@@ -355,21 +447,24 @@ function AddCredentialDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="data">Secret data</Label>
+            <Label htmlFor="data" className="text-on-surface">Secret data</Label>
             <Input id="data" type="password" value={data} onChange={(e) => setData(e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="tags">Tags (comma separated)</Label>
-            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="prod, aws"
-            />
+            <Label htmlFor="tags" className="text-on-surface">Tags (comma separated)</Label>
+            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="prod, aws" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="expires">Expires at (optional)</Label>
+            <Label htmlFor="expires" className="text-on-surface">Expires at (optional)</Label>
             <Input id="expires" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={!name || !data}>Save</Button>
+            <Button type="button" variant="outline" className="border-outline-variant" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-primary text-on-primary" disabled={!name || !data}>
+              Save
+            </Button>
           </div>
         </form>
       </DialogContent>
