@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import type { Credential, CredentialType } from "./credential-list";
 
 interface CredentialFormProps {
@@ -83,7 +84,7 @@ export function CredentialForm({ credential, onSubmit, onCancel }: CredentialFor
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-surface-container-high rounded-xl border border-outline-variant p-5">
       <Tabs value={type} onValueChange={(v) => setType(v as CredentialType)}>
         <TabsList className="grid grid-cols-5">
           <TabsTrigger value="ssh-key">SSH Key</TabsTrigger>
@@ -96,69 +97,75 @@ export function CredentialForm({ credential, onSubmit, onCancel }: CredentialFor
         <div className="space-y-4 mt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name" className="text-on-surface">Name *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Production Server"
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="folder">Folder</Label>
+              <Label htmlFor="folder" className="text-on-surface">Folder</Label>
               <Input
                 id="folder"
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
                 placeholder="Default"
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="text-on-surface">Username</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="e.g., root"
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="host">Host</Label>
+              <Label htmlFor="host" className="text-on-surface">Host</Label>
               <Input
                 id="host"
                 value={host}
                 onChange={(e) => setHost(e.target.value)}
                 placeholder="e.g., 192.168.1.1"
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="port">Port</Label>
+            <Label htmlFor="port" className="text-on-surface">Port</Label>
             <Input
               id="port"
               type="number"
               value={port}
               onChange={(e) => setPort(e.target.value)}
               placeholder="22"
+              className="bg-surface-container-lowest border-outline-variant text-on-surface"
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-2">
-            <Label>Tags</Label>
+            <Label className="text-on-surface">Tags</Label>
             <div className="flex items-center gap-2">
               <Input
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 placeholder="Add tag..."
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
-              <Button type="button" variant="outline" onClick={handleAddTag}>
+              <Button type="button" variant="outline" className="border-outline-variant" onClick={handleAddTag}>
                 Add
               </Button>
             </div>
@@ -174,64 +181,69 @@ export function CredentialForm({ credential, onSubmit, onCancel }: CredentialFor
           {/* Type-specific fields */}
           <TabsContent value="ssh-key" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="privateKey">Private Key</Label>
+              <Label htmlFor="privateKey" className="text-on-surface">Private Key</Label>
               <Textarea
                 id="privateKey"
                 value={privateKey}
                 onChange={(e) => setPrivateKey(e.target.value)}
                 placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
                 rows={6}
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </TabsContent>
 
           <TabsContent value="password" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-on-surface">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </TabsContent>
 
           <TabsContent value="api-key" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="apiKey">API Key</Label>
+              <Label htmlFor="apiKey" className="text-on-surface">API Key</Label>
               <Input
                 id="apiKey"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="Enter API key"
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </TabsContent>
 
           <TabsContent value="certificate" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="certificate">Certificate</Label>
+              <Label htmlFor="certificate" className="text-on-surface">Certificate</Label>
               <Textarea
                 id="certificate"
                 value={certificate}
                 onChange={(e) => setCertificate(e.target.value)}
                 placeholder="-----BEGIN CERTIFICATE-----"
                 rows={6}
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </TabsContent>
 
           <TabsContent value="note" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="note">Note</Label>
+              <Label htmlFor="note" className="text-on-surface">Note</Label>
               <Textarea
                 id="note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Enter secure note..."
                 rows={6}
+                className="bg-surface-container-lowest border-outline-variant text-on-surface"
               />
             </div>
           </TabsContent>
@@ -239,10 +251,10 @@ export function CredentialForm({ credential, onSubmit, onCancel }: CredentialFor
       </Tabs>
 
       <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" className="border-outline-variant" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" className="bg-primary text-on-primary hover:bg-primary/90">
           {credential ? "Update" : "Add"} Credential
         </Button>
       </div>

@@ -104,7 +104,7 @@ export function ImportExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-surface-container-high border-outline-variant">
         <DialogHeader>
           <DialogTitle>Import / Export Credentials</DialogTitle>
           <DialogDescription>
@@ -129,16 +129,16 @@ export function ImportExportDialog({
 
               <TabsContent value="openssh" className="space-y-4">
                 <Card
-                  className="border-dashed"
+                  className="border-dashed border-outline-variant bg-surface-container-lowest"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                 >
                   <CardContent className="p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <Upload className="h-8 w-8 mx-auto mb-4 text-on-surface-variant" />
+                    <p className="text-sm text-on-surface-variant mb-2">
                       Drag and drop your OpenSSH config file here
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-on-surface-variant">
                       Supports ~/.ssh/config format
                     </p>
                   </CardContent>
@@ -156,10 +156,10 @@ export function ImportExportDialog({
               </TabsContent>
 
               <TabsContent value="putty" className="space-y-4">
-                <Card className="border-dashed">
+                <Card className="border-dashed border-outline-variant bg-surface-container-lowest">
                   <CardContent className="p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
+                    <Upload className="h-8 w-8 mx-auto mb-4 text-on-surface-variant" />
+                    <p className="text-sm text-on-surface-variant">
                       Import from PuTTY .ppk or .reg files
                     </p>
                   </CardContent>
@@ -194,7 +194,7 @@ export function ImportExportDialog({
             {isImporting && (
               <div className="space-y-2">
                 <Progress value={importProgress} />
-                <p className="text-sm text-muted-foreground text-center">
+                <p className="text-sm text-on-surface-variant text-center">
                   Importing... {importProgress}%
                 </p>
               </div>
@@ -216,12 +216,13 @@ export function ImportExportDialog({
             )}
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" className="border-outline-variant" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button
                 onClick={handleImport}
                 disabled={!importData || isImporting}
+                className="bg-primary text-on-primary hover:bg-primary/90"
               >
                 Import
               </Button>
@@ -245,7 +246,7 @@ export function ImportExportDialog({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-on-surface-variant mb-4">
                       Export all credentials as encrypted JSON backup
                     </p>
                     <Button onClick={handleExport}>
@@ -265,7 +266,7 @@ export function ImportExportDialog({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-on-surface-variant mb-4">
                       Export credentials as CSV spreadsheet
                     </p>
                     <Button onClick={handleExport}>
@@ -285,7 +286,7 @@ export function ImportExportDialog({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-on-surface-variant mb-4">
                       Export as environment variable declarations
                     </p>
                     <Button onClick={handleExport}>
