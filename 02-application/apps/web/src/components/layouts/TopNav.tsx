@@ -2,48 +2,93 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Server, Globe, Shield, Settings, TerminalSquare } from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/hosts", label: "Hosts", icon: Server },
-  { href: "/terminal", label: "Terminal", icon: TerminalSquare },
-  { href: "/tunnels", label: "Tunnels", icon: Globe },
-  { href: "/vault", label: "Vault", icon: Shield },
-  { href: "/settings", label: "Settings", icon: Settings },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: string;
+}
+
+const navItems: NavItem[] = [
+  { href: "/hosts", label: "Hosts", icon: "dns" },
+  { href: "/terminal", label: "Terminal", icon: "terminal" },
+  { href: "/tunnels", label: "Tunnels", icon: "vpn_lock" },
+  { href: "/vault", label: "Vault", icon: "vpn_key" },
+  { href: "/settings", label: "Settings", icon: "settings" },
 ];
 
 export function TopNav() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-border bg-surface-container">
-      <div className="container flex items-center justify-between h-14">
+    <header className="fixed top-0 left-0 right-0 h-16 bg-background border-b border-outline-variant z-50">
+      <div className="flex items-center justify-between h-full px-4 md:px-6">
+        {/* Left: logo */}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <svg className="w-5 h-5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+            <MaterialIcon name="terminal" size="sm" className="text-on-primary" fill />
           </div>
-          <span className="font-bold text-lg tracking-tight">vexa</span>
+          <span className="text-headline-sm font-bold text-on-surface">Vexa</span>
         </div>
-        <nav className="flex items-center gap-6">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-2 text-sm font-medium transition-colors",
-                pathname?.startsWith(href)
-                  ? "text-primary hover:text-primary/80"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          ))}
+
+        {/* Center: nav links */}
+        <nav className="hidden md:flex items-center gap-6">
+          {navItems.map(({ href, label, icon }) => {
+            const active = pathname?.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-2 text-sm font-medium transition-colors pb-1 border-b-2",
+                  active
+                    ? "text-primary border-primary"
+                    : "text-on-surface-variant hover:text-on-surface border-transparent",
+                )}
+              >
+                <MaterialIcon name={icon} size="sm" fill={active} />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
         </nav>
+
+        {/* Right: actions */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Search"
+            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+          >
+            <MaterialIcon name="search" size="md" />
+          </button>
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+          >
+            <MaterialIcon name="notifications" size="md" />
+          </button>
+          <button
+            type="button"
+            aria-label="Help"
+            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+          >
+            <MaterialIcon name="help_outline" size="md" />
+          </button>
+          <button
+            type="button"
+            aria-label="Settings"
+            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+          >
+            <MaterialIcon name="settings" size="md" />
+          </button>
+          <div className="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant flex items-center justify-center">
+            <MaterialIcon name="person" size="sm" className="text-on-secondary-container" />
+          </div>
+        </div>
       </div>
     </header>
   );
