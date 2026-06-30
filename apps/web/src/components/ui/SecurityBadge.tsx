@@ -10,11 +10,11 @@ interface SecurityBadgeProps {
 export function SecurityBadge({ status, children, className }: SecurityBadgeProps) {
   // Semantic colors from design system
   const colorMap = {
-    success: 'bg-green-600 text-white',
-    warning: 'bg-yellow-600 text-white',
-    danger: 'bg-red-600 text-white',
-    info: 'bg-blue-600 text-white',
-    mfa: 'bg-purple-600 text-white',
+    success: 'bg-success/10 text-success',
+    warning: 'bg-warning/10 text-warning',
+    danger: 'bg-error/10 text-error',
+    info: 'bg-primary/10 text-primary',
+    mfa: 'bg-primary-container text-on-primary-container',
   };
   const bg = colorMap[status] || colorMap.success;
   const classes = `px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${bg} ${className || ''}`;
