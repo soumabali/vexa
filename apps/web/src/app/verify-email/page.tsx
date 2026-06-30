@@ -3,8 +3,9 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import Link from "next/link";
 
 function VerifyEmailContent() {
@@ -23,60 +24,56 @@ function VerifyEmailContent() {
 
   if (isVerified) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Email Verified!</CardTitle>
-            <CardDescription>
-              Your email has been successfully verified. You can now log in to your account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/login">
-              <Button className="w-full">Continue to Login</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout title="Email Verified!" description="You can now log in to your account">
+        <div className="flex flex-col items-center text-center space-y-6">
+          <MaterialIcon name="mark_email_read" size="xl" className="text-primary" />
+          <p className="text-on-surface-variant text-body-md">
+            Your email has been successfully verified.
+          </p>
+          <Link href="/login" className="w-full">
+            <Button className="w-full">Continue to Login</Button>
+          </Link>
+        </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Verify Your Email</CardTitle>
-          <CardDescription>
-            Click the button below to verify your email address.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button 
-            className="w-full" 
-            onClick={handleVerify}
-            disabled={isVerifying}
-          >
-            {isVerifying ? (
-              <LoadingSpinner size="sm" />
-            ) : (
-              "Verify Email"
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout title="Verify Your Email" description="Check your inbox">
+      <div className="flex flex-col items-center text-center space-y-6">
+        <MaterialIcon name="mail" size="xl" className="text-primary" />
+        <p className="text-on-surface-variant text-body-md">
+          Click the button below to verify your email address.
+        </p>
+        <Button
+          className="w-full"
+          onClick={handleVerify}
+          disabled={isVerifying}
+        >
+          {isVerifying ? (
+            <LoadingSpinner size="sm" />
+          ) : (
+            "Verify Email"
+          )}
+        </Button>
+        <Link
+          href="/login"
+          className="text-on-surface-variant text-label-lg hover:text-on-surface transition-colors"
+        >
+          Back to login
+        </Link>
+      </div>
+    </AuthLayout>
   );
 }
 
 function LoadingContent() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardContent className="flex items-center justify-center py-12">
-          <LoadingSpinner size="md" />
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout title="Verify Your Email" description="Check your inbox">
+      <div className="flex items-center justify-center py-12">
+        <LoadingSpinner size="md" />
+      </div>
+    </AuthLayout>
   );
 }
 
