@@ -133,12 +133,12 @@ export function CredentialList({
     });
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-col h-full gap-4 bg-surface-container rounded-xl p-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
             <Input
               placeholder="Search credentials..."
               value={searchQuery}
@@ -164,7 +164,7 @@ export function CredentialList({
                   Filter
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 bg-surface-container-high border-outline-variant">
                 <DropdownMenuItem onClick={() => setFilterType("all")}>
                   All Types
                 </DropdownMenuItem>
@@ -201,7 +201,7 @@ export function CredentialList({
                   Sort
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-surface-container-high border-outline-variant">
                 <DropdownMenuItem onClick={() => setSortBy("name")}>
                   Name
                 </DropdownMenuItem>
@@ -217,7 +217,7 @@ export function CredentialList({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <div className="flex items-center border rounded-md">
+            <div className="flex items-center border border-outline-variant rounded-md">
               <Button
                 variant={viewMode === "grid" ? "secondary" : "ghost"}
                 size="sm"
@@ -238,7 +238,7 @@ export function CredentialList({
           </div>
         </div>
 
-        <Button onClick={() => setIsAddDialogOpen(true)}>
+        <Button onClick={() => setIsAddDialogOpen(true)} className="bg-primary text-on-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Add Credential
         </Button>
@@ -247,7 +247,7 @@ export function CredentialList({
       {/* Tags */}
       {allTags.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <Tag className="h-4 w-4 text-muted-foreground" />
+          <Tag className="h-4 w-4 text-on-surface-variant" />
           {allTags.map((tag) => (
             <Badge
               key={tag}
@@ -264,7 +264,7 @@ export function CredentialList({
       )}
 
       {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-on-surface-variant">
         {filteredCredentials.length} credential
         {filteredCredentials.length !== 1 ? "s" : ""}
         {searchQuery && ` matching "${searchQuery}"`}
@@ -275,7 +275,7 @@ export function CredentialList({
         <div
           className={
             viewMode === "grid"
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               : "flex flex-col gap-2"
           }
         >
@@ -305,7 +305,7 @@ export function CredentialList({
 
       {/* Add Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-surface-container-high border-outline-variant">
           <DialogHeader>
             <DialogTitle>Add New Credential</DialogTitle>
           </DialogHeader>
@@ -350,7 +350,7 @@ function CredentialDetailDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-surface-container-high border-outline-variant">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {credential.name}
@@ -374,25 +374,25 @@ function CredentialDetailDialog({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-on-surface-variant">
                   Username
                 </label>
                 <p>{credential.username || "—"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-on-surface-variant">
                   Host
                 </label>
                 <p>{credential.host || "—"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-on-surface-variant">
                   Port
                 </label>
                 <p>{credential.port || "—"}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-on-surface-variant">
                   Folder
                 </label>
                 <p>{credential.folder}</p>
@@ -400,7 +400,7 @@ function CredentialDetailDialog({
             </div>
 
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="text-sm font-medium text-on-surface-variant">
                 Tags
               </label>
               <div className="flex flex-wrap gap-2 mt-1">
@@ -414,7 +414,7 @@ function CredentialDetailDialog({
 
             {credential.lastUsed && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-on-surface-variant">
                   Last Used
                 </label>
                 <p>{credential.lastUsed.toLocaleString()}</p>
@@ -424,6 +424,7 @@ function CredentialDetailDialog({
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
+                className="border-outline-variant"
                 onClick={() => onFavorite(credential.id)}
               >
                 <Star
@@ -433,11 +434,12 @@ function CredentialDetailDialog({
                 />
                 {credential.isFavorite ? "Unfavorite" : "Favorite"}
               </Button>
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
+              <Button variant="outline" className="border-outline-variant" onClick={() => setIsEditing(true)}>
                 Edit
               </Button>
               <Button
                 variant="destructive"
+                className="bg-error text-on-error hover:bg-error/90"
                 onClick={() => {
                   onDelete(credential.id);
                   onClose();
