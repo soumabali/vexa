@@ -387,7 +387,17 @@ export default function VaultPage() {
               ))}
 
               {filtered.length === 0 && !credsLoading && (
-                <p className="text-on-surface-variant col-span-full">No credentials found.</p>
+                <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                  <MaterialIcon name="lock" size="xl" className="text-on-surface-variant mb-4" />
+                  <p className="text-headline-sm text-on-surface mb-2">Vault empty</p>
+                  <p className="text-body-md text-on-surface-variant mb-4">
+                    Add your first credential to securely store secrets
+                  </p>
+                  <Button onClick={() => setShowAddDialog(true)} className="bg-primary text-on-primary rounded-lg">
+                    <MaterialIcon name="add" size="sm" className="mr-2" />
+                    Add Credential
+                  </Button>
+                </div>
               )}
             </div>
           </>

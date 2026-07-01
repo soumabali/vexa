@@ -223,8 +223,14 @@ export default function RecordingsPage() {
               ))
             ) : recordings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-400">
-                  No recordings found. Start a session to record your terminal.
+                <TableCell colSpan={8} className="text-center py-12">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <MaterialIcon name="videocam_off" size="xl" className="text-on-surface-variant mb-2" />
+                    <p className="text-headline-sm text-on-surface mb-1">No recordings available</p>
+                    <p className="text-body-md text-on-surface-variant">
+                      Start a session to record your terminal
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (

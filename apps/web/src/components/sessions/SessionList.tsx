@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LoadingSpinner } from "../auth/LoadingSpinner";
 import { ErrorDisplay } from "../auth/ErrorDisplay";
 import { Laptop, Smartphone, Tablet, X, Monitor } from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface Session {
   id: string;
@@ -95,7 +96,16 @@ export function SessionList() {
       <CardContent>
         {error && <ErrorDisplay message={error} />}
         <div className="space-y-4">
-          {sessions.map((session) => (
+          {sessions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <MaterialIcon name="devices" size="xl" className="text-on-surface-variant mb-4" />
+              <p className="text-headline-sm text-on-surface mb-2">No active sessions</p>
+              <p className="text-body-md text-on-surface-variant">
+                You have no active sessions across devices
+              </p>
+            </div>
+          ) : (
+            sessions.map((session) => (
             <div
               key={session.id}
               className={`flex items-center justify-between p-4 rounded-lg border ${
@@ -138,7 +148,8 @@ export function SessionList() {
                 </Button>
               )}
             </div>
-          ))}
+          ))
+          )}
         </div>
       </CardContent>
     </Card>
