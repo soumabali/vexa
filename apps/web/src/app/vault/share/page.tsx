@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,6 +176,7 @@ export default function ShareManagementPage() {
   };
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Shared Credentials</h1>
@@ -387,5 +389,6 @@ export default function ShareManagementPage() {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 }

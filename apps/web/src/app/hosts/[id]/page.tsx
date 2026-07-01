@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useParams, useRouter } from "next/navigation";
 import { hostsApi } from "@/lib/api/hosts";
 import type { HostDetailStats } from "@/lib/api/hosts";
@@ -135,6 +136,7 @@ export default function HostDetailPage() {
   }
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -339,5 +341,6 @@ export default function HostDetailPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }

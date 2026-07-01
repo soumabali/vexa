@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,6 +133,7 @@ export default function RecordingsPage() {
   };
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Session Recordings</h1>
@@ -341,5 +343,6 @@ export default function RecordingsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }

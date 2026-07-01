@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -115,6 +116,7 @@ export default function SessionManagement() {
   ];
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">Session Management</h1>
 
@@ -136,5 +138,6 @@ export default function SessionManagement() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   );
 }

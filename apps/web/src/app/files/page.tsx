@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { FileManager } from '@/components/file-manager';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from "@/hooks/use-auth";
@@ -128,6 +129,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
   }, []);
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -401,6 +403,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }
 

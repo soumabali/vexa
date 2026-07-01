@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -38,6 +39,7 @@ export default function AppearanceSettingsPage() {
   };
 
   return (
+    <DashboardLayout>
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-on-surface">Appearance</h1>
@@ -217,5 +219,6 @@ export default function AppearanceSettingsPage() {
         <Button onClick={handleSave}>Save Changes</Button>
       </div>
     </div>
+    </DashboardLayout>
   );
 }
