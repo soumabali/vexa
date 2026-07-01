@@ -251,7 +251,7 @@ export default function Terminal({
       fitAddon.fit();
       const { cols, rows } = term;
       const resizeMsg = JSON.stringify({ type: 'resize', cols, rows });
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(resizeMsg);
       }
     };

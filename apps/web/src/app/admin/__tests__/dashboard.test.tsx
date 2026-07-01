@@ -7,13 +7,21 @@ import HostManagement from '../hosts/page';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock WebSocket
-global.WebSocket = vi.fn().mockImplementation(() => ({
-  onopen: null,
-  onclose: null,
-  onmessage: null,
-  close: vi.fn(),
-  send: vi.fn(),
-})) as unknown as typeof WebSocket;
+class MockWebSocket {
+  onopen: ((ev: Event) => void) | null = null;
+  onclose: ((ev: CloseEvent) => void) | null = null;
+  onmessage: ((ev: MessageEvent) => void) | null = null;
+  close = vi.fn();
+  send = vi.fn();
+  readyState = 1;
+  static OPEN = 1;
+  static CONNECTING = 0;
+  static CLOSED = 3;
+  constructor(url: string) {
+    setTimeout(() => this.onopen?.(new Event('open')), 0);
+  }
+}
+global.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 
 // Mock fetch
 global.fetch = vi.fn().mockImplementation((url) => {
