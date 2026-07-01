@@ -1,13 +1,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SessionList } from "@/components/sessions/SessionList";
 import { LoginHistory } from "@/components/sessions/LoginHistory";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 export default function SessionsPage() {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Session Management</h1>
-        <p className="text-muted-foreground">
+        <p className="text-on-surface-variant">
           Manage your active sessions and view login history
         </p>
       </div>

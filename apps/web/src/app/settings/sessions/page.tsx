@@ -22,7 +22,7 @@ import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
-import { Loader2, Monitor, Trash2, MapPin, Clock } from "lucide-react";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface SessionMetadata {
   session_id: string;
@@ -95,7 +95,7 @@ export default function SessionsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Active Sessions</h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-on-surface-variant mt-2">
             Review and revoke active sessions across your devices.
           </p>
         </div>
@@ -109,16 +109,16 @@ export default function SessionsPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center gap-2 text-muted-foreground py-6">
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="flex items-center gap-2 text-on-surface-variant py-6">
+                <MaterialIcon name="progress_activity" className="h-4 w-4 animate-spin" />
                 Loading sessions…
               </div>
             ) : error ? (
-              <p className="text-sm text-destructive py-6">
+              <p className="text-sm text-error py-6">
                 {error.message || "Failed to load sessions."}
               </p>
             ) : !data || data.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-6">
+              <p className="text-sm text-on-surface-variant py-6">
                 No active sessions.
               </p>
             ) : (
@@ -132,7 +132,7 @@ export default function SessionsPage() {
                       data-testid="session-row"
                     >
                       <div className="flex items-center gap-3">
-                        <Monitor className="h-5 w-5 text-primary" />
+                        <MaterialIcon name="monitor" className="h-5 w-5 text-primary" />
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <p className="font-medium">
@@ -144,13 +144,13 @@ export default function SessionsPage() {
                               </Badge>
                             ) : null}
                           </div>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
                             <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
+                              <MaterialIcon name="location_on" className="h-3 w-3" />
                               {session.ip_address || "Unknown IP"}
                             </span>
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
+                              <MaterialIcon name="schedule" className="h-3 w-3" />
                               Last active {formatRelative(session.last_active_at)}
                             </span>
                           </div>
@@ -164,7 +164,7 @@ export default function SessionsPage() {
                           aria-label={`Revoke ${browser} session`}
                           data-testid="revoke-button"
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <MaterialIcon name="delete" className="h-4 w-4 text-error" />
                         </Button>
                       )}
                     </div>
@@ -205,7 +205,7 @@ export default function SessionsPage() {
               data-testid="confirm-revoke"
             >
               {revoking ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <MaterialIcon name="progress_activity" className="h-4 w-4 animate-spin mr-2" />
               ) : null}
               Revoke session
             </Button>
