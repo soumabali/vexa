@@ -270,8 +270,28 @@ export default function VaultPage() {
 
             {/* Credential Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {credsLoading && <p className="text-on-surface-variant col-span-full">Loading credentials...</p>}
-              {filtered.map((cred) => (
+              {credsLoading &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="glass-card rounded-xl p-5 flex flex-col gap-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-surface-container-low animate-pulse" />
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 rounded-md bg-surface-container-low animate-pulse" />
+                          <div className="h-3 w-20 rounded-md bg-surface-container-low animate-pulse" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-3 w-full rounded-md bg-surface-container-low animate-pulse" />
+                    <div className="h-3 w-2/3 rounded-md bg-surface-container-low animate-pulse" />
+                    <div className="flex gap-2 mt-auto">
+                      <div className="h-8 w-24 rounded-md bg-surface-container-low animate-pulse" />
+                      <div className="h-8 w-24 rounded-md bg-surface-container-low animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              {!credsLoading &&
+                filtered.map((cred) => (
                 <div key={cred.id} className="glass-card rounded-xl p-5 flex flex-col gap-3 group">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">

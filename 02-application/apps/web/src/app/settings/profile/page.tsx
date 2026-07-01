@@ -15,6 +15,7 @@ import { authApi } from "@/lib/api/auth";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { ErrorDisplay } from "@/components/auth/ErrorDisplay";
 import { MaterialIcon } from "@/components/ui/material-icon";
+import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
 
 interface ProfileData {
@@ -72,8 +73,26 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-12 flex justify-center">
-        <LoadingSpinner />
+      <div className="container mx-auto max-w-4xl px-4 py-12 space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="rounded-xl border border-outline-variant bg-surface p-6 space-y-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-28" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+          <Skeleton className="h-10 w-32 rounded-md" />
+        </div>
       </div>
     );
   }
