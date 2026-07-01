@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,6 +74,7 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
+      <DashboardLayout>
       <div className="container mx-auto max-w-4xl px-4 py-12 space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="rounded-xl border border-outline-variant bg-surface p-6 space-y-4">
@@ -94,26 +96,32 @@ export default function ProfileSettingsPage() {
           <Skeleton className="h-10 w-32 rounded-md" />
         </div>
       </div>
+      </DashboardLayout>
     );
   }
 
   if (error) {
     return (
+      <DashboardLayout>
       <div className="container mx-auto max-w-4xl px-4 py-12">
         <ErrorDisplay message={error} />
       </div>
+      </DashboardLayout>
     );
   }
 
   if (!profile) {
     return (
+      <DashboardLayout>
       <div className="container mx-auto max-w-4xl px-4 py-12">
         <ErrorDisplay message="Profile not found" />
       </div>
+      </DashboardLayout>
     );
   }
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto max-w-4xl px-4 py-12">
       <div className="mb-8">
         <h1 className="text-headline-lg text-on-surface mb-2">Profile Settings</h1>
@@ -139,6 +147,7 @@ export default function ProfileSettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </DashboardLayout>
   );
 }
 
