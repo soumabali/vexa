@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c2c6d6",
+                        "tertiary-fixed": "#ffdcc6",
+                        "secondary-container": "#39485a",
+                        "primary": "#adc6ff",
+                        "on-primary": "#002e6a",
+                        "on-primary-container": "#00285d",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1d2027",
+                        "surface": "#10131a",
+                        "on-tertiary-container": "#461f00",
+                        "inverse-primary": "#005ac2",
+                        "tertiary-container": "#df7412",
+                        "on-secondary": "#233143",
+                        "surface-container-lowest": "#0b0e15",
+                        "surface-container-low": "#191b23",
+                        "on-error": "#690005",
+                        "outline-variant": "#424754",
+                        "tertiary": "#ffb786",
+                        "surface-container-highest": "#32353c",
+                        "surface-bright": "#363941",
+                        "on-secondary-container": "#a7b6cc",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "error-container": "#93000a",
+                        "background": "#10131a",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-high": "#272a31",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "outline": "#8c909f",
+                        "surface-variant": "#32353c",
+                        "secondary-fixed": "#d4e4fa",
+                        "on-secondary-fixed-variant": "#39485a",
+                        "surface-dim": "#10131a",
+                        "primary-fixed": "#d8e2ff",
+                        "secondary-fixed-dim": "#b9c8de",
+                        "on-surface": "#e1e2ec",
+                        "on-primary-fixed": "#001a42",
+                        "primary-container": "#4d8eff",
+                        "inverse-surface": "#e1e2ec",
+                        "surface-tint": "#adc6ff",
+                        "inverse-on-surface": "#2e3038",
+                        "secondary": "#b9c8de",
+                        "on-tertiary-fixed": "#311400",
+                        "on-tertiary": "#502400",
+                        "on-secondary-fixed": "#0d1c2d",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-background": "#e1e2ec"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin": "24px",
+                        "gutter": "20px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "base": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "mono-code": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "mono-code": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #10131a;
+            color: #e1e2ec;
+        }
+        .glass-panel {
+            background: rgba(29, 32, 39, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid #32353c;
+        }
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #32353c;
+            border-radius: 2px;
+            outline: none;
+        }
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #adc6ff;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #10131a;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #32353c;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #e1e2ec;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4d8eff;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="w-full h-16 flex items-center bg-surface border-b border-outline-variant px-lg fixed top-0 z-50">
+<div class="flex justify-between items-center w-full">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold text-primary">Vexa</span>
+<nav class="hidden md:flex gap-lg">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Hosts</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Terminal</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Tunnels</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Vault</a>
+<a class="text-primary border-b-2 border-primary pb-5 cursor-pointer active:scale-95" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs cursor-pointer">JS</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 mt-16 pb-24 px-lg max-w-5xl mx-auto w-full">
+<!-- Page Header -->
+<div class="py-xl">
+<h1 class="text-headline-lg font-bold text-on-surface">Appearance</h1>
+<p class="text-on-surface-variant mt-xs">Customize the look and feel of the application</p>
+</div>
+<div class="space-y-lg">
+<!-- Theme Section -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">palette</span>
+<h2 class="text-headline-sm font-semibold">Theme</h2>
+</div>
+<p class="text-on-surface-variant text-sm mb-lg">Choose your preferred color scheme</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
+<button class="flex flex-col items-center justify-center p-lg rounded-lg border border-outline-variant hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-3xl mb-md group-hover:text-primary">light_mode</span>
+<span class="font-semibold">Light</span>
+<span class="text-xs text-on-surface-variant">Clean and bright</span>
+</button>
+<button class="flex flex-col items-center justify-center p-lg rounded-lg border border-outline-variant hover:border-primary transition-all group bg-surface-container-high border-primary-container ring-1 ring-primary">
+<span class="material-symbols-outlined text-3xl mb-md text-primary">dark_mode</span>
+<span class="font-semibold">Dark</span>
+<span class="text-xs text-on-surface-variant">Easy on the eyes</span>
+</button>
+<button class="flex flex-col items-center justify-center p-lg rounded-lg border border-outline-variant hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-3xl mb-md group-hover:text-primary">desktop_windows</span>
+<span class="font-semibold">System</span>
+<span class="text-xs text-on-surface-variant">Follow system preference</span>
+</button>
+</div>
+</section>
+<!-- Font Section -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">text_fields</span>
+<h2 class="text-headline-sm font-semibold">Font</h2>
+</div>
+<p class="text-on-surface-variant text-sm mb-lg">Configure font settings for the terminal and UI</p>
+<div class="space-y-lg">
+<div>
+<label class="block text-sm font-medium mb-md">Font Family</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+<button class="flex items-center gap-md px-md py-sm rounded-md bg-primary-container text-on-primary-container text-left transition-colors">
+<span class="font-mono text-sm">Aa</span>
+<span class="flex-1 font-mono">Monospace</span>
+</button>
+<button class="flex items-center gap-md px-md py-sm rounded-md bg-surface-container hover:bg-surface-container-high text-left transition-colors">
+<span class="font-mono text-sm">Aa</span>
+<span class="flex-1 font-mono">JetBrains Mono</span>
+</button>
+<button class="flex items-center gap-md px-md py-sm rounded-md bg-surface-container hover:bg-surface-container-high text-left transition-colors">
+<span class="font-mono text-sm">Aa</span>
+<span class="flex-1 font-mono">Fira Code</span>
+</button>
+<button class="flex items-center gap-md px-md py-sm rounded-md bg-surface-container hover:bg-surface-container-high text-left transition-colors">
+<span class="font-mono text-sm">Aa</span>
+<span class="flex-1 font-mono">Source Code Pro</span>
+</button>
+<button class="flex items-center gap-md px-md py-sm rounded-md bg-surface-container hover:bg-surface-container-high text-left transition-colors">
+<span class="font-mono text-sm">Aa</span>
+<span class="flex-1 font-mono">Cascadia Code</span>
+</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-sm">
+<label class="text-sm font-medium">Font Size</label>
+<span class="text-sm text-primary font-mono">14px</span>
+</div>
+<div class="relative w-full h-1 bg-surface-container-highest rounded-full">
+<div class="absolute left-0 top-0 h-full bg-primary rounded-full" style="width: 40%"></div>
+<input class="custom-slider absolute -top-1.5 left-0 w-full opacity-0 cursor-pointer" max="24" min="10" step="1" type="range" value="14"/>
+<div class="absolute w-4 h-4 bg-primary border-2 border-surface rounded-full shadow-lg" style="left: 40%; top: -6px;"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Terminal Section -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">terminal</span>
+<h2 class="text-headline-sm font-semibold">Terminal</h2>
+</div>
+<p class="text-on-surface-variant text-sm mb-lg">Terminal display preferences</p>
+<div class="divide-y divide-outline-variant">
+<div class="flex items-center justify-between py-md">
+<div>
+<p class="font-medium">Show Line Numbers</p>
+<p class="text-xs text-on-surface-variant">Display line numbers in the terminal</p>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+<div class="flex items-center justify-between py-md">
+<div>
+<p class="font-medium">Word Wrap</p>
+<p class="text-xs text-on-surface-variant">Wrap long lines to fit the terminal width</p>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+</div>
+</section>
+<!-- Layout Section -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">view_quilt</span>
+<h2 class="text-headline-sm font-semibold">Layout</h2>
+</div>
+<p class="text-on-surface-variant text-sm mb-lg">Configure the application layout</p>
+<div class="divide-y divide-outline-variant">
+<div class="flex items-center justify-between py-md">
+<div>
+<p class="font-medium">Compact Mode</p>
+<p class="text-xs text-on-surface-variant">Reduce padding and spacing for a denser UI</p>
+</div>
+<label class="toggle-switch">
+<input type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+<div class="flex items-center justify-between py-md">
+<div>
+<p class="font-medium">Collapsed Sidebar</p>
+<p class="text-xs text-on-surface-variant">Start with the sidebar collapsed</p>
+</div>
+<label class="toggle-switch">
+<input type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+<div class="flex items-center justify-between py-md">
+<div>
+<p class="font-medium">Show Git Branch</p>
+<p class="text-xs text-on-surface-variant">Display current git branch in the status bar</p>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+</div>
+</section>
+<!-- Default View Mode Section -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">visibility</span>
+<h2 class="text-headline-sm font-semibold">Default View Mode</h2>
+</div>
+<p class="text-on-surface-variant text-sm mb-lg">Choose your preferred default view</p>
+<div class="grid grid-cols-2 gap-md">
+<button class="flex flex-col items-center justify-center p-lg rounded-lg border border-primary bg-surface-container-high ring-1 ring-primary transition-all">
+<span class="material-symbols-outlined text-2xl mb-sm text-primary">grid_view</span>
+<span class="font-semibold">Grid</span>
+<span class="text-xs text-on-surface-variant">Card-based layout</span>
+</button>
+<button class="flex flex-col items-center justify-center p-lg rounded-lg border border-outline-variant hover:border-primary transition-all">
+<span class="material-symbols-outlined text-2xl mb-sm">view_list</span>
+<span class="font-semibold">List</span>
+<span class="text-xs text-on-surface-variant">Compact rows</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Footer Actions -->
+<div class="flex justify-end gap-md py-xl">
+<button class="px-lg py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">Discard changes</button>
+<button class="px-xl py-sm rounded-lg bg-primary text-on-primary font-semibold shadow-lg hover:brightness-110 active:scale-95 transition-all">Save Changes</button>
+</div>
+</main>
+</body></html>

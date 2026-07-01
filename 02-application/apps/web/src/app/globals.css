@@ -4,112 +4,136 @@
 
 @layer base {
   :root {
-    /* Cybernetic Velocity - Dark Theme */
-    --background: 222 47% 5%;
-    --foreground: 226 71% 92%;
-    
-    --card: 222 35% 8%;
-    --card-foreground: 226 71% 92%;
-    
-    --popover: 222 35% 8%;
-    --popover-foreground: 226 71% 92%;
-    
-    --primary: #3B82F6;
-    --primary-foreground: 218 100% 21%;
-    
-    --secondary: 156 62% 59%;
-    --secondary-foreground: 158 100% 11%;
-    
-    --muted: 220 20% 16%;
-    --muted-foreground: 220 14% 65%;
-    
-    --accent: 262 100% 87%;
-    --accent-foreground: 265 100% 29%;
-    
-    --destructive: 4 100% 83%;
-    --destructive-foreground: 356 100% 21%;
-    
-    --border: 220 18% 28%;
-    --input: 220 18% 28%;
-    --ring: 220 100% 84%;
+    /* Material 3 Design Tokens — Vexa Core (from Design.md) */
+    --surface-dim: #10131a;
+    --surface: #10131a;
+    --surface-bright: #363941;
+    --surface-container-lowest: #0b0e15;
+    --surface-container-low: #191b23;
+    --surface-container: #1d2027;
+    --surface-container-high: #272a31;
+    --surface-container-highest: #32353c;
+    --surface-variant: #32353c;
+    --on-surface: #e1e2ec;
+    --on-surface-variant: #c2c6d6;
+    --inverse-surface: #e1e2ec;
+    --inverse-on-surface: #2e3038;
+    --outline: #8c909f;
+    --outline-variant: #424754;
+    --surface-tint: #adc6ff;
+
+    /* Primary */
+    --primary: #adc6ff;
+    --on-primary: #002e6a;
+    --primary-container: #4d8eff;
+    --on-primary-container: #00285d;
+    --inverse-primary: #005ac2;
+    --primary-fixed: #d8e2ff;
+    --primary-fixed-dim: #adc6ff;
+    --on-primary-fixed: #001a42;
+    --on-primary-fixed-variant: #004395;
+
+    /* Secondary */
+    --secondary: #b9c8de;
+    --on-secondary: #233143;
+    --secondary-container: #39485a;
+    --on-secondary-container: #a7b6cc;
+    --secondary-fixed: #d4e4fa;
+    --secondary-fixed-dim: #b9c8de;
+    --on-secondary-fixed: #0d1c2d;
+    --on-secondary-fixed-variant: #39485a;
+
+    /* Tertiary */
+    --tertiary: #ffb786;
+    --on-tertiary: #502400;
+    --tertiary-container: #df7412;
+    --on-tertiary-container: #461f00;
+    --tertiary-fixed: #ffdcc6;
+    --tertiary-fixed-dim: #ffb786;
+    --on-tertiary-fixed: #311400;
+    --on-tertiary-fixed-variant: #723600;
+
+    /* Error */
+    --error: #ffb4ab;
+    --on-error: #690005;
+    --error-container: #93000a;
+    --on-error-container: #ffdad6;
+
+    /* Background */
+    --background: #10131a;
+    --on-background: #e1e2ec;
+
+    /* shadcn/ui aliases (map to Material 3 tokens) */
+    --foreground: var(--on-surface);
+    --card: var(--surface-container);
+    --card-foreground: var(--on-surface);
+    --popover: var(--surface-container-high);
+    --popover-foreground: var(--on-surface);
+    --primary-foreground: var(--on-primary);
+    --secondary-foreground: var(--on-secondary);
+    --muted: var(--surface-container-low);
+    --muted-foreground: var(--on-surface-variant);
+    --accent: var(--primary-container);
+    --accent-foreground: var(--on-primary-container);
+    --destructive: var(--error);
+    --destructive-foreground: var(--on-error);
+    --border: var(--outline-variant);
+    --input: var(--outline-variant);
+    --ring: var(--primary);
     --radius: 0.5rem;
-    
-    /* Custom surface levels */
-    --surface: 222 47% 5%;
-    --surface-dim: 222 47% 5%;
-    --surface-bright: 222 20% 25%;
-    --surface-container: 222 30% 15%;
-    --surface-container-high: 222 25% 20%;
-    --on-surface: 226 71% 92%;
-    --on-surface-variant: 226 20% 80%;
-    --outline: 220 14% 65%;
-    --outline-variant: 220 18% 28%;
+
+    /* Status colors (used in mockups) */
+    --success: #4ade80;
+    --warning: #facc15;
+    --info: #adc6ff;
   }
 
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-on-surface antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
-  
-  /* Monospace for technical content */
+
   code, pre, .font-mono, .mono-label {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* Material Symbols base */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }
 
 @layer components {
-  /* Solid button styles - NO transparency */
-  .btn-solid {
-    @apply px-4 py-2 rounded-md font-medium transition-colors;
-    @apply bg-primary text-primary-foreground;
-    @apply hover:bg-primary/90;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  /* Glass card (from mockup) */
+  .glass-card {
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .btn-secondary {
-    @apply px-4 py-2 rounded-md font-medium transition-colors;
-    @apply bg-muted text-muted-foreground;
-    @apply hover:bg-muted/80;
-    @apply border border-border;
+  .glass-card:hover {
+    background: rgba(51, 65, 85, 0.6);
+    border-color: #adc6ff;
+    transform: translateY(-2px);
   }
-  
-  .btn-ghost {
-    @apply px-4 py-2 rounded-md font-medium transition-colors;
-    @apply bg-transparent text-muted-foreground;
-    @apply hover:bg-muted hover:text-foreground;
-    @apply border border-border;
+
+  /* No scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-  
-  /* Card with solid background */
-  .card-solid {
-    @apply rounded-lg border p-4;
-    @apply bg-card text-card-foreground;
-    @apply border-border;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-  
-  /* Input with solid background */
-  .input-solid {
-    @apply rounded-md px-3 py-2;
-    @apply bg-muted text-foreground;
-    @apply border border-input;
-    @apply placeholder:text-muted-foreground;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring;
-  }
-  
-  /* Status indicators */
-  .status-online {
-    @apply w-2 h-2 rounded-full bg-green-500;
-  }
-  
-  .status-offline {
-    @apply w-2 h-2 rounded-full bg-gray-500;
-  }
-  
-  .status-error {
-    @apply w-2 h-2 rounded-full bg-red-500;
+
+  /* Terminal dot */
+  .terminal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
   }
 }

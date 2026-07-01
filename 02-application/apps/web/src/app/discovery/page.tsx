@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import type { ScanJob, ScanResult, StartScanResponse, ScanResultsResponse, ScanHistoryResponse, ImportResultsResponse } from '@/types/discovery'
 import { useToast } from '@/components/ui/use-toast'
 import { api } from "@/lib/api"
-import { Loader2, Search, Plus, Pause, Download, Server, Globe, Shield } from 'lucide-react'
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 const defaultPorts = [
   { port: 22, service: 'SSH', checked: true },
@@ -204,8 +204,8 @@ export default function DiscoveryPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Network Discovery</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Shield className="h-4 w-4" />
+        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+          <MaterialIcon name="shield" className="h-4 w-4" />
           <span>Rate-limited, private networks only</span>
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function DiscoveryPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
+            <MaterialIcon name="search" className="h-5 w-5" />
             Scan Configuration
           </CardTitle>
         </CardHeader>
@@ -306,9 +306,9 @@ export default function DiscoveryPage() {
               className="min-w-[120px]"
             >
               {isScanning ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <MaterialIcon name="progress_activity" className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Search className="mr-2 h-4 w-4" />
+                <MaterialIcon name="search" className="mr-2 h-4 w-4" />
               )}
               {isScanning ? 'Scanning...' : 'Start Scan'}
             </Button>
@@ -318,7 +318,7 @@ export default function DiscoveryPage() {
                 onClick={() => cancelScan(currentScan.id)}
                 disabled={loading}
               >
-                <Pause className="mr-2 h-4 w-4" />
+                <MaterialIcon name="pause" className="mr-2 h-4 w-4" />
                 Cancel
               </Button>
             )}
@@ -338,7 +338,7 @@ export default function DiscoveryPage() {
               <span>{currentScan.scanned_hosts} / {currentScan.total_hosts} hosts</span>
             </div>
             <Progress value={currentScan.progress} className="h-2" />
-            <div className="flex justify-between text-sm text-muted-foreground">
+            <div className="flex justify-between text-sm text-on-surface-variant">
               <span>Status: {currentScan.status}</span>
               <span>{currentScan.progress}% complete</span>
             </div>
@@ -352,7 +352,7 @@ export default function DiscoveryPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <Server className="h-5 w-5" />
+                <MaterialIcon name="dns" className="h-5 w-5" />
                 Scan Results ({scanResults.length} hosts found)
               </span>
               <div className="flex gap-2">
@@ -361,7 +361,7 @@ export default function DiscoveryPage() {
                   size="sm"
                   onClick={() => importResults(currentScan!.id, true)}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <MaterialIcon name="add" className="mr-2 h-4 w-4" />
                   Import All
                 </Button>
                 {selectedResults.size > 0 && (
@@ -370,7 +370,7 @@ export default function DiscoveryPage() {
                     size="sm"
                     onClick={() => importResults(currentScan!.id, false)}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <MaterialIcon name="add" className="mr-2 h-4 w-4" />
                     Import Selected ({selectedResults.size})
                   </Button>
                 )}
@@ -381,7 +381,7 @@ export default function DiscoveryPage() {
             <div className="rounded-md border">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b bg-muted/50">
+                  <tr className="border-b bg-surface-container-low/50">
                     <th className="p-3 text-left">
                       <Checkbox
                         checked={selectedResults.size === scanResults.length}
@@ -447,7 +447,7 @@ export default function DiscoveryPage() {
               {scanHistory.map((job) => (
                 <div
                   key={job.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-muted/50 cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-surface-container-low/50 cursor-pointer"
                   onClick={() => {
                     if (job.status === 'completed') {
                       fetchScanResults(job.id)
@@ -455,10 +455,10 @@ export default function DiscoveryPage() {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <MaterialIcon name="public" className="h-4 w-4 text-on-surface-variant" />
                     <div>
                       <p className="font-medium">{job.network}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-on-surface-variant">
                         {new Date(job.created_at).toLocaleString()}
                       </p>
                     </div>
@@ -466,7 +466,7 @@ export default function DiscoveryPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-sm">{job.found_hosts} hosts found</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-on-surface-variant">
                         {job.scanned_hosts}/{job.total_hosts} scanned
                       </p>
                     </div>

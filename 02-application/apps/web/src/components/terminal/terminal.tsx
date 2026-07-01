@@ -251,7 +251,7 @@ export default function Terminal({
       fitAddon.fit();
       const { cols, rows } = term;
       const resizeMsg = JSON.stringify({ type: 'resize', cols, rows });
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(resizeMsg);
       }
     };
@@ -290,10 +290,10 @@ export default function Terminal({
   }, []);
 
   return (
-    <div className={`terminal-container flex flex-col h-full ${className || ''}`}>
+    <div className={`terminal-container flex flex-col h-full bg-black p-4 font-mono-code ${className || ''}`}>
       <div
         ref={containerRef}
-        className="terminal-viewport flex-1 overflow-hidden"
+        className="terminal-viewport flex-1 overflow-hidden text-mono-code"
         style={{ backgroundColor: theme.background }}
       />
     </div>

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { LucideIcon } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/material-icon';
 
 interface StatItem {
   title: string;
   value: number | string;
-  icon: LucideIcon;
+  icon: string;
   color: string;
 }
 
@@ -21,10 +21,10 @@ export default function StatsCards({ items }: StatsCardsProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">{item.title}</p>
+                <p className="text-sm font-medium text-on-surface-variant">{item.title}</p>
                 <p className="text-2xl font-bold">{item.value}</p>
               </div>
-              <item.icon className={`h-8 w-8 ${item.color}`} />
+              <MaterialIcon name={item.icon} className={`h-8 w-8 ${item.color}`} />
             </div>
           </CardContent>
         </Card>

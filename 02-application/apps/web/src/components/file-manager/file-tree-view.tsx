@@ -39,7 +39,8 @@ export function FileTreeView({ items, selected, onItemClick, onItemDoubleClick }
         >
           {item.type === 'directory' && (
             <button
-              className="p-0.5 hover:bg-accent rounded"
+              aria-label={expanded.has(item.id) ? `Collapse ${item.name}` : `Expand ${item.name}`}
+              className="p-0.5 hover:bg-accent rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleExpand(item.id);

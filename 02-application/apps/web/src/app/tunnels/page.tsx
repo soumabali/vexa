@@ -19,7 +19,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Shield, MoreHorizontal, Power, RefreshCw, Trash2 } from "lucide-react"
 import type { Tunnel } from "@/types/tunnel"
 import { tunnelsApi, enableTunnelApi, disableTunnelApi, rotateTunnelKeys } from "@/lib/api"
 import { TunnelStatusBadge } from "@/components/tunnels/TunnelStatusBadge"
@@ -27,6 +26,7 @@ import { TunnelConfigModal } from "@/components/tunnels/TunnelConfigModal"
 import { TunnelDeleteDialog } from "@/components/tunnels/TunnelDeleteDialog"
 import { TunnelDetailDialog } from "@/components/tunnels/TunnelDetailDialog"
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 export default function TunnelsPage() {
   const [filter, setFilter] = useState("")
@@ -58,10 +58,10 @@ export default function TunnelsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="h-6 w-6" />
+              <MaterialIcon name="shield" className="h-6 w-6" />
               Tunnels
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-on-surface-variant">
               Manage your WireGuard tunnels
             </p>
           </div>
@@ -89,8 +89,14 @@ export default function TunnelsPage() {
             <TableBody>
               {filtered?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No tunnels found. Create one from a host detail page.
+                  <TableCell colSpan={7} className="text-center py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <MaterialIcon name="vpn_lock" size="xl" className="text-on-surface-variant mb-2" />
+                      <p className="text-headline-sm text-on-surface mb-1">No tunnels configured</p>
+                      <p className="text-body-md text-on-surface-variant">
+                        Create a WireGuard tunnel from a host detail page
+                      </p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -125,20 +131,20 @@ export default function TunnelsPage() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MaterialIcon name="more_horiz" className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => toggleTunnel(tunnel)}>
-                          <Power className="mr-2 h-4 w-4" />
+                          <MaterialIcon name="power" className="mr-2 h-4 w-4" />
                           {tunnel.is_enabled ? "Disable" : "Enable"}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={async () => { await rotateTunnelKeys(tunnel.id); refetch(); }}>
-                          <RefreshCw className="mr-2 h-4 w-4" />
+                          <MaterialIcon name="refresh" className="mr-2 h-4 w-4" />
                           Rotate Keys
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
+                        <DropdownMenuItem className="text-error">
+                          <MaterialIcon name="delete" className="mr-2 h-4 w-4" />
                           <TunnelDeleteDialog tunnel={tunnel} onDeleted={refetch} />
                         </DropdownMenuItem>
                       </DropdownMenuContent>

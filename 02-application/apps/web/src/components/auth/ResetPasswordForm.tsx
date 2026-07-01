@@ -6,9 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, ResetPasswordInput } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { ErrorDisplay } from "./ErrorDisplay";
 import Link from "next/link";
@@ -17,6 +17,7 @@ export function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -30,7 +31,7 @@ export function ResetPasswordForm() {
     setIsLoading(true);
     setError("");
     try {
-      // In real app, token would come from URL query or state
+      // In real app, token comes from URL query state
       await authApi.resetPassword({ token: "temp-token", password: data.password });
       setIsSuccess(true);
     } catch (err) {
@@ -42,64 +43,83 @@ export function ResetPasswordForm() {
 
   if (isSuccess) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Password Reset Successful</CardTitle>
-          <CardDescription>
+      <div className="w-full space-y-6">
+        <div className="flex justify-center">
+          <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center">
+            <MaterialIcon name="check_circle" size="lg" className="text-on-primary-container" />
+          </div>
+        </div>
+        <div className="space-y-2 text-center">
+          <h2 className="text-headline-sm font-bold text-on-surface">Password Reset</h2>
+          <p className="text-body-md text-on-surface-variant">
             Your password has been successfully reset. You can now log in with your new password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="flex justify-center pt-2">
           <Link href="/login">
-            <Button className="w-full">Go to Login</Button>
+            <Button className="bg-primary text-on-primary hover:bg-primary/90">
+              Continue to Login
+            </Button>
           </Link>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Reset Password</CardTitle>
-        <CardDescription>
-          Enter your new password below.
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          {error && <ErrorDisplay message={error} />}
-          <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+    <div className="w-full space-y-6">
+      <div className="space-y-2">
+        <h2 className="text-headline-sm font-bold text-on-surface">Reset Password</h2>
+        <p className="text-body-md text-on-surface-variant">
+          Choose a new password for your account.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {error && <ErrorDisplay message={error} />}
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-on-surface">New Password</Label>
+          <div className="relative">
             <Input
               id="password"
-              type="password"
-              placeholder="••••••••"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter new password"
+              className="bg-surface-container-high border-outline-variant text-on-surface pr-10"
               {...register("password")}
             />
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
-            )}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+              tabIndex={-1}
+            >
+              <MaterialIcon name={showPassword ? "visibility_off" : "visibility"} size="sm" />
+            </button>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <LoadingSpinner size="sm" /> : "Reset Password"}
-          </Button>
-        </CardFooter>
+          {errors.password && (
+            <p className="text-sm text-error">{errors.password.message}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-on-surface">Confirm Password</Label>
+          <Input
+            id="confirmPassword"
+            type={showPassword ? "text" : "password"}
+            placeholder="Confirm new password"
+            className="bg-surface-container-high border-outline-variant text-on-surface"
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword && (
+            <p className="text-sm text-error">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+        <Button
+          type="submit"
+          className="w-full bg-primary text-on-primary hover:bg-primary/90"
+          disabled={isLoading}
+        >
+          {isLoading ? <LoadingSpinner /> : "Reset Password"}
+        </Button>
       </form>
-    </Card>
+    </div>
   );
 }

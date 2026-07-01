@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vexa | Notifications Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #10131a; /* bg-surface */
+            color: #e1e2ec; /* on-surface */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(66, 71, 84, 0.5);
+        }
+        .custom-toggle {
+            appearance: none;
+            width: 36px;
+            height: 20px;
+            background: #32353c;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .custom-toggle:checked {
+            background: #adc6ff;
+        }
+        .custom-toggle::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: #e1e2ec;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .custom-toggle:checked::before {
+            transform: translateX(16px);
+            background: #002e6a;
+        }
+        .notification-card:hover {
+            border-color: #adc6ff;
+            background: rgba(173, 198, 255, 0.04);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c2c6d6",
+                        "secondary-container": "#39485a",
+                        "primary": "#adc6ff",
+                        "on-primary": "#002e6a",
+                        "on-primary-container": "#00285d",
+                        "surface-container": "#1d2027",
+                        "surface": "#10131a",
+                        "outline-variant": "#424754",
+                        "surface-container-highest": "#32353c",
+                        "on-secondary-container": "#a7b6cc",
+                        "outline": "#8c909f",
+                        "on-surface": "#e1e2ec",
+                        "background": "#10131a"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "mono-code": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "mono-code": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface flex overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="w-[260px] h-screen fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col py-lg z-50">
+<div class="px-lg mb-xl">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface">Admin Console</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Vexa Enterprise</p>
+</div>
+<div class="px-md mb-md">
+<button class="w-full flex items-center justify-center gap-sm bg-primary text-on-primary font-label-md text-label-md py-sm rounded transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Connection
+            </button>
+</div>
+<nav class="flex-1 space-y-base overflow-y-auto">
+<!-- Active State: Notifications -->
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-label-md text-label-md">Security</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined">palette</span>
+<span class="font-label-md text-label-md">Appearance</span>
+</a>
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container border-l-2 border-primary py-sm px-md active:translate-x-1" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined">keyboard</span>
+<span class="font-label-md text-label-md">Keyboard Shortcuts</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined">language</span>
+<span class="font-label-md text-label-md">Language &amp; Region</span>
+</a>
+</nav>
+<div class="mt-auto px-md space-y-base">
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Docs</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[260px] flex-1 h-screen flex flex-col relative overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="w-full h-16 flex items-center justify-between px-lg bg-surface border-b border-outline-variant shrink-0">
+<div class="flex items-center gap-xl">
+<div class="font-headline-md text-headline-md font-bold text-primary">Vexa</div>
+<nav class="hidden md:flex gap-lg">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Hosts</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Terminal</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Tunnels</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Vault</a>
+<a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-5" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">help_outline</button>
+<div class="h-8 w-8 rounded-full bg-secondary-container flex items-center justify-center cursor-pointer border border-outline-variant">
+<span class="material-symbols-outlined text-on-secondary-container">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Notification Settings Canvas -->
+<div class="flex-1 overflow-y-auto p-lg max-w-6xl mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-xl">
+<h2 class="font-headline-lg text-30px text-on-surface tracking-tight">Notification Settings</h2>
+<p class="font-body-md text-on-surface-variant mt-sm">Configure how and when Vexa reaches out to you across your infrastructure.</p>
+</div>
+<div class="grid grid-cols-12 gap-lg">
+<!-- Primary Toggles (Bento Left) -->
+<div class="col-span-12 lg:col-span-7 space-y-lg">
+<!-- Channel Preferences -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-lg">
+<span class="material-symbols-outlined text-primary">broadcast_on_home</span>
+<h3 class="font-headline-sm text-headline-sm">Delivery Channels</h3>
+</div>
+<div class="space-y-md">
+<div class="flex items-center justify-between p-md rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
+<div class="flex items-start gap-md">
+<div class="p-base bg-secondary-container rounded">
+<span class="material-symbols-outlined text-on-secondary-container">desktop_windows</span>
+</div>
+<div>
+<p class="font-body-lg font-medium text-on-surface">Desktop Notifications</p>
+<p class="font-label-md text-on-surface-variant">Push alerts for real-time terminal activity and system health.</p>
+</div>
+</div>
+<input checked="" class="custom-toggle" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between p-md rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
+<div class="flex items-start gap-md">
+<div class="p-base bg-secondary-container rounded">
+<span class="material-symbols-outlined text-on-secondary-container">mail</span>
+</div>
+<div>
+<p class="font-body-lg font-medium text-on-surface">Email Alerts</p>
+<p class="font-label-md text-on-surface-variant">Daily summaries and critical security audit logs via email.</p>
+</div>
+</div>
+<input checked="" class="custom-toggle" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between p-md rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors opacity-50">
+<div class="flex items-start gap-md">
+<div class="p-base bg-surface-container-highest rounded">
+<span class="material-symbols-outlined text-outline">stack</span>
+</div>
+<div>
+<p class="font-body-lg font-medium text-on-surface">Slack Integration <span class="ml-sm text-[10px] uppercase bg-primary/10 text-primary px-sm py-0.5 rounded">Pro</span></p>
+<p class="font-label-md text-on-surface-variant">Stream events directly to a private Slack channel.</p>
+</div>
+</div>
+<input class="custom-toggle" disabled="" type="checkbox"/>
+</div>
+</div>
+</section>
+<!-- Event Triggers -->
+<section class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-lg">
+<span class="material-symbols-outlined text-primary">bolt</span>
+<h3 class="font-headline-sm text-headline-sm">Event Triggers</h3>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center gap-md p-sm px-md notification-card border border-transparent rounded-lg transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">login</span>
+<div class="flex-1">
+<p class="font-body-md font-semibold text-on-surface">Successful Login</p>
+<p class="font-label-md text-on-surface-variant">Notify when a new session is established on any host.</p>
+</div>
+<div class="flex gap-sm">
+<span class="px-sm py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-md">Desktop</span>
+<input checked="" class="custom-toggle" type="checkbox"/>
+</div>
+</div>
+<div class="flex items-center gap-md p-sm px-md notification-card border border-transparent rounded-lg transition-all">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">error</span>
+<div class="flex-1">
+<p class="font-body-md font-semibold text-on-surface">Failed Tunnel Connection</p>
+<p class="font-label-md text-on-surface-variant">Immediate alert if an active tunnel drops or fails to initiate.</p>
+</div>
+<div class="flex gap-sm">
+<span class="px-sm py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-md">Desktop</span>
+<span class="px-sm py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-md">Email</span>
+<input checked="" class="custom-toggle" type="checkbox"/>
+</div>
+</div>
+<div class="flex items-center gap-md p-sm px-md notification-card border border-transparent rounded-lg transition-all">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<div class="flex-1">
+<p class="font-body-md font-semibold text-on-surface">Sudo Privilege Execution</p>
+<p class="font-label-md text-on-surface-variant">Log whenever a command is executed with root privileges.</p>
+</div>
+<div class="flex gap-sm">
+<input class="custom-toggle" type="checkbox"/>
+</div>
+</div>
+<div class="flex items-center gap-md p-sm px-md notification-card border border-transparent rounded-lg transition-all">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">dns</span>
+<div class="flex-1">
+<p class="font-body-md font-semibold text-on-surface">Host Offline</p>
+<p class="font-label-md text-on-surface-variant">Alert when heartbeat monitoring fails for &gt; 60 seconds.</p>
+</div>
+<div class="flex gap-sm">
+<span class="px-sm py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-md">Email</span>
+<input checked="" class="custom-toggle" type="checkbox"/>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Secondary Config (Bento Right) -->
+<div class="col-span-12 lg:col-span-5 space-y-lg">
+<!-- Quiet Hours -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-lg bg-surface-container-high border-b border-outline-variant">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">bedtime</span>
+<h4 class="font-headline-sm text-lg">Quiet Hours</h4>
+</div>
+<input class="custom-toggle" type="checkbox"/>
+</div>
+</div>
+<div class="p-lg space-y-md">
+<p class="font-label-md text-on-surface-variant">Mute non-critical notifications during specific times.</p>
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant uppercase">From</label>
+<input class="w-full bg-surface-container border border-outline-variant rounded p-sm text-on-surface font-mono-code focus:border-primary outline-none" type="time" value="22:00"/>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant uppercase">To</label>
+<input class="w-full bg-surface-container border border-outline-variant rounded p-sm text-on-surface font-mono-code focus:border-primary outline-none" type="time" value="07:00"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Preview Visual -->
+<div class="relative group rounded-xl overflow-hidden h-64 border border-outline-variant">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="A cinematic, high-contrast shot of a sleek server room corridor illuminated with pulsing neon blue and deep slate gray lights. The atmosphere is quiet, technological, and high-security, with rows of server racks fading into a dark perspective. Thin fiber optic lines glow faintly, symbolizing data flow and connectivity in a modern DevOps environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCQX6E29m3iKHqg_1CE9xx4Yh7vWjhNbTFNIb_4ezc7MdRA_eZpgbU6MrgiDhGzeDQDz5tU80jZhvSbjnNWY3A84L98ATJ2jo3goLoQBf-jrjMOBbrrs2oJuu62IpEr3cNA9Yw4_Bm3FkFEOnvtz-CPJPJwa7Yx7K0voFBd6Z0aGPHjRKJcRc-1zpV_4GA8ZshBx6Y6dz8t3Ql91dM-YM_3JnMNULNRpoBagRuXbW2l452W74l0Cq7kENkhPAP7fF4zjuoZUxiXMtfH')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-lg w-full">
+<div class="p-md glass-panel rounded-lg shadow-2xl translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<p class="font-label-md font-bold text-primary">SYSTEM ALERT</p>
+</div>
+<p class="font-body-md text-on-surface">SSH Login detected on <span class="font-mono-code text-secondary">prod-db-01</span></p>
+<p class="text-[10px] text-on-surface-variant mt-xs">Just now • via Desktop</p>
+</div>
+</div>
+</div>
+<!-- Notification Log Card -->
+<div class="glass-panel rounded-xl p-lg">
+<div class="flex items-center justify-between mb-md">
+<h4 class="font-label-md font-bold text-on-surface uppercase tracking-widest">Recent Activity</h4>
+<button class="text-primary font-label-md hover:underline">Clear all</button>
+</div>
+<div class="space-y-md">
+<div class="flex gap-md">
+<div class="w-px bg-outline-variant relative">
+<div class="absolute top-1 -left-1 w-2 h-2 rounded-full bg-outline"></div>
+</div>
+<div>
+<p class="font-body-md text-on-surface">Email sent: Failed Tunnel</p>
+<p class="font-label-md text-on-surface-variant">2 mins ago</p>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-px bg-outline-variant relative">
+<div class="absolute top-1 -left-1 w-2 h-2 rounded-full bg-outline"></div>
+</div>
+<div>
+<p class="font-body-md text-on-surface">Settings updated by admin</p>
+<p class="font-label-md text-on-surface-variant">1 hour ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Global Actions -->
+<div class="mt-xl pt-lg border-t border-outline-variant flex justify-end gap-md">
+<button class="px-lg py-sm font-label-md border border-outline-variant rounded-md hover:bg-surface-container-highest transition-colors">Discard Changes</button>
+<button class="px-lg py-sm font-label-md bg-primary text-on-primary rounded-md shadow-lg shadow-primary/20 active:scale-95 transition-all">Save Notification Policy</button>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple toggle state log for demo
+        document.querySelectorAll('.custom-toggle').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const label = e.target.closest('div')?.querySelector('.font-body-lg')?.innerText || 'Event';
+                console.log(`Notification Toggle: ${label} is now ${e.target.checked ? 'ENABLED' : 'DISABLED'}`);
+                
+                // Visual feedback
+                if(e.target.checked) {
+                    e.target.closest('div')?.classList.remove('opacity-75');
+                } else {
+                    e.target.closest('div')?.classList.add('opacity-75');
+                }
+            });
+        });
+
+        // Search bar interaction mock
+        const navItems = document.querySelectorAll('nav a');
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                if(!item.classList.contains('bg-secondary-container')) {
+                    item.style.transform = 'translateX(4px)';
+                }
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.transform = 'translateX(0px)';
+            });
+        });
+    </script>
+</body></html>

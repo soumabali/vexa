@@ -7,7 +7,8 @@
 
 | File | Topik | Status | Session Note |
 |------|-------|--------|--------------|
-| `20260622-workflow-improvement-10of10.md` | Workflow improvement plan: target rating 10/10 | ✅ 9/9 items implemented | `2026-06-22-backup-automation.md` |
+| `20260622-workflow-improvement-10of10.md` | Workflow improvement plan: target rating 10/10 | 9/9 items implemented | `2026-06-22-backup-automation.md` |
+| `2026-06-30_ui-redesign.md` | UI Redesign — Material 3 design system, 36 pages, 11 dispatches | PROPOSED — awaiting approval | — |
 
 ## Arsip Plans (selesai/sukses)
 

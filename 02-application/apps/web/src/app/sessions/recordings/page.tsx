@@ -21,18 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Play,
-  Download,
-  Trash2,
-  Search,
-  Clock,
-  Monitor,
-  FileText,
-  Calendar,
-  X,
-} from "lucide-react";
 import { RecordingPlayer } from "@/components/recording-player";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface Recording {
   id: string;
@@ -153,7 +143,7 @@ export default function RecordingsPage() {
       {/* Search Bar */}
       <div className="flex gap-2 mb-6">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <MaterialIcon name="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search recordings by content, commands, or host..."
             value={searchQuery}
@@ -171,7 +161,7 @@ export default function RecordingsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
           <div className="text-2xl font-bold">{recordings.length}</div>
           <div className="text-sm text-gray-400">Total Recordings</div>
@@ -219,15 +209,28 @@ export default function RecordingsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><div className="h-4 w-24 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-20 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-32 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-16 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-16 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-20 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-24 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-8 w-20 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                </TableRow>
+              ))
             ) : recordings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-400">
-                  No recordings found. Start a session to record your terminal.
+                <TableCell colSpan={8} className="text-center py-12">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <MaterialIcon name="videocam_off" size="xl" className="text-on-surface-variant mb-2" />
+                    <p className="text-headline-sm text-on-surface mb-1">No recordings available</p>
+                    <p className="text-body-md text-on-surface-variant">
+                      Start a session to record your terminal
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -241,14 +244,14 @@ export default function RecordingsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-gray-400" />
+                      <MaterialIcon name="schedule" className="h-3 w-3 text-gray-400" />
                       {formatDuration(recording.duration)}
                     </div>
                   </TableCell>
                   <TableCell>{formatFileSize(recording.file_size_bytes)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Monitor className="h-3 w-3 text-gray-400" />
+                      <MaterialIcon name="monitor" className="h-3 w-3 text-gray-400" />
                       {recording.terminal_type}
                     </div>
                   </TableCell>
@@ -266,21 +269,21 @@ export default function RecordingsPage() {
                         onClick={() => handlePlay(recording)}
                         disabled={recording.status !== "completed"}
                       >
-                        <Play className="h-4 w-4" />
+                        <MaterialIcon name="play_arrow" className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDownload(recording.id)}
                       >
-                        <Download className="h-4 w-4" />
+                        <MaterialIcon name="download" className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(recording.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <MaterialIcon name="delete" className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -325,7 +328,7 @@ export default function RecordingsPage() {
                 size="icon"
                 onClick={() => setIsPlayerOpen(false)}
               >
-                <X className="h-4 w-4" />
+                <MaterialIcon name="close" className="h-4 w-4" />
               </Button>
             </DialogTitle>
           </DialogHeader>

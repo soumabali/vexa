@@ -6,9 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema, ForgotPasswordInput } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MaterialIcon } from "@/components/ui/material-icon";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { ErrorDisplay } from "./ErrorDisplay";
 import Link from "next/link";
@@ -41,60 +41,77 @@ export function ForgotPasswordForm() {
 
   if (isSuccess) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Check Your Email</CardTitle>
-          <CardDescription>
+      <div className="w-full space-y-6">
+        <div className="flex justify-center">
+          <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center">
+            <MaterialIcon name="mark_email_read" size="lg" className="text-on-primary-container" />
+          </div>
+        </div>
+        <div className="space-y-2 text-center">
+          <h2 className="text-headline-sm font-bold text-on-surface">Check Your Email</h2>
+          <p className="text-body-md text-on-surface-variant">
             If an account exists with that email, we&apos;ve sent a verification code to reset your password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="text-center space-y-2">
+          <p className="text-sm text-on-surface-variant">
+            Didn&apos;t receive an email? Check your spam folder or{" "}
+            <button
+              onClick={() => setIsSuccess(false)}
+              className="text-primary underline"
+            >
+              try again
+            </button>
+          </p>
+        </div>
+        <div className="flex justify-center pt-2">
           <Link href="/reset-password">
-            <Button className="w-full">Enter Verification Code</Button>
+            <Button variant="outline">Enter Verification Code</Button>
           </Link>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Link href="/login">
-            <Button variant="ghost">Back to Login</Button>
-          </Link>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Forgot Password?</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a verification code to reset your password.
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          {error && <ErrorDisplay message={error} />}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <LoadingSpinner size="sm" /> : "Send Reset Code"}
-          </Button>
-          <Link href="/login">
-            <Button variant="ghost" className="w-full">Back to Login</Button>
-          </Link>
-        </CardFooter>
+    <div className="w-full space-y-6">
+      <div className="space-y-2">
+        <h2 className="text-headline-sm font-bold text-on-surface">Forgot Password?</h2>
+        <p className="text-body-md text-on-surface-variant">
+          Enter your email and we&apos;ll send you a reset link.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {error && <ErrorDisplay message={error} />}
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-on-surface">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            className="bg-surface-container-high border-outline-variant text-on-surface"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-sm text-error">{errors.email.message}</p>
+          )}
+        </div>
+        <Button
+          type="submit"
+          className="w-full bg-primary text-on-primary hover:bg-primary/90"
+          disabled={isLoading}
+        >
+          {isLoading ? <LoadingSpinner /> : "Send Reset Link"}
+        </Button>
       </form>
-    </Card>
+      <div className="text-center space-y-2 pt-2">
+        <p className="text-sm text-on-surface-variant">
+          Remember your password?{" "}
+          <Link href="/login" className="text-primary hover:underline font-medium">
+            Back to login
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }

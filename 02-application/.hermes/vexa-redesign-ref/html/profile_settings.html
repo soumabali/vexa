@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vexa | Profile Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .profile-gradient {
+            background: linear-gradient(135deg, #005ac2 0%, #10131a 100%);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #10131a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#c2c6d6",
+                    "tertiary-fixed": "#ffdcc6",
+                    "secondary-container": "#39485a",
+                    "primary": "#adc6ff",
+                    "on-primary": "#002e6a",
+                    "on-primary-container": "#00285d",
+                    "on-error-container": "#ffdad6",
+                    "surface-container": "#1d2027",
+                    "surface": "#10131a",
+                    "on-tertiary-container": "#461f00",
+                    "inverse-primary": "#005ac2",
+                    "tertiary-container": "#df7412",
+                    "on-secondary": "#233143",
+                    "surface-container-lowest": "#0b0e15",
+                    "surface-container-low": "#191b23",
+                    "on-error": "#690005",
+                    "outline-variant": "#424754",
+                    "tertiary": "#ffb786",
+                    "surface-container-highest": "#32353c",
+                    "surface-bright": "#363941",
+                    "on-secondary-container": "#a7b6cc",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "error-container": "#93000a",
+                    "background": "#10131a",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-container-high": "#272a31",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "outline": "#8c909f",
+                    "surface-variant": "#32353c",
+                    "secondary-fixed": "#d4e4fa",
+                    "on-secondary-fixed-variant": "#39485a",
+                    "surface-dim": "#10131a",
+                    "primary-fixed": "#d8e2ff",
+                    "secondary-fixed-dim": "#b9c8de",
+                    "on-surface": "#e1e2ec",
+                    "on-primary-fixed": "#001a42",
+                    "primary-container": "#4d8eff",
+                    "inverse-surface": "#e1e2ec",
+                    "surface-tint": "#adc6ff",
+                    "inverse-on-surface": "#2e3038",
+                    "secondary": "#b9c8de",
+                    "on-tertiary-fixed": "#311400",
+                    "on-tertiary": "#502400",
+                    "on-secondary-fixed": "#0d1c2d",
+                    "on-primary-fixed-variant": "#004395",
+                    "on-background": "#e1e2ec"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin": "24px",
+                    "gutter": "20px",
+                    "xl": "32px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "base": "4px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "mono-code": ["JetBrains Mono"],
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "mono-code": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar Implementation -->
+<header class="w-full h-16 flex items-center border-b border-outline-variant bg-surface dark:bg-surface px-lg fixed top-0 z-50">
+<div class="flex justify-between items-center w-full">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary">Vexa</span>
+<nav class="hidden md:flex gap-lg items-center">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Hosts</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Terminal</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Tunnels</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Vault</a>
+<a class="font-body-md text-body-md text-primary dark:text-primary border-b-2 border-primary pb-5" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined p-xs text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined p-xs text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95" data-icon="help_outline">help_outline</button>
+<button class="material-symbols-outlined p-xs text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95" data-icon="account_circle">account_circle</button>
+</div>
+</div>
+</header>
+<!-- SideNavBar Implementation -->
+<aside class="w-[260px] h-screen fixed left-0 top-0 pt-16 bg-surface-container dark:bg-surface-container border-r border-outline-variant hidden md:block">
+<div class="flex flex-col h-full py-lg">
+<div class="px-md mb-lg">
+<div class="flex items-center gap-md p-sm bg-surface-container-high rounded-lg mb-md">
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A professional close-up headshot of a senior software engineer with a neutral expression, wearing minimalist tech-wear. The lighting is low-key with a cool blue rim light, set against a dark, tech-oriented studio background with subtle server rack bokeh. The style is ultra-high definition and modern corporate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByisKBCrgZdKUDXNhF7JkFb8l3L7ckPqrc_m8h1eFh_JliB7aXP5jxKVI9cQiOJRCzTo0lkw4OsdqIgBZcQOoPd5wYr6KGoKx-_1etszh30TFr8XKHWez8KBr1PMsMznU5ks4g_WbX0zFjN0JuzdW70TKgQnIjZPDxCkunaZ534Ewg7RYx_WLoh095a6MJ7lOj4xwWikvGiaxtChDfwId4H2-zpyjAWztXzdrXw37-JX6FM3XjMpKbuGgswiATDZlO1zCLJJE4Y4XG"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Admin Console</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Vexa Enterprise</span>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-sm bg-primary text-on-primary py-sm rounded-lg font-label-md text-label-md font-bold hover:opacity-90 transition-opacity active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    New Connection
+                </button>
+</div>
+<nav class="flex-1 space-y-xs px-sm">
+<!-- ACTIVE TAB: Profile -->
+<a class="flex items-center gap-md bg-secondary-container dark:bg-secondary-container text-on-secondary-container dark:text-on-secondary-container border-l-2 border-primary py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant dark:text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-md text-label-md">Security</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant dark:text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="palette">palette</span>
+<span class="font-label-md text-label-md">Appearance</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant dark:text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant dark:text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="keyboard">keyboard</span>
+<span class="font-label-md text-label-md">Keyboard Shortcuts</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant dark:text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+<span class="font-label-md text-label-md">Language & Region</span>
+</a>
+</nav>
+<div class="mt-auto px-sm border-t border-outline-variant pt-md">
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Docs</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-sm px-md hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-[260px] pt-16 min-h-screen">
+<div class="max-w-6xl mx-auto p-lg">
+<!-- Header Section -->
+<div class="mb-xl">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Profile Settings</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your account identity and system preferences.</p>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Profile Identity Card -->
+<section class="col-span-12 lg:col-span-8 space-y-lg">
+<div class="glass-panel rounded-xl p-xl overflow-hidden relative">
+<div class="absolute top-0 right-0 p-lg">
+<span class="material-symbols-outlined text-primary/20 scale-[4]" data-icon="verified_user">verified_user</span>
+</div>
+<div class="flex flex-col md:flex-row gap-xl items-start md:items-center relative z-10">
+<div class="relative group">
+<img class="w-32 h-32 rounded-full border-2 border-primary object-cover" data-alt="A detailed, sharp portrait of a software engineer for a tech profile. The aesthetic is dark-mode focused with deep navy and slate tones. The person has a serious, professional look. Lighting is dramatic, with a subtle glow around the avatar that matches a cyber-security theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7qSW8pKZ_gzPKhjibWxllUrKJ2pkItJFCNYMtrUqAYFYnSzUyhC7avkFggRDWU3kfxLBBXqHSfJxRmn4xCRvtjOJIYHDajhnN13vIUplrBtGkpg_tQjdrgyKKRPVGSHFvv3Sd1SStVV1UAUp2OD48QZfkUXQ2_BSdrP96nZifyY1K9GPutnjyDtdeXUK-sZRFWL_5NUbZrWYKu-Dvk7CSCfvXTeDVR8l9w2vEh1Bnfn2pGGNe1IATBHE47ZD3eEVe2FhR_huykh4A"/>
+<button class="absolute bottom-0 right-0 bg-primary text-on-primary p-xs rounded-full shadow-lg border-2 border-surface active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="flex-1 space-y-sm">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Alex Chen</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Senior DevOps Engineer • Vexa Labs</p>
+</div>
+<div class="flex flex-wrap gap-sm">
+<span class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded font-label-md text-label-md border border-outline-variant">Enterprise Admin</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-sm py-xs rounded font-label-md text-label-md border border-outline-variant">North America-West</span>
+</div>
+</div>
+</div>
+<div class="mt-xl grid grid-cols-1 md:grid-cols-2 gap-lg border-t border-outline-variant pt-xl">
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Full Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="text" value="Alex Chen"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Email Address</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="email" value="alex.chen@vexa.io"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">SSH Username</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-md font-mono-code text-mono-code text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="text" value="alex_admin"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Job Title</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="text" value="Senior DevOps Engineer"/>
+</div>
+</div>
+<div class="mt-lg flex justify-end gap-md">
+<button class="px-lg py-sm border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-colors">Discard Changes</button>
+<button class="px-lg py-sm bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 active:scale-95 transition-all">Save Profile</button>
+</div>
+</div>
+<!-- Security Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="glass-panel rounded-xl p-lg border-l-4 border-l-tertiary-container">
+<div class="flex items-center gap-md mb-md text-tertiary">
+<span class="material-symbols-outlined" data-icon="lock_clock">lock_clock</span>
+<h3 class="font-headline-sm text-headline-sm">Two-Factor Auth</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Secure your account with multi-factor authentication (MFA).</p>
+<div class="flex items-center gap-sm">
+<span class="text-error flex items-center font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px] mr-1" data-icon="cancel">cancel</span>
+                                    Currently Disabled
+                                </span>
+</div>
+<button class="mt-lg w-full py-sm bg-surface-container-highest text-on-surface border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-bright transition-colors">Enable 2FA</button>
+</div>
+<div class="glass-panel rounded-xl p-lg border-l-4 border-l-primary">
+<div class="flex items-center gap-md mb-md text-primary">
+<span class="material-symbols-outlined" data-icon="vpn_key">vpn_key</span>
+<h3 class="font-headline-sm text-headline-sm">SSH Key Vault</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Manage 4 active keys across 12 production clusters.</p>
+<div class="flex items-center gap-sm">
+<span class="text-primary flex items-center font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px] mr-1" data-icon="check_circle">check_circle</span>
+                                    Verified & Encrypted
+                                </span>
+</div>
+<button class="mt-lg w-full py-sm bg-surface-container-highest text-on-surface border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-bright transition-colors">Manage Keys</button>
+</div>
+</div>
+</section>
+<!-- Sidebar Content -->
+<aside class="col-span-12 lg:col-span-4 space-y-lg">
+<!-- Session Card -->
+<div class="glass-panel rounded-xl p-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Active Sessions</h3>
+<div class="space-y-md">
+<div class="flex items-start gap-md">
+<div class="p-xs bg-surface-container-highest rounded text-primary">
+<span class="material-symbols-outlined" data-icon="desktop_windows">desktop_windows</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="font-label-md text-label-md text-on-surface">MacOS • Chrome</span>
+<span class="text-[10px] uppercase font-bold text-primary">Current</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">San Francisco, USA • 192.168.1.45</p>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<div class="p-xs bg-surface-container-highest rounded text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="smartphone">smartphone</span>
+</div>
+<div class="flex-1">
+<span class="font-label-md text-label-md text-on-surface">iOS App</span>
+<p class="font-label-md text-label-md text-on-surface-variant">Logged in 2h ago</p>
+</div>
+<button class="text-error font-label-md text-label-md hover:underline">Revoke</button>
+</div>
+</div>
+<button class="mt-lg w-full text-center text-on-surface-variant font-label-md text-label-md hover:text-on-surface">View All Sessions</button>
+</div>
+<!-- Usage Stats -->
+<div class="glass-panel rounded-xl p-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Resource Usage</h3>
+<div class="space-y-lg">
+<div class="space-y-xs">
+<div class="flex justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">Storage (Vault)</span>
+<span class="font-label-md text-label-md text-on-surface">4.2 / 10 GB</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 42%"></div>
+</div>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">API Requests</span>
+<span class="font-label-md text-label-md text-on-surface">85%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container" style="width: 85%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Dangerous Zone -->
+<div class="p-lg rounded-xl border border-error/30 bg-error/5">
+<h3 class="font-label-md text-label-md font-bold text-error uppercase tracking-wider mb-sm">Dangerous Zone</h3>
+<p class="font-label-md text-label-md text-on-surface-variant mb-md">Permanently remove your account and all associated tunnel data.</p>
+<button class="w-full py-sm border border-error text-error rounded-lg font-label-md text-label-md hover:bg-error hover:text-on-error transition-all active:scale-95">Delete Account</button>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<!-- Success Message Toast (Hidden by default) -->
+<div class="fixed bottom-lg right-lg glass-panel px-lg py-md rounded-xl border-l-4 border-l-primary flex items-center gap-md transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none" id="toast">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle">check_circle</span>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">Profile Updated</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Changes were saved successfully.</p>
+</div>
+</div>
+<script>
+        // Simple Interaction logic
+        const saveBtn = document.querySelector('button.bg-primary');
+        const toast = document.getElementById('toast');
+
+        if(saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                // Show toast
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                
+                // Animate button
+                saveBtn.innerText = "Saving...";
+                
+                setTimeout(() => {
+                    toast.classList.add('translate-y-24', 'opacity-0');
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    saveBtn.innerText = "Save Profile";
+                }, 3000);
+            });
+        }
+
+        // Ripple / Active effect on nav items
+        const navItems = document.querySelectorAll('aside nav a');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Not actually navigating, just UI feedback
+                navItems.forEach(i => i.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'border-l-2', 'border-primary'));
+                navItems.forEach(i => i.classList.add('text-on-surface-variant'));
+                
+                item.classList.add('bg-secondary-container', 'text-on-secondary-container', 'border-l-2', 'border-primary');
+                item.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

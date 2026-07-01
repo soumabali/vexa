@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Copy, ClipboardPaste, Search, ZoomIn, ZoomOut, Bell, BellOff, BellRing, Settings } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/material-icon';
 
 export interface TerminalToolbarProps {
   onCopy?: () => void;
@@ -53,40 +53,43 @@ export default function TerminalToolbar({
     [handleSearch]
   );
 
-  const BellIcon = bellMode === 'off' ? BellOff : bellMode === 'audible' ? BellRing : Bell;
+  const BellIcon = bellMode === 'off' ? 'notifications_off' : bellMode === 'audible' ? 'notifications_active' : 'notifications';
 
   return (
-    <div className={`terminal-toolbar flex items-center gap-1 px-2 py-1 bg-[#2d2d2d] border-b border-[#3c3c3c] ${className || ''}`}>
+    <div className={`terminal-toolbar flex items-center gap-1 px-2 py-1 bg-surface-container border-b border-outline-variant ${className || ''}`}>
       <button
         onClick={onCopy}
-        className="p-1.5 rounded hover:bg-[#505050] text-gray-300 hover:text-white transition-colors"
+        aria-label="Copy selection"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Copy selection"
       >
-        <Copy className="w-4 h-4" />
+        <MaterialIcon name="content_copy" size="sm" />
       </button>
 
       <button
         onClick={onPaste}
-        className="p-1.5 rounded hover:bg-[#505050] text-gray-300 hover:text-white transition-colors"
+        aria-label="Paste"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Paste"
       >
-        <ClipboardPaste className="w-4 h-4" />
+        <MaterialIcon name="content_paste" size="sm" />
       </button>
 
-      <div className="w-px h-4 bg-[#3c3c3c] mx-1" />
+      <div className="w-px h-4 bg-outline-variant mx-1" />
 
       <button
         onClick={() => setSearchVisible(!searchVisible)}
-        className={`p-1.5 rounded hover:bg-[#505050] transition-colors ${
-          searchVisible ? 'text-blue-400 bg-[#505050]' : 'text-gray-300 hover:text-white'
+        aria-label="Search"
+        className={`p-1.5 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+          searchVisible ? 'text-primary bg-surface-variant' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
         }`}
         title="Search"
       >
-        <Search className="w-4 h-4" />
+        <MaterialIcon name="search" size="sm" />
       </button>
 
       {searchVisible && (
-        <div className="flex items-center gap-1 bg-[#1e1e1e] rounded px-2 py-0.5">
+        <div className="flex items-center gap-1 bg-surface-container-low rounded px-2 py-0.5">
           <input
             type="text"
             value={searchQuery}
@@ -94,12 +97,13 @@ export default function TerminalToolbar({
             onKeyDown={handleKeyDown}
             placeholder="Search..."
             autoFocus
-            className="bg-transparent text-white text-sm outline-none w-32 placeholder-gray-500"
+            className="bg-transparent text-on-surface text-sm outline-none w-32 placeholder:text-on-surface-variant"
           />
           <button
             onClick={() => setCaseSensitive(!caseSensitive)}
-            className={`text-xs px-1.5 py-0.5 rounded ${
-              caseSensitive ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-[#505050]'
+            aria-label="Toggle case sensitive search"
+            className={`text-xs px-1.5 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              caseSensitive ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-variant'
             }`}
             title="Case sensitive"
           >
@@ -107,8 +111,9 @@ export default function TerminalToolbar({
           </button>
           <button
             onClick={() => setWholeWord(!wholeWord)}
-            className={`text-xs px-1.5 py-0.5 rounded ${
-              wholeWord ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-[#505050]'
+            aria-label="Toggle whole word search"
+            className={`text-xs px-1.5 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              wholeWord ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-variant'
             }`}
             title="Whole word"
           >
@@ -116,8 +121,9 @@ export default function TerminalToolbar({
           </button>
           <button
             onClick={() => setRegexMode(!regexMode)}
-            className={`text-xs px-1.5 py-0.5 rounded ${
-              regexMode ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-[#505050]'
+            aria-label="Toggle regex search"
+            className={`text-xs px-1.5 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              regexMode ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-variant'
             }`}
             title="Regex"
           >
@@ -126,44 +132,48 @@ export default function TerminalToolbar({
         </div>
       )}
 
-      <div className="w-px h-4 bg-[#3c3c3c] mx-1" />
+      <div className="w-px h-4 bg-outline-variant mx-1" />
 
       <button
         onClick={onZoomOut}
-        className="p-1.5 rounded hover:bg-[#505050] text-gray-300 hover:text-white transition-colors"
+        aria-label="Zoom out"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Zoom out"
       >
-        <ZoomOut className="w-4 h-4" />
+        <MaterialIcon name="zoom_out" size="sm" />
       </button>
 
-      <span className="text-xs text-gray-400 min-w-[3ch] text-center">{fontSize}</span>
+      <span className="text-xs text-on-surface-variant min-w-[3ch] text-center">{fontSize}</span>
 
       <button
         onClick={onZoomIn}
-        className="p-1.5 rounded hover:bg-[#505050] text-gray-300 hover:text-white transition-colors"
+        aria-label="Zoom in"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Zoom in"
       >
-        <ZoomIn className="w-4 h-4" />
+        <MaterialIcon name="zoom_in" size="sm" />
       </button>
 
-      <div className="w-px h-4 bg-[#3c3c3c] mx-1" />
+      <div className="w-px h-4 bg-outline-variant mx-1" />
 
       <button
         onClick={onToggleBell}
-        className={`p-1.5 rounded hover:bg-[#505050] transition-colors ${
-          bellMode === 'off' ? 'text-gray-500' : 'text-gray-300 hover:text-white'
+        aria-label={`Bell: ${bellMode}`}
+        className={`p-1.5 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+          bellMode === 'off' ? 'text-on-surface-variant' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
         }`}
         title={`Bell: ${bellMode}`}
       >
-        <BellIcon className="w-4 h-4" />
+        <MaterialIcon name={BellIcon} size="sm" />
       </button>
 
       <button
         onClick={onSettings}
-        className="p-1.5 rounded hover:bg-[#505050] text-gray-300 hover:text-white transition-colors"
+        aria-label="Settings"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Settings"
       >
-        <Settings className="w-4 h-4" />
+        <MaterialIcon name="settings" size="sm" />
       </button>
     </div>
   );

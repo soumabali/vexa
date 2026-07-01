@@ -8,17 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import {
-  ShieldCheck,
-  Fingerprint,
-  KeyRound,
-  Trash2,
-  Smartphone,
-  Usb,
-  AlertTriangle,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
-import {
   isWebAuthnSupported,
   isPlatformAuthenticatorAvailable,
   registerCredential,
@@ -28,6 +17,7 @@ import {
   type WebAuthnCredential,
 } from "@/lib/webauthn";
 import { toast } from "sonner";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 export default function WebAuthnSettingsPage() {
   const [supported, setSupported] = useState(false);
@@ -112,16 +102,16 @@ export default function WebAuthnSettingsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Passkeys &amp; WebAuthn</h1>
-            <p className="text-muted-foreground">Manage passwordless authentication credentials.</p>
+            <p className="text-on-surface-variant">Manage passwordless authentication credentials.</p>
           </div>
-          <ShieldCheck className="h-8 w-8 text-primary" />
+          <MaterialIcon name="verified_user" className="h-8 w-8 text-primary" />
         </div>
 
         {!supported && (
           <Card className="border-destructive">
             <CardContent className="flex items-center gap-3 py-6">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              <p className="text-sm text-destructive">Your browser does not support WebAuthn / FIDO2.</p>
+              <MaterialIcon name="warning" className="h-5 w-5 text-error" />
+              <p className="text-sm text-error">Your browser does not support WebAuthn / FIDO2.</p>
             </CardContent>
           </Card>
         )}
@@ -129,7 +119,7 @@ export default function WebAuthnSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Fingerprint className="h-5 w-5" />
+              <MaterialIcon name="fingerprint" className="h-5 w-5" />
               Register New Passkey
             </CardTitle>
             <CardDescription>
@@ -161,8 +151,8 @@ export default function WebAuthnSettingsPage() {
             </div>
 
             <Button onClick={handleRegister} disabled={!supported || loading} className="w-full sm:w-auto">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <KeyRound className="mr-2 h-4 w-4" />
+              {loading && <MaterialIcon name="progress_activity" className="mr-2 h-4 w-4 animate-spin" />}
+              <MaterialIcon name="key" className="mr-2 h-4 w-4" />
               Register Passkey
             </Button>
           </CardContent>
@@ -171,21 +161,21 @@ export default function WebAuthnSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Usb className="h-5 w-5" />
+              <MaterialIcon name="usb" className="h-5 w-5" />
               Your Passkeys
             </CardTitle>
             <CardDescription>{credentials.length} passkey{credentials.length !== 1 && "s"} registered.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {credentials.length === 0 && <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>}
+            {credentials.length === 0 && <p className="text-sm text-on-surface-variant">No passkeys registered yet.</p>}
 
             {credentials.map((cred) => (
               <div key={cred.id} className="flex items-center justify-between rounded-lg border p-4">
                 <div className="flex items-center gap-3">
                   {cred.authenticatorAttachment === "platform" ? (
-                    <Smartphone className="h-5 w-5 text-muted-foreground" />
+                    <MaterialIcon name="smartphone" className="h-5 w-5 text-on-surface-variant" />
                   ) : (
-                    <Usb className="h-5 w-5 text-muted-foreground" />
+                    <MaterialIcon name="usb" className="h-5 w-5 text-on-surface-variant" />
                   )}
                   <div>
                     <p className="font-medium">{cred.name || "Unnamed Passkey"}</p>
@@ -193,7 +183,7 @@ export default function WebAuthnSettingsPage() {
                       {cred.isResidentKey && <Badge variant="secondary" className="text-xs">Resident Key</Badge>}
                       {cred.isBackupEligible && <Badge variant="outline" className="text-xs">Backup Eligible</Badge>}
                       {cred.isBackedUp && <Badge variant="outline" className="text-xs">Backed Up</Badge>}
-                      <span className="text-xs text-muted-foreground">{new Date(cred.createdAt).toLocaleDateString()}</span>
+                      <span className="text-xs text-on-surface-variant">{new Date(cred.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
@@ -208,7 +198,7 @@ export default function WebAuthnSettingsPage() {
                         placeholder="New name"
                       />
                       <Button size="sm" variant="ghost" onClick={() => handleRename(cred.id, renameValue)} disabled={loading}>
-                        <CheckCircle2 className="h-4 w-4" />
+                        <MaterialIcon name="check_circle" className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
@@ -236,14 +226,14 @@ export default function WebAuthnSettingsPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-destructive"
+                        className="text-error"
                         onClick={() => {
                           setDeleteId(cred.id);
                           handleDelete(cred.id);
                         }}
                         disabled={loading}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <MaterialIcon name="delete" className="h-4 w-4" />
                       </Button>
                     </>
                   )}
@@ -256,15 +246,15 @@ export default function WebAuthnSettingsPage() {
         {error && (
           <Card className="border-destructive">
             <CardContent className="flex items-center gap-3 py-4">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              <p className="text-sm text-destructive">{error}</p>
+              <MaterialIcon name="warning" className="h-5 w-5 text-error" />
+              <p className="text-sm text-error">{error}</p>
             </CardContent>
           </Card>
         )}
 
-        <div className="rounded-lg border bg-muted/50 p-4">
+        <div className="rounded-lg border bg-surface-container-low/50 p-4">
           <h3 className="text-sm font-semibold mb-1">Security Tips</h3>
-          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+          <ul className="list-disc list-inside text-sm text-on-surface-variant space-y-1">
             <li>Register at least one backup passkey (e.g. a YubiKey) in case your platform authenticator is unavailable.</li>
             <li>Passkeys with resident keys allow discoverable credential login without entering your email.</li>
             <li>Backup eligible credentials can be synced across devices by your authenticator vendor.</li>

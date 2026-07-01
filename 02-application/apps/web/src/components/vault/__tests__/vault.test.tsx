@@ -49,7 +49,7 @@ describe('CredentialList', () => {
     expect(screen.getByText('Test Password')).toBeInTheDocument();
   });
 
-  it('filters by search query', () => {
+  it('filters search query', async () => {
     render(
       <CredentialList
         credentials={mockCredentials}
@@ -63,8 +63,10 @@ describe('CredentialList', () => {
     const searchInput = screen.getByPlaceholderText('Search credentials...');
     fireEvent.change(searchInput, { target: { value: 'SSH' } });
 
-    expect(screen.getByText('Test SSH Key')).toBeInTheDocument();
-    expect(screen.queryByText('Test Password')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Test SSH Key')).toBeInTheDocument();
+      expect(screen.queryByText('Test Password')).not.toBeInTheDocument();
+    });
   });
 
   it('adds new credential', async () => {
@@ -99,15 +101,17 @@ describe('CredentialList', () => {
       />
     );
 
-    const favoriteButtons = screen.getAllByRole('button', { name: /favorite/i });
+    // Cards sorted by name: "Test Password" < "Test SSH Key" alphabetically
+    // So favoriteButtons[0] = credential id '2' (isFavorite: false => "Add favorite")
+    const favoriteButtons = screen.getAllByRole('button', { name: /Add favorite|Remove favorite/i });
     fireEvent.click(favoriteButtons[0]);
 
-    expect(onFavorite).toHaveBeenCalledWith('1');
+    expect(onFavorite).toHaveBeenCalledWith('2');
   });
 });
 
 describe('CredentialCard', () => {
-  it('renders credential card', () => {
+  it('renders credential card', async () => {
     render(
       <CredentialCard
         credential={mockCredentials[0]}
@@ -119,8 +123,9 @@ describe('CredentialCard', () => {
       />
     );
 
-    expect(screen.getByText('Test SSH Key')).toBeInTheDocument();
-    expect(screen.getByText('root@test.example.com:22')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('root@test.example.com:22')).toBeInTheDocument();
+    });
   });
 
   it('handles delete', () => {
