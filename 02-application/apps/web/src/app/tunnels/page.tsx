@@ -89,8 +89,14 @@ export default function TunnelsPage() {
             <TableBody>
               {filtered?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-on-surface-variant">
-                    No tunnels found. Create one from a host detail page.
+                  <TableCell colSpan={7} className="text-center py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <MaterialIcon name="vpn_lock" size="xl" className="text-on-surface-variant mb-2" />
+                      <p className="text-headline-sm text-on-surface mb-1">No tunnels configured</p>
+                      <p className="text-body-md text-on-surface-variant">
+                        Create a WireGuard tunnel from a host detail page
+                      </p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
