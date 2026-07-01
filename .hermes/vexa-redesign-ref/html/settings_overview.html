@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vexa Settings | System Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+    .nav-item-active {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface-tint": "#adc6ff",
+                  "tertiary-container": "#df7412",
+                  "surface-container-lowest": "#0b0e15",
+                  "tertiary-fixed": "#ffdcc6",
+                  "surface-bright": "#363941",
+                  "on-tertiary-fixed": "#311400",
+                  "on-tertiary-container": "#461f00",
+                  "secondary-container": "#39485a",
+                  "surface-container": "#1d2027",
+                  "on-surface": "#e1e2ec",
+                  "inverse-on-surface": "#2e3038",
+                  "tertiary": "#ffb786",
+                  "surface-dim": "#10131a",
+                  "on-tertiary-fixed-variant": "#723600",
+                  "secondary-fixed": "#d4e4fa",
+                  "on-secondary-container": "#a7b6cc",
+                  "primary-fixed": "#d8e2ff",
+                  "error": "#ffb4ab",
+                  "tertiary-fixed-dim": "#ffb786",
+                  "outline": "#8c909f",
+                  "primary-container": "#4d8eff",
+                  "primary-fixed-dim": "#adc6ff",
+                  "primary": "#adc6ff",
+                  "background": "#10131a",
+                  "error-container": "#93000a",
+                  "on-primary-container": "#00285d",
+                  "on-primary": "#002e6a",
+                  "secondary": "#b9c8de",
+                  "surface-container-highest": "#32353c",
+                  "inverse-primary": "#005ac2",
+                  "on-tertiary": "#502400",
+                  "on-error-container": "#ffdad6",
+                  "surface": "#10131a",
+                  "surface-container-low": "#191b23",
+                  "on-surface-variant": "#c2c6d6",
+                  "surface-variant": "#32353c",
+                  "on-background": "#e1e2ec",
+                  "surface-container-high": "#272a31",
+                  "on-secondary-fixed": "#0d1c2d",
+                  "outline-variant": "#424754",
+                  "on-error": "#690005",
+                  "on-primary-fixed": "#001a42",
+                  "on-secondary-fixed-variant": "#39485a",
+                  "secondary-fixed-dim": "#b9c8de",
+                  "on-secondary": "#233143",
+                  "inverse-surface": "#e1e2ec",
+                  "on-primary-fixed-variant": "#004395"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "base": "4px",
+                  "lg": "24px",
+                  "margin": "24px",
+                  "xl": "32px",
+                  "md": "16px",
+                  "gutter": "20px",
+                  "sm": "8px",
+                  "xs": "4px"
+          },
+          "fontFamily": {
+                  "label-md": ["Inter"],
+                  "mono-code": ["JetBrains Mono"],
+                  "headline-md": ["Inter"],
+                  "body-md": ["Inter"],
+                  "headline-lg": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "headline-lg-mobile": ["Inter"],
+                  "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+                  "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                  "mono-code": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                  "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                  "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar Implementation -->
+<header class="bg-background text-primary text-body-md font-body-md docked full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center w-full px-6 py-3 h-16 sticky z-50">
+<div class="flex items-center gap-8">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">Vexa</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors px-2 py-1 rounded" href="#">Hosts</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors px-2 py-1 rounded" href="#">Terminal</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors px-2 py-1 rounded" href="#">Tunnels</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors px-2 py-1 rounded" href="#">Vault</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-semibold" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-1.5 text-body-md focus:outline-none focus:border-primary w-64 transition-all" placeholder="Search systems..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-container-highest">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-container-highest">help</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant bg-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged tech administrator with short hair and glasses, set against a dark, minimalist laboratory background with subtle blue backlighting. The lighting is crisp and low-key, emphasizing a serious and capable professional demeanor suitable for a high-security server management application. The overall aesthetic is clean, corporate, and technologically advanced." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZBMpp63uXIYQGRDKi0nDn5pn1-QYJ0Y12LDCXExx4gKvsPWT8Kr1WOq4qEAl17Q7ZCZ2nxkwHYL6C089UcokgD5pJbkCJ12xCzxHag92kGAN2usqs9nA3o4tjFvejqrYP6Sg0ypORR420jC2YUqsLXviAN5cYKwC1nrua-9I1sm0LKOSwhwr8LiywoCT8UB_F_cqaFMawSD4Lk2GVlLmsaG5zJAz3YXpDWJOrWkDDTjiIYjvmjc3v2sybU-Eo7AgDippZyhCmOux2"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar Implementation -->
+<aside class="bg-surface-container text-label-md font-label-md fixed left-0 top-16 bottom-0 w-[260px] border-r border-outline-variant flat no shadows hidden lg:flex flex-col h-full p-4 gap-2 z-40">
+<div class="flex items-center gap-3 p-3 mb-4 rounded-xl bg-surface-container-high border border-outline-variant">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-headline-sm">SA</div>
+<div class="flex flex-col">
+<span class="text-on-surface font-bold text-sm">System Admin</span>
+<span class="text-on-surface-variant text-[10px] uppercase tracking-wider">Production Cluster</span>
+</div>
+</div>
+<button class="bg-primary text-on-primary py-3 px-4 rounded-lg flex items-center justify-center gap-2 mb-6 font-bold Active: scale-[0.98] transition-transform shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined">add</span>
+        New Connection
+      </button>
+<nav class="space-y-1 flex-1">
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-lg flex items-center gap-3 px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">dns</span> All Hosts
+        </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-lg flex items-center gap-3 px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">folder</span> Groups
+        </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-lg flex items-center gap-3 px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">cloud</span> Cloud Instances
+        </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-lg flex items-center gap-3 px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">history</span> Recent Sessions
+        </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-lg flex items-center gap-3 px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">vpn_key</span> Key Management
+        </a>
+</nav>
+<div class="pt-4 mt-4 border-t border-outline-variant space-y-1">
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-lg flex items-center gap-3 px-4 py-2 transition-colors" href="#">
+<span class="material-symbols-outlined">help_outline</span> Help Center
+        </a>
+<a class="text-error opacity-80 hover:opacity-100 hover:bg-error/10 rounded-lg flex items-center gap-3 px-4 py-2 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span> Log out
+        </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-[260px] p-6 lg:p-12 overflow-y-auto bg-background">
+<div class="max-w-4xl mx-auto">
+<div class="mb-10">
+<h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Settings</h1>
+<p class="text-body-lg text-on-surface-variant">Manage your account configurations, security preferences, and system behavior.</p>
+</div>
+<!-- Settings Groups - Asymmetric Layout (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Primary Account Section (Full Width) -->
+<div class="md:col-span-12">
+<h2 class="text-label-md font-label-md text-primary mb-3 uppercase tracking-[0.2em]">Core Account</h2>
+<div class="space-y-4">
+<!-- Profile Card -->
+<a class="flex items-center justify-between p-5 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">person</span>
+</div>
+<div>
+<h3 class="text-body-lg font-bold text-on-surface">Profile</h3>
+<p class="text-body-md text-on-surface-variant">Update identity, email, and public-facing details.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+<!-- Security Card -->
+<a class="flex items-center justify-between p-5 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">security</span>
+</div>
+<div>
+<h3 class="text-body-lg font-bold text-on-surface">Security</h3>
+<p class="text-body-md text-on-surface-variant">Multi-factor authentication, login history, and password audits.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+</div>
+</div>
+<!-- Left Column: Dev & Access -->
+<div class="md:col-span-7 space-y-4">
+<h2 class="text-label-md font-label-md text-primary mb-3 uppercase tracking-[0.2em] mt-4">Developer &amp; Access</h2>
+<a class="flex items-start gap-5 p-5 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg bg-surface-container-highest text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">key</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h3 class="text-body-md font-bold text-on-surface">API Keys</h3>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:text-primary">arrow_forward</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-1 leading-relaxed">Manage programmatic access tokens for automated scripts and integrations.</p>
+</div>
+</a>
+<a class="flex items-start gap-5 p-5 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg bg-surface-container-highest text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">fingerprint</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h3 class="text-body-md font-bold text-on-surface">WebAuthn</h3>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:text-primary">arrow_forward</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-1 leading-relaxed">Configure hardware security keys and biometric authentication.</p>
+</div>
+</a>
+<a class="flex items-start gap-5 p-5 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg bg-surface-container-highest text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">devices</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h3 class="text-body-md font-bold text-on-surface">Active Sessions</h3>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:text-primary">arrow_forward</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-1 leading-relaxed">Audit and revoke access for currently logged-in devices and browser instances.</p>
+</div>
+</a>
+</div>
+<!-- Right Column: UI & Prefs -->
+<div class="md:col-span-5 space-y-4">
+<h2 class="text-label-md font-label-md text-primary mb-3 uppercase tracking-[0.2em] mt-4">Interface</h2>
+<a class="flex items-center gap-4 p-4 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">palette</span>
+<div class="flex-1">
+<h3 class="text-body-md font-bold text-on-surface">Appearance</h3>
+<p class="text-label-md text-on-surface-variant">Theme and font options.</p>
+</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:translate-x-0.5 transition-transform">arrow_forward_ios</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">notifications</span>
+<div class="flex-1">
+<h3 class="text-body-md font-bold text-on-surface">Notifications</h3>
+<p class="text-label-md text-on-surface-variant">Alert thresholds and channels.</p>
+</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:translate-x-0.5 transition-transform">arrow_forward_ios</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">keyboard</span>
+<div class="flex-1">
+<h3 class="text-body-md font-bold text-on-surface">Keyboard</h3>
+<p class="text-label-md text-on-surface-variant">Custom terminal shortcuts.</p>
+</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:translate-x-0.5 transition-transform">arrow_forward_ios</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl glass-panel group hover:border-primary transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">public</span>
+<div class="flex-1">
+<h3 class="text-body-md font-bold text-on-surface">Language &amp; Region</h3>
+<p class="text-label-md text-on-surface-variant">Localization and timezones.</p>
+</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant group-hover:translate-x-0.5 transition-transform">arrow_forward_ios</span>
+</a>
+<!-- Preferences (Featured) -->
+<div class="p-5 rounded-xl bg-surface-container-high border border-outline-variant mt-2 relative overflow-hidden group">
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-primary">tune</span>
+<h3 class="text-body-md font-bold text-on-surface">System Preferences</h3>
+</div>
+<p class="text-body-md text-on-surface-variant mb-4">Deep terminal behavior, SSH timeout policies, and default shell configurations.</p>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary hover:text-on-primary transition-all rounded text-label-md font-bold uppercase tracking-widest border border-outline-variant group-hover:border-primary">
+                  Advanced Settings
+                </button>
+</div>
+<!-- Decorative background element -->
+<div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px]">settings_suggest</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Danger Zone Footer -->
+<div class="mt-16 pt-8 border-t border-outline-variant/30 text-center">
+<p class="text-label-md text-on-surface-variant mb-4">Need to reset your Vexa environment?</p>
+<button class="px-6 py-2 border border-error/30 text-error hover:bg-error/5 transition-colors rounded-lg text-label-md font-bold uppercase tracking-widest">
+            Deactivate Account
+          </button>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container flex items-center justify-around z-50 border-t border-outline-variant px-4">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">dns</span>
+<span class="text-[10px]">Hosts</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span class="text-[10px]">Terminal</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined nav-item-active">settings</span>
+<span class="text-[10px] font-bold">Settings</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+    // Micro-interactions for hover effects
+    document.querySelectorAll('.glass-panel').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-2px)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
+</body></html>

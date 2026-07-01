@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c2c6d6",
+                        "tertiary-fixed": "#ffdcc6",
+                        "secondary-container": "#39485a",
+                        "primary": "#adc6ff",
+                        "on-primary": "#002e6a",
+                        "on-primary-container": "#00285d",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1d2027",
+                        "surface": "#10131a",
+                        "on-tertiary-container": "#461f00",
+                        "inverse-primary": "#005ac2",
+                        "tertiary-container": "#df7412",
+                        "on-secondary": "#233143",
+                        "surface-container-lowest": "#0b0e15",
+                        "surface-container-low": "#191b23",
+                        "on-error": "#690005",
+                        "outline-variant": "#424754",
+                        "tertiary": "#ffb786",
+                        "surface-container-highest": "#32353c",
+                        "surface-bright": "#363941",
+                        "on-secondary-container": "#a7b6cc",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "error-container": "#93000a",
+                        "background": "#10131a",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-high": "#272a31",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "outline": "#8c909f",
+                        "surface-variant": "#32353c",
+                        "secondary-fixed": "#d4e4fa",
+                        "on-secondary-fixed-variant": "#39485a",
+                        "surface-dim": "#10131a",
+                        "primary-fixed": "#d8e2ff",
+                        "secondary-fixed-dim": "#b9c8de",
+                        "on-surface": "#e1e2ec",
+                        "on-primary-fixed": "#001a42",
+                        "primary-container": "#4d8eff",
+                        "inverse-surface": "#e1e2ec",
+                        "surface-tint": "#adc6ff",
+                        "inverse-on-surface": "#2e3038",
+                        "secondary": "#b9c8de",
+                        "on-tertiary-fixed": "#311400",
+                        "on-tertiary": "#502400",
+                        "on-secondary-fixed": "#0d1c2d",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-background": "#e1e2ec"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin": "24px",
+                        "gutter": "20px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "base": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "mono-code": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "mono-code": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #10131a;
+            color: #e1e2ec;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+        }
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #32353c;
+            border-radius: 2px;
+            outline: none;
+        }
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #adc6ff;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md selection:bg-primary/30">
+<!-- Top Navigation Bar -->
+<header class="w-full h-16 flex items-center bg-surface border-b border-outline-variant px-lg fixed top-0 z-50">
+<div class="flex justify-between items-center w-full">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold text-primary">Vexa</span>
+<nav class="hidden md:flex gap-lg">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Hosts</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Terminal</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Tunnels</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200 cursor-pointer active:scale-95" href="#">Vault</a>
+<a class="text-primary border-b-2 border-primary pb-[18px] cursor-pointer active:scale-95" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+</div>
+</div>
+</header>
+<div class="flex pt-16 min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-outline-variant bg-surface-container-low fixed h-[calc(100vh-64px)] overflow-y-auto">
+<div class="p-md space-y-xs">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span>General</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg bg-secondary-container text-on-secondary-container font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px] fill">palette</span>
+<span>Appearance</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">code</span>
+<span>Editor</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">key</span>
+<span>Authentication</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">extension</span>
+<span>Plugins</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">cloud_upload</span>
+<span>Sync</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 p-xl pb-32">
+<div class="max-w-4xl mx-auto">
+<div class="mb-xl">
+<h1 class="text-headline-lg text-on-surface mb-sm">Appearance</h1>
+<p class="text-on-surface-variant">Customize how Vexa looks and feels on your device.</p>
+</div>
+<!-- Settings Sections -->
+<div class="space-y-xl">
+<!-- Theme Section -->
+<section class="space-y-md">
+<h2 class="text-headline-sm text-on-surface">Theme</h2>
+<div class="grid grid-cols-3 gap-md">
+<label class="cursor-pointer group">
+<input class="hidden peer" name="theme" type="radio"/>
+<div class="p-md rounded-xl border border-outline-variant bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary-container/10 group-hover:border-outline transition-all">
+<div class="h-24 bg-white rounded-lg mb-md border border-outline-variant/30"></div>
+<span class="block text-center font-medium">Light</span>
+</div>
+</label>
+<label class="cursor-pointer group">
+<input checked="" class="hidden peer" name="theme" type="radio"/>
+<div class="p-md rounded-xl border-2 border-primary bg-primary-container/10 group-hover:border-primary transition-all">
+<div class="h-24 bg-surface rounded-lg mb-md border border-outline-variant/30 flex items-center justify-center">
+<div class="w-1/2 h-2 bg-primary/20 rounded-full"></div>
+</div>
+<span class="block text-center font-medium text-primary">Dark</span>
+</div>
+</label>
+<label class="cursor-pointer group">
+<input class="hidden peer" name="theme" type="radio"/>
+<div class="p-md rounded-xl border border-outline-variant bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary-container/10 group-hover:border-outline transition-all">
+<div class="h-24 rounded-lg mb-md border border-outline-variant/30 overflow-hidden flex">
+<div class="w-1/2 h-full bg-white"></div>
+<div class="w-1/2 h-full bg-surface"></div>
+</div>
+<span class="block text-center font-medium">System</span>
+</div>
+</label>
+</div>
+</section>
+<!-- Font Section -->
+<section class="space-y-md border-t border-outline-variant pt-xl">
+<h2 class="text-headline-sm text-on-surface">Font</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-sm">
+<label class="text-label-md text-on-surface-variant uppercase tracking-wider">Font Family</label>
+<div class="relative">
+<select class="w-full bg-surface-container border border-outline-variant rounded-lg px-md py-md appearance-none focus:outline-none focus:border-primary font-mono-code">
+<option>Inter</option>
+<option selected="">JetBrains Mono</option>
+<option>Fira Code</option>
+<option>Source Code Pro</option>
+</select>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center">
+<label class="text-label-md text-on-surface-variant uppercase tracking-wider">Font Size</label>
+<span class="text-primary font-mono-code">13px</span>
+</div>
+<div class="py-base">
+<input class="custom-slider" max="24" min="10" type="range" value="13"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Terminal Section -->
+<section class="space-y-md border-t border-outline-variant pt-xl">
+<h2 class="text-headline-sm text-on-surface">Terminal</h2>
+<div class="space-y-sm">
+<div class="flex items-center justify-between p-md bg-surface-container rounded-xl">
+<div class="flex flex-col">
+<span class="font-medium">Show Line Numbers</span>
+<span class="text-body-md text-on-surface-variant">Display gutters with line indices</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container rounded-xl">
+<div class="flex flex-col">
+<span class="font-medium">Word Wrap</span>
+<span class="text-body-md text-on-surface-variant">Wrap long lines to fit container width</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Layout Section -->
+<section class="space-y-md border-t border-outline-variant pt-xl">
+<h2 class="text-headline-sm text-on-surface">Layout</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="flex items-center justify-between p-md bg-surface-container rounded-xl">
+<span class="font-medium">Compact Mode</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container rounded-xl">
+<span class="font-medium">Collapsed Sidebar</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container rounded-xl md:col-span-2">
+<span class="font-medium">Show Git Branch</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Default View Mode -->
+<section class="space-y-md border-t border-outline-variant pt-xl">
+<h2 class="text-headline-sm text-on-surface">Default View Mode</h2>
+<div class="flex p-xs bg-surface-container rounded-xl w-fit">
+<button class="flex items-center gap-sm px-lg py-md rounded-lg bg-secondary-container text-on-secondary-container transition-all">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span class="font-medium">Grid</span>
+</button>
+<button class="flex items-center gap-sm px-lg py-md rounded-lg text-on-surface-variant hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-[20px]">view_list</span>
+<span class="font-medium">List</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<!-- Action Bar -->
+<div class="fixed bottom-0 right-0 left-64 bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant p-lg z-40">
+<div class="max-w-4xl mx-auto flex justify-end gap-md">
+<button class="px-lg py-md text-on-surface-variant hover:text-on-surface transition-colors">Discard changes</button>
+<button class="px-xl py-md bg-primary text-on-primary rounded-full font-bold hover:bg-primary-container transition-all active:scale-95">Save Changes</button>
+</div>
+</div>
+</body></html>

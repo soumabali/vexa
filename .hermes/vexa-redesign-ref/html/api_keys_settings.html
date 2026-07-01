@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vexa - API Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#adc6ff",
+                    "tertiary-container": "#df7412",
+                    "surface-container-lowest": "#0b0e15",
+                    "tertiary-fixed": "#ffdcc6",
+                    "surface-bright": "#363941",
+                    "on-tertiary-fixed": "#311400",
+                    "on-tertiary-container": "#461f00",
+                    "secondary-container": "#39485a",
+                    "surface-container": "#1d2027",
+                    "on-surface": "#e1e2ec",
+                    "inverse-on-surface": "#2e3038",
+                    "tertiary": "#ffb786",
+                    "surface-dim": "#10131a",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "secondary-fixed": "#d4e4fa",
+                    "on-secondary-container": "#a7b6cc",
+                    "primary-fixed": "#d8e2ff",
+                    "error": "#ffb4ab",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "outline": "#8c909f",
+                    "primary-container": "#4d8eff",
+                    "primary-fixed-dim": "#adc6ff",
+                    "primary": "#adc6ff",
+                    "background": "#10131a",
+                    "error-container": "#93000a",
+                    "on-primary-container": "#00285d",
+                    "on-primary": "#002e6a",
+                    "secondary": "#b9c8de",
+                    "surface-container-highest": "#32353c",
+                    "inverse-primary": "#005ac2",
+                    "on-tertiary": "#502400",
+                    "on-error-container": "#ffdad6",
+                    "surface": "#10131a",
+                    "surface-container-low": "#191b23",
+                    "on-surface-variant": "#c2c6d6",
+                    "surface-variant": "#32353c",
+                    "on-background": "#e1e2ec",
+                    "surface-container-high": "#272a31",
+                    "on-secondary-fixed": "#0d1c2d",
+                    "outline-variant": "#424754",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#001a42",
+                    "on-secondary-fixed-variant": "#39485a",
+                    "secondary-fixed-dim": "#b9c8de",
+                    "on-secondary": "#233143",
+                    "inverse-surface": "#e1e2ec",
+                    "on-primary-fixed-variant": "#004395"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "lg": "24px",
+                    "margin": "24px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "gutter": "20px",
+                    "sm": "8px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "mono-code": ["JetBrains Mono"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "mono-code": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #10131a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #32353c;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary/30 min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-background dark:bg-background border-b border-outline-variant fixed top-0 left-0 right-0 z-50 flex justify-between items-center w-full px-6 py-3 h-16">
+<div class="flex items-center gap-8">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">Vexa</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Hosts</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Terminal</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Tunnels</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Vault</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a tech-savvy systems administrator in a dimly lit server room environment, featuring soft blue ambient lighting and a confident expression. The style is sharp, cinematic, and high-contrast, following a modern corporate tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBelbZtlD3pbyYT7jnuj0XjSgGPT_tjiH_VL0cHL_SdtgVMjxu_BD7ADWMCQ0dKWFzlkd0FJAwPzws11Xit6Yqr4MA2LEY1OZm430VIQdOM-1IqxrYY7AulkMfGv3bsZPyhtttK01W8ydJLIKiwZPOOQP7Te75Ls6PISTp9PTFsEC9bIr-zxsHJTlJhqHmH-fP_2ooa09YaVIp0lReOs0X87kURCfdmZckOCmlS9C68nxyLPiWf8qvY32VwzxGf-BjY7CCg_r7Hted"/>
+</div>
+</div>
+</header>
+<div class="flex pt-16 min-h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-surface-container dark:bg-surface-container fixed left-0 top-16 bottom-0 w-[260px] border-r border-outline-variant flex flex-col h-full p-4 gap-2 hidden lg:flex">
+<div class="mb-6 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">dns</span>
+</div>
+<div>
+<div class="text-label-md font-label-md text-on-surface font-bold">System Admin</div>
+<div class="text-xs text-on-surface-variant">Production Cluster</div>
+</div>
+</div>
+</div>
+<button class="bg-primary text-on-primary py-2 px-4 rounded-lg flex items-center justify-center gap-2 mb-6 font-label-md text-label-md hover:opacity-90 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">add</span>
+                New Connection
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dns</span>
+                    All Hosts
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">folder</span>
+                    Groups
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">cloud</span>
+                    Cloud Instances
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span>
+                    Recent Sessions
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary bg-secondary-container rounded-lg border-l-2 border-primary transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">vpn_key</span>
+                    Key Management
+                </a>
+</div>
+<div class="mt-auto pt-6 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+                    Help Center
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md text-error" href="#">
+<span class="material-symbols-outlined">logout</span>
+                    Log out
+                </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-0 lg:ml-[260px] p-6 lg:p-10 overflow-y-auto">
+<div class="max-w-5xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">API Keys</h1>
+<p class="text-on-surface-variant mt-1 text-body-md">Manage programmatic access tokens for automated server operations and CI/CD pipelines.</p>
+</div>
+<button class="bg-primary text-on-primary-container px-6 py-2.5 rounded-lg flex items-center gap-2 font-label-md text-label-md font-semibold hover:opacity-90 transition-all shadow-lg shadow-primary/10" onclick="document.getElementById('new-key-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined">add</span>
+                        Generate New Key
+                    </button>
+</div>
+<!-- API Key Grid/List -->
+<div class="space-y-6">
+<div class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant px-1">
+<span class="material-symbols-outlined text-[18px]">key</span>
+<span>Your API Keys (3 active)</span>
+</div>
+<!-- Key Cards -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Key Item 1 -->
+<div class="glass-panel rounded-xl p-5 hover:border-primary/50 transition-all group flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-[20px]">key</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Production API Key</h3>
+<span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider border border-success/20">Active</span>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-lowest border border-outline-variant rounded-md p-2 w-fit mb-4">
+<code class="text-mono-code font-mono-code text-on-surface-variant">vex_prod_72k1...h8v2</code>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="text-[11px] font-label-md bg-surface-container-highest text-on-surface px-2 py-1 rounded">hosts:read</span>
+<span class="text-[11px] font-label-md bg-surface-container-highest text-on-surface px-2 py-1 rounded">hosts:write</span>
+<span class="text-[11px] font-label-md bg-surface-container-highest text-on-surface px-2 py-1 rounded">sessions:all</span>
+</div>
+</div>
+<div class="flex flex-col md:items-end gap-3 border-t md:border-t-0 md:border-l border-outline-variant pt-4 md:pt-0 md:pl-6">
+<div class="text-right">
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest font-bold">Last Used</div>
+<div class="text-body-md text-on-surface">2 hours ago (IP: 192.168.1.1)</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-highest text-on-surface-variant hover:text-error transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">delete_forever</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Key Item 2 -->
+<div class="glass-panel rounded-xl p-5 hover:border-primary/50 transition-all group flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-[20px]">terminal</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">CI/CD Deployer</h3>
+<span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider border border-success/20">Active</span>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-lowest border border-outline-variant rounded-md p-2 w-fit mb-4">
+<code class="text-mono-code font-mono-code text-on-surface-variant">vex_cicd_a9x4...m1p5</code>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="text-[11px] font-label-md bg-surface-container-highest text-on-surface px-2 py-1 rounded">vault:read</span>
+<span class="text-[11px] font-label-md bg-surface-container-highest text-on-surface px-2 py-1 rounded">tunnel:create</span>
+</div>
+</div>
+<div class="flex flex-col md:items-end gap-3 border-t md:border-t-0 md:border-l border-outline-variant pt-4 md:pt-0 md:pl-6">
+<div class="text-right">
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest font-bold">Last Used</div>
+<div class="text-body-md text-on-surface">Dec 12, 2023 - 09:42 PM</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-highest text-on-surface-variant hover:text-error transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">delete_forever</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Key Item 3 (Revoked) -->
+<div class="glass-panel opacity-60 rounded-xl p-5 border-dashed border-outline flex flex-col md:flex-row md:items-center justify-between gap-6 grayscale">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">history</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Legacy Integration</h3>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container text-[10px] font-bold uppercase tracking-wider border border-error/20">Revoked</span>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-lowest border border-outline-variant rounded-md p-2 w-fit mb-4">
+<code class="text-mono-code font-mono-code text-on-surface-variant">vex_old_99n2...z7q1</code>
+</div>
+<div class="text-[12px] text-on-surface-variant italic">Revoked on Jan 05, 2024 for security rotation.</div>
+</div>
+<div class="flex flex-col md:items-end gap-3 pt-4 md:pt-0">
+<div class="text-right">
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest font-bold">Created</div>
+<div class="text-body-md text-on-surface">Mar 10, 2022</div>
+</div>
+<button class="p-2 rounded-lg bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">restore_from_trash</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Usage Analytics Visualization -->
+<div class="mt-12 glass-panel rounded-2xl p-6 overflow-hidden relative">
+<div class="flex justify-between items-end mb-6 relative z-10">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">API Usage Insights</h4>
+<p class="text-body-md text-on-surface-variant">Requests authenticated by your keys over the last 30 days.</p>
+</div>
+<div class="text-right">
+<div class="text-headline-md font-headline-md text-primary">1.2M</div>
+<div class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest">Calls</div>
+</div>
+</div>
+<div class="h-32 flex items-end gap-1 px-2 relative z-10">
+<!-- Simple Bar Chart Visualization -->
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[30%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[45%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[60%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[55%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[80%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[100%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[90%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[70%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[50%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[65%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[75%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[30%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[20%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[15%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[35%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[45%]"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all rounded-t-sm h-[60%]"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal: Generate New Key -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center hidden" id="new-key-modal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-background/80 backdrop-blur-sm" onclick="document.getElementById('new-key-modal').classList.add('hidden')"></div>
+<!-- Modal Content -->
+<div class="relative glass-panel rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Generate New API Key</h2>
+<p class="text-label-md font-label-md text-on-surface-variant">Configure permissions for your new programmatic token.</p>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-on-surface transition-colors" onclick="document.getElementById('new-key-modal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6 space-y-6 max-h-[614px] overflow-y-auto">
+<!-- Name Input -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface">Key Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all font-body-md" placeholder="e.g., GitHub Action - Deployer" type="text"/>
+</div>
+<!-- Scope Selection -->
+<div class="space-y-4">
+<label class="font-label-md text-label-md text-on-surface">Permissions (Scopes)</label>
+<div class="grid grid-cols-1 gap-2">
+<!-- Scope Item 1 -->
+<label class="flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:bg-surface-variant/50 cursor-pointer transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input checked="" class="mt-1 rounded bg-surface-container-lowest border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="text-label-md font-label-md text-on-surface">Read Hosts</div>
+<div class="text-xs text-on-surface-variant">Ability to list servers and view basic metadata.</div>
+</div>
+</label>
+<!-- Scope Item 2 -->
+<label class="flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:bg-surface-variant/50 cursor-pointer transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input class="mt-1 rounded bg-surface-container-lowest border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="text-label-md font-label-md text-on-surface">Write Hosts</div>
+<div class="text-xs text-on-surface-variant">Ability to add, edit, or delete server configurations.</div>
+</div>
+</label>
+<!-- Scope Item 3 -->
+<label class="flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:bg-surface-variant/50 cursor-pointer transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input class="mt-1 rounded bg-surface-container-lowest border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="text-label-md font-label-md text-on-surface">Terminal Access</div>
+<div class="text-xs text-on-surface-variant">Execute commands programmatically through SSH bridges.</div>
+</div>
+</label>
+<!-- Scope Item 4 -->
+<label class="flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:bg-surface-variant/50 cursor-pointer transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input class="mt-1 rounded bg-surface-container-lowest border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="text-label-md font-label-md text-on-surface">Manage Vault</div>
+<div class="text-xs text-on-surface-variant">Full access to modify stored credentials and secrets.</div>
+</div>
+</label>
+</div>
+</div>
+<!-- Expiration Selection -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface">Key Expiration</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface outline-none transition-all font-body-md appearance-none">
+<option>30 Days (Recommended)</option>
+<option>90 Days</option>
+<option>1 Year</option>
+<option>Never (Not recommended)</option>
+</select>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low border-t border-outline-variant flex justify-end gap-3">
+<button class="px-6 py-2.5 rounded-lg text-on-surface hover:bg-surface-variant transition-colors font-label-md text-label-md" onclick="document.getElementById('new-key-modal').classList.add('hidden')">Cancel</button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary-container font-semibold hover:opacity-90 transition-all font-label-md text-label-md">Generate Key</button>
+</div>
+</div>
+</div>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Simple ripple effect for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', function(e) {
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                const ripple = document.createElement('span');
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                ripple.classList.add('absolute', 'bg-white/20', 'rounded-full', 'pointer-events-none', 'transform', 'scale-0', 'animate-ping');
+                
+                this.classList.add('relative', 'overflow-hidden');
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>

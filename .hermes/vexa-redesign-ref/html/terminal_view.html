@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vexa Terminal - System Admin</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-tint": "#adc6ff",
+            "tertiary-container": "#df7412",
+            "surface-container-lowest": "#0b0e15",
+            "tertiary-fixed": "#ffdcc6",
+            "surface-bright": "#363941",
+            "on-tertiary-fixed": "#311400",
+            "on-tertiary-container": "#461f00",
+            "secondary-container": "#39485a",
+            "surface-container": "#1d2027",
+            "on-surface": "#e1e2ec",
+            "inverse-on-surface": "#2e3038",
+            "tertiary": "#ffb786",
+            "surface-dim": "#10131a",
+            "on-tertiary-fixed-variant": "#723600",
+            "secondary-fixed": "#d4e4fa",
+            "on-secondary-container": "#a7b6cc",
+            "primary-fixed": "#d8e2ff",
+            "error": "#ffb4ab",
+            "tertiary-fixed-dim": "#ffb786",
+            "outline": "#8c909f",
+            "primary-container": "#4d8eff",
+            "primary-fixed-dim": "#adc6ff",
+            "primary": "#adc6ff",
+            "background": "#10131a",
+            "error-container": "#93000a",
+            "on-primary-container": "#00285d",
+            "on-primary": "#002e6a",
+            "secondary": "#b9c8de",
+            "surface-container-highest": "#32353c",
+            "inverse-primary": "#005ac2",
+            "on-tertiary": "#502400",
+            "on-error-container": "#ffdad6",
+            "surface": "#10131a",
+            "surface-container-low": "#191b23",
+            "on-surface-variant": "#c2c6d6",
+            "surface-variant": "#32353c",
+            "on-background": "#e1e2ec",
+            "surface-container-high": "#272a31",
+            "on-secondary-fixed": "#0d1c2d",
+            "outline-variant": "#424754",
+            "on-error": "#690005",
+            "on-primary-fixed": "#001a42",
+            "on-secondary-fixed-variant": "#39485a",
+            "secondary-fixed-dim": "#b9c8de",
+            "on-secondary": "#233143",
+            "inverse-surface": "#e1e2ec",
+            "on-primary-fixed-variant": "#004395"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "base": "4px",
+            "lg": "24px",
+            "margin": "24px",
+            "xl": "32px",
+            "md": "16px",
+            "gutter": "20px",
+            "sm": "8px",
+            "xs": "4px"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "mono-code": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg-mobile": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "mono-code": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #10131a;
+      color: #e1e2ec;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1.2em;
+      background-color: #adc6ff;
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(140, 144, 159, 0.2);
+    }
+  </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col font-body-md text-body-md">
+<!-- TopNavBar (The Anchor) -->
+<header class="bg-background dark:bg-background border-b border-outline-variant flex justify-between items-center w-full px-6 py-3 h-16 shrink-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-[20px]">terminal</span>
+</div>
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface">Vexa</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Hosts</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Terminal</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Tunnels</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Vault</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-surface-container-highest transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional high-contrast headshot of a system administrator in their 30s with a focused expression, set against a dark, tech-oriented studio background with subtle blue rim lighting to match a premium dark UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCULKN0QDW4BgjX03SO_JIMAHo5jSVLJF55b6VQSKFRgfC9EFHkZosvngm8wpupEYyNf5wnXAGUDHHOa3GhpiTi9yFsABb1F1F_3cQRVZ6xiuKl6Bj_xQitQyofpCsq5fpkcs6pTBgK5-LBCB7Mrk7s4Yw5RMZjMJyCWSZYV0WRu0j71qGa2REJIROffAzUWE0ZUpM3YRg5ZyUjYLabtlEwSpO7GTpokf3My6xMlzJ0anAsPi7oUyOccJmGvYEeA86C1d87pymPrGN2"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar (The Blueprint) -->
+<aside class="hidden md:flex flex-col h-full p-4 gap-2 bg-surface-container dark:bg-surface-container border-r border-outline-variant fixed left-0 top-16 bottom-0 w-[260px] z-40">
+<div class="mb-6 px-2">
+<div class="flex items-center gap-3 py-2">
+<div class="w-10 h-10 rounded-lg bg-surface-variant border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+</div>
+<div>
+<p class="text-label-md font-label-md text-on-surface">System Admin</p>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant opacity-60">Production Cluster</p>
+</div>
+</div>
+</div>
+<button class="mb-4 flex items-center justify-center gap-2 py-2.5 px-4 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>New Connection</span>
+</button>
+<div class="space-y-1 flex-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dns</span>
+<span>All Hosts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">folder</span>
+<span>Groups</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">cloud</span>
+<span>Cloud Instances</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary bg-secondary-container rounded-lg border-l-2 border-primary transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Recent Sessions</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">vpn_key</span>
+<span>Key Management</span>
+</a>
+</div>
+<div class="pt-4 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-error hover:bg-error-container/20 rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Log out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[260px] bg-surface-container-lowest relative flex flex-col">
+<!-- Terminal Controls / Tab Bar -->
+<div class="h-14 bg-surface-container flex items-center px-6 justify-between border-b border-outline-variant">
+<div class="flex items-center h-full gap-1">
+<!-- Local Tab -->
+<button class="h-full px-4 flex items-center gap-2 border-b-2 border-primary bg-surface-container-high group transition-all">
+<span class="material-symbols-outlined text-[18px] text-primary">computer</span>
+<span class="text-label-md font-label-md text-on-surface">Local</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">close</span>
+</button>
+<!-- Remote Tab -->
+<button class="h-full px-4 flex items-center gap-2 border-b-2 border-transparent hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">dns</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Remote Server 1</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">close</span>
+</button>
+<button class="w-8 h-8 ml-2 rounded hover:bg-surface-variant flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">add</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative group">
+<select class="appearance-none bg-surface-container-highest border border-outline-variant text-on-surface rounded-lg px-4 py-1.5 pr-10 font-label-md text-label-md focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer transition-all">
+<option>Select host</option>
+<option>prod-db-master (10.0.0.45)</option>
+<option>staging-web-01 (10.0.1.12)</option>
+<option>backup-vault (10.0.5.99)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+<button class="flex items-center gap-2 px-4 py-1.5 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">power</span>
+<span>Connect</span>
+</button>
+</div>
+</div>
+<!-- Terminal Pane -->
+<div class="flex-1 flex flex-col p-4 bg-black overflow-hidden relative group">
+<!-- Status Overlay -->
+<div class="absolute top-6 left-6 flex items-center gap-2 px-2 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant opacity-60 group-hover:opacity-100 transition-opacity z-10">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[10px] uppercase font-mono-code tracking-widest text-on-surface-variant">Status: Idle</span>
+</div>
+<div class="flex-1 font-mono-code text-mono-code overflow-y-auto p-4 scrollbar-hide">
+<div class="space-y-1">
+<p class="text-primary opacity-80">Vexa Terminal v2.4.1 (Stable)</p>
+<p class="text-on-surface-variant">Connected to local instance (Darwin Kernel Version 21.6.0)</p>
+<p class="text-on-surface-variant mt-4">Welcome to vexa terminal.</p>
+<p class="text-on-surface-variant">Select a host and click <span class="text-primary">Connect</span> to start a remote session.</p>
+<div class="pt-6">
+<span class="text-tertiary">system@vexa</span>
+<span class="text-on-surface">:</span>
+<span class="text-primary-container">~</span>
+<span class="text-on-surface">$</span>
+<span class="text-on-surface ml-2">ssh root@prod-db-master</span>
+</div>
+<div class="text-on-surface-variant pl-4 border-l border-outline-variant/30 py-2 my-2 bg-surface-variant/10">
+<p>The authenticity of host 'prod-db-master (10.0.0.45)' can't be established.</p>
+<p>ED25519 key fingerprint is SHA256:uNiYpL8p...x9K2p8.</p>
+<p>Are you sure you want to continue connecting (yes/no/[fingerprint])? <span class="text-on-surface font-bold">yes</span></p>
+</div>
+<div class="pt-2">
+<span class="text-tertiary">root@prod-db-master</span>
+<span class="text-on-surface">:</span>
+<span class="text-primary-container">/etc/nginx</span>
+<span class="text-on-surface">$</span>
+<span class="text-on-surface ml-2">ls -la</span>
+</div>
+<div class="grid grid-cols-4 gap-4 mt-2 max-w-2xl text-on-surface-variant/80">
+<div class="flex gap-2"><span class="text-primary-container">drwxr-xr-x</span><span>root</span><span>4096</span><span class="text-tertiary">.</span></div>
+<div class="flex gap-2"><span class="text-primary-container">drwxr-xr-x</span><span>root</span><span>4096</span><span class="text-tertiary">..</span></div>
+<div class="flex gap-2"><span class="text-primary-container">drwxr-xr-x</span><span>root</span><span>4096</span><span class="text-primary-fixed">conf.d</span></div>
+<div class="flex gap-2"><span class="text-primary-container">-rw-r--r--</span><span>root</span><span>1077</span><span class="text-on-surface">fastcgi.conf</span></div>
+<div class="flex gap-2"><span class="text-primary-container">-rw-r--r--</span><span>root</span><span>2837</span><span class="text-on-surface">nginx.conf</span></div>
+<div class="flex gap-2"><span class="text-primary-container">drwxr-xr-x</span><span>root</span><span>4096</span><span class="text-primary-fixed">sites-available</span></div>
+<div class="flex gap-2"><span class="text-primary-container">drwxr-xr-x</span><span>root</span><span>4096</span><span class="text-primary-fixed">sites-enabled</span></div>
+</div>
+<div class="pt-6">
+<span class="text-tertiary">root@prod-db-master</span>
+<span class="text-on-surface">:</span>
+<span class="text-primary-container">/etc/nginx</span>
+<span class="text-on-surface">$</span>
+<span class="terminal-cursor"></span>
+</div>
+</div>
+</div>
+<!-- Terminal Quick Actions -->
+<div class="h-10 bg-surface-container-low border-t border-outline-variant flex items-center px-4 justify-between">
+<div class="flex gap-4 text-[11px] font-mono-code text-on-surface-variant/60">
+<span class="hover:text-primary cursor-pointer transition-colors">UTF-8</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Line 142, Col 1</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Spaces: 2</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-1 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+<button class="p-1 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">search</span></button>
+<button class="p-1 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">settings</span></button>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Sidebar: Contextual Details (High-end Bento-ish expansion) -->
+<aside class="hidden lg:flex flex-col w-[300px] bg-surface-container border-l border-outline-variant p-6 gap-6 overflow-y-auto">
+<div class="space-y-1">
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest">Active Host</h3>
+<p class="text-headline-sm font-headline-sm text-on-surface">prod-db-master</p>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-4 rounded-xl glass-panel flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant font-medium">CPU LOAD</span>
+<div class="flex items-end gap-1">
+<span class="text-headline-sm font-bold text-primary">12.4</span>
+<span class="text-label-md text-on-surface-variant mb-1">%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden mt-2">
+<div class="bg-primary h-full w-[12%]"></div>
+</div>
+</div>
+<div class="p-4 rounded-xl glass-panel flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant font-medium">MEMORY</span>
+<div class="flex items-end gap-1">
+<span class="text-headline-sm font-bold text-tertiary">4.2</span>
+<span class="text-label-md text-on-surface-variant mb-1">GB</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden mt-2">
+<div class="bg-tertiary h-full w-[45%]"></div>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<h4 class="text-label-md font-label-md text-on-surface">Recent Logs</h4>
+<div class="space-y-3">
+<div class="p-3 rounded-lg bg-surface-container-low border border-outline-variant/30">
+<div class="flex justify-between text-[11px] mb-1">
+<span class="text-primary">INFO</span>
+<span class="opacity-40">14:22:01</span>
+</div>
+<p class="text-[12px] text-on-surface-variant leading-tight">Database migration completed for cluster-04.</p>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low border border-outline-variant/30">
+<div class="flex justify-between text-[11px] mb-1">
+<span class="text-tertiary">WARN</span>
+<span class="opacity-40">14:21:45</span>
+</div>
+<p class="text-[12px] text-on-surface-variant leading-tight">High latency detected in us-east-1 ingress.</p>
+</div>
+</div>
+</div>
+<div class="mt-auto space-y-4">
+<div class="p-4 rounded-xl bg-primary-container/10 border border-primary/20">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-[20px]">security</span>
+<span class="text-label-md font-label-md text-primary">Secure Session</span>
+</div>
+<p class="text-[12px] text-on-primary-container opacity-80 leading-snug">Encryption: AES-256-GCM. Peer verified via hardware token.</p>
+</div>
+</div>
+</aside>
+</div>
+<script>
+    // Lightweight interaction for tab switching simulation
+    const tabs = document.querySelectorAll('.flex.items-center.h-full.gap-1 button');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => {
+          t.classList.remove('border-primary', 'bg-surface-container-high');
+          t.classList.add('border-transparent');
+          t.querySelector('span:nth-child(2)').classList.add('text-on-surface-variant');
+          t.querySelector('span:nth-child(2)').classList.remove('text-on-surface');
+        });
+        tab.classList.add('border-primary', 'bg-surface-container-high');
+        tab.classList.remove('border-transparent');
+        tab.querySelector('span:nth-child(2)').classList.remove('text-on-surface-variant');
+        tab.querySelector('span:nth-child(2)').classList.add('text-on-surface');
+      });
+    });
+
+    // Simple terminal typing animation for atmospheric effect
+    const terminalLines = [
+      "Starting secure shell proxy...",
+      "Allocating TTY...",
+      "Connection established."
+    ];
+    // (Logic could go here to append lines periodically)
+  </script>
+</body></html>
