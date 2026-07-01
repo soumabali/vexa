@@ -21,18 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Play,
-  Download,
-  Trash2,
-  Search,
-  Clock,
-  Monitor,
-  FileText,
-  Calendar,
-  X,
-} from "lucide-react";
 import { RecordingPlayer } from "@/components/recording-player";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface Recording {
   id: string;
@@ -153,7 +143,7 @@ export default function RecordingsPage() {
       {/* Search Bar */}
       <div className="flex gap-2 mb-6">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <MaterialIcon name="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search recordings by content, commands, or host..."
             value={searchQuery}
@@ -241,14 +231,14 @@ export default function RecordingsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-gray-400" />
+                      <MaterialIcon name="schedule" className="h-3 w-3 text-gray-400" />
                       {formatDuration(recording.duration)}
                     </div>
                   </TableCell>
                   <TableCell>{formatFileSize(recording.file_size_bytes)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Monitor className="h-3 w-3 text-gray-400" />
+                      <MaterialIcon name="monitor" className="h-3 w-3 text-gray-400" />
                       {recording.terminal_type}
                     </div>
                   </TableCell>
@@ -266,21 +256,21 @@ export default function RecordingsPage() {
                         onClick={() => handlePlay(recording)}
                         disabled={recording.status !== "completed"}
                       >
-                        <Play className="h-4 w-4" />
+                        <MaterialIcon name="play_arrow" className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDownload(recording.id)}
                       >
-                        <Download className="h-4 w-4" />
+                        <MaterialIcon name="download" className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(recording.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <MaterialIcon name="delete" className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -325,7 +315,7 @@ export default function RecordingsPage() {
                 size="icon"
                 onClick={() => setIsPlayerOpen(false)}
               >
-                <X className="h-4 w-4" />
+                <MaterialIcon name="close" className="h-4 w-4" />
               </Button>
             </DialogTitle>
           </DialogHeader>
