@@ -339,7 +339,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="border rounded-lg p-4">
                   <h3 className="font-medium mb-2 flex items-center gap-2">
                     <MaterialIcon name="storage" className="h-4 w-4" />
@@ -430,7 +430,7 @@ function NewHostForm({ onSubmit }: { onSubmit: (host: FileSystem) => void }) {
           onChange={(e) => setHost({ ...host, host: e.target.value })}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="port">Port</Label>
           <Input

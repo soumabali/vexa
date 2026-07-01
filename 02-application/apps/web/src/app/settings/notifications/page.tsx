@@ -111,7 +111,7 @@ export default function NotificationsSettingsPage() {
               <Switch checked={quietHours} onCheckedChange={setQuietHours} />
             </div>
             {quietHours && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="quiet-from" className="text-on-surface-variant">From</Label>
                   <Input

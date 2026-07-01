@@ -19,14 +19,26 @@ const navItems: NavItem[] = [
   { href: "/settings", label: "Settings", icon: "settings" },
 ];
 
-export function TopNav() {
+interface TopNavProps {
+  onMenuClick?: () => void;
+}
+
+export function TopNav({ onMenuClick }: TopNavProps = {}) {
   const pathname = usePathname();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-background border-b border-outline-variant z-50">
       <div className="flex items-center justify-between h-full px-4 md:px-6">
-        {/* Left: logo */}
+        {/* Left: logo + hamburger */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Open navigation menu"
+            onClick={onMenuClick}
+            className="md:hidden w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <MaterialIcon name="menu" size="md" />
+          </button>
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <MaterialIcon name="terminal" size="sm" className="text-on-primary" fill />
           </div>
@@ -42,7 +54,7 @@ export function TopNav() {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex items-center gap-2 text-sm font-medium transition-colors pb-1 border-b-2",
+                  "flex items-center gap-2 text-sm font-medium transition-colors pb-1 border-b-2 focus:outline-none focus:ring-2 focus:ring-primary rounded",
                   active
                     ? "text-primary border-primary"
                     : "text-on-surface-variant hover:text-on-surface border-transparent",
@@ -60,34 +72,38 @@ export function TopNav() {
           <button
             type="button"
             aria-label="Search"
-            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <MaterialIcon name="search" size="md" />
           </button>
           <button
             type="button"
             aria-label="Notifications"
-            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <MaterialIcon name="notifications" size="md" />
           </button>
           <button
             type="button"
             aria-label="Help"
-            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+            className="hidden sm:flex w-10 h-10 rounded-lg hover:bg-surface-container-highest items-center justify-center text-on-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <MaterialIcon name="help_outline" size="md" />
           </button>
           <button
             type="button"
             aria-label="Settings"
-            className="w-10 h-10 rounded-lg hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors"
+            className="hidden sm:flex w-10 h-10 rounded-lg hover:bg-surface-container-highest items-center justify-center text-on-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <MaterialIcon name="settings" size="md" />
           </button>
-          <div className="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant flex items-center justify-center">
+          <button
+            type="button"
+            aria-label="Account"
+            className="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
+          >
             <MaterialIcon name="person" size="sm" className="text-on-secondary-container" />
-          </div>
+          </button>
         </div>
       </div>
     </header>
