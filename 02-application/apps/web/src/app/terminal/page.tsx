@@ -242,11 +242,12 @@ export default function TerminalPage() {
               {tabs.length > 1 && (
                 <button
                   type="button"
+                  aria-label={`Close tab ${tab.hostName ?? tab.label}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     closeTab(tab.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <MaterialIcon name="close" size="sm" />
                 </button>
@@ -255,7 +256,8 @@ export default function TerminalPage() {
           ))}
           <button
             type="button"
-            className="w-8 h-8 ml-1 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-variant transition-colors"
+            aria-label="New tab"
+            className="w-8 h-8 ml-1 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-variant transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             title="New tab"
             onClick={addTab}
           >

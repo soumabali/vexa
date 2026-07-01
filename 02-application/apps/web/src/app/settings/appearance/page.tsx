@@ -64,7 +64,8 @@ export default function AppearanceSettingsPage() {
                   key={option.id}
                   type="button"
                   onClick={() => setTheme(option.id)}
-                  className={`relative flex flex-col items-start gap-2 rounded-lg p-4 text-left transition-colors ${
+                  aria-label={`Select theme ${option.label}`}
+                  className={`relative flex flex-col items-start gap-2 rounded-lg p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     active
                       ? "border-2 border-primary bg-primary/5"
                       : "border border-outline-variant hover:border-outline"
@@ -116,7 +117,8 @@ export default function AppearanceSettingsPage() {
                   key={option.id}
                   type="button"
                   onClick={() => setDensity(option.id)}
-                  className={`flex items-center gap-3 rounded-lg p-4 text-left transition-colors ${
+                  aria-label={`Select density ${option.label}`}
+                  className={`flex items-center gap-3 rounded-lg p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     selected
                       ? "bg-secondary-container text-on-secondary-container"
                       : "border border-outline-variant hover:border-outline text-on-surface"
@@ -199,7 +201,7 @@ export default function AppearanceSettingsPage() {
                   onClick={() => setAccent(color.id)}
                   aria-label={color.label}
                   aria-pressed={active}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-offset-2 ring-offset-surface-container transition-all ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-offset-2 ring-offset-surface-container transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     color.class
                   } ${active ? "ring-on-surface" : "ring-transparent hover:ring-outline-variant"}`}
                 >

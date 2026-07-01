@@ -172,13 +172,15 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
             <button
               key={value}
               type="button"
+              aria-label={`Select host type ${label}`}
+              aria-pressed={selectedHostType === value}
               onClick={() => {
                 console.log("HostForm set hostType", value);
                 setSelectedHostType(value as HostType);
                 setValue("hostType", value as HostType);
               }}
               className={cn(
-                "flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all bg-surface-container-low",
+                "flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 selectedHostType === value
                   ? "border-primary bg-primary-container text-on-primary-container"
                   : "border-outline-variant text-on-surface-variant hover:border-primary"
@@ -270,12 +272,14 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
               <button
                 key={color}
                 type="button"
+                aria-label={`Select color ${color}`}
+                aria-pressed={selectedColor === color}
                 onClick={() => {
                   setSelectedColor(color);
                   setValue("color", color);
                 }}
                 className={cn(
-                  "h-5 w-5 rounded border-2 transition-all",
+                  "h-5 w-5 rounded border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedColor === color ? "border-primary scale-110" : "border-outline-variant"
                 )}
                 style={{ backgroundColor: color }}
@@ -303,8 +307,9 @@ export function HostForm({ host, onSuccess, onCancel }: HostFormProps) {
               {tag}
               <button
                 type="button"
+                aria-label={`Remove tag ${tag}`}
                 onClick={() => handleRemoveTag(tag)}
-                className="ml-1 hover:text-error"
+                className="ml-1 hover:text-error focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
               >
                 <MaterialIcon name="close" size="sm" />
               </button>

@@ -259,7 +259,7 @@ export function RecordingPlayer({
                 <button
                   key={t}
                   onClick={() => setTheme(t)}
-                  className={`text-xs px-2 py-1 rounded ${
+                  className={`text-xs px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     theme === t
                       ? "bg-blue-600 text-white"
                       : "bg-gray-700 text-gray-300"

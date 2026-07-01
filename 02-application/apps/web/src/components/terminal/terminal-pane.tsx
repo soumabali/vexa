@@ -153,14 +153,16 @@ export default function TerminalPaneComponent({
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10">
         <button
           onClick={() => splitPane('horizontal')}
-          className="p-1.5 bg-surface-container rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
+          aria-label="Split horizontal"
+          className="p-1.5 bg-surface-container rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           title="Split horizontal"
         >
           <MaterialIcon name="grid_view" size="sm" />
         </button>
         <button
           onClick={() => splitPane('vertical')}
-          className="p-1.5 bg-surface-container rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
+          aria-label="Split vertical"
+          className="p-1.5 bg-surface-container rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           title="Split vertical"
         >
           <MaterialIcon name="expand_more" size="sm" />
