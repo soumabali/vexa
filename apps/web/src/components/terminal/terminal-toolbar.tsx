@@ -59,7 +59,8 @@ export default function TerminalToolbar({
     <div className={`terminal-toolbar flex items-center gap-1 px-2 py-1 bg-surface-container border-b border-outline-variant ${className || ''}`}>
       <button
         onClick={onCopy}
-        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+        aria-label="Copy selection"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Copy selection"
       >
         <MaterialIcon name="content_copy" size="sm" />
@@ -67,7 +68,8 @@ export default function TerminalToolbar({
 
       <button
         onClick={onPaste}
-        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+        aria-label="Paste"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Paste"
       >
         <MaterialIcon name="content_paste" size="sm" />
@@ -77,7 +79,8 @@ export default function TerminalToolbar({
 
       <button
         onClick={() => setSearchVisible(!searchVisible)}
-        className={`p-1.5 rounded transition-colors ${
+        aria-label="Search"
+        className={`p-1.5 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
           searchVisible ? 'text-primary bg-surface-variant' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
         }`}
         title="Search"
@@ -98,7 +101,8 @@ export default function TerminalToolbar({
           />
           <button
             onClick={() => setCaseSensitive(!caseSensitive)}
-            className={`text-xs px-1.5 py-0.5 rounded ${
+            aria-label="Toggle case sensitive search"
+            className={`text-xs px-1.5 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               caseSensitive ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-variant'
             }`}
             title="Case sensitive"
@@ -107,7 +111,8 @@ export default function TerminalToolbar({
           </button>
           <button
             onClick={() => setWholeWord(!wholeWord)}
-            className={`text-xs px-1.5 py-0.5 rounded ${
+            aria-label="Toggle whole word search"
+            className={`text-xs px-1.5 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               wholeWord ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-variant'
             }`}
             title="Whole word"
@@ -116,7 +121,8 @@ export default function TerminalToolbar({
           </button>
           <button
             onClick={() => setRegexMode(!regexMode)}
-            className={`text-xs px-1.5 py-0.5 rounded ${
+            aria-label="Toggle regex search"
+            className={`text-xs px-1.5 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               regexMode ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-variant'
             }`}
             title="Regex"
@@ -130,7 +136,8 @@ export default function TerminalToolbar({
 
       <button
         onClick={onZoomOut}
-        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+        aria-label="Zoom out"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Zoom out"
       >
         <MaterialIcon name="zoom_out" size="sm" />
@@ -140,7 +147,8 @@ export default function TerminalToolbar({
 
       <button
         onClick={onZoomIn}
-        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+        aria-label="Zoom in"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Zoom in"
       >
         <MaterialIcon name="zoom_in" size="sm" />
@@ -150,7 +158,8 @@ export default function TerminalToolbar({
 
       <button
         onClick={onToggleBell}
-        className={`p-1.5 rounded transition-colors ${
+        aria-label={`Bell: ${bellMode}`}
+        className={`p-1.5 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
           bellMode === 'off' ? 'text-on-surface-variant' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
         }`}
         title={`Bell: ${bellMode}`}
@@ -160,7 +169,8 @@ export default function TerminalToolbar({
 
       <button
         onClick={onSettings}
-        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+        aria-label="Settings"
+        className="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         title="Settings"
       >
         <MaterialIcon name="settings" size="sm" />

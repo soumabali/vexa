@@ -214,8 +214,9 @@ export function LoginForm() {
               />
               <button
                 type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                 tabIndex={-1}
               >
                 <MaterialIcon name={showPassword ? "visibility_off" : "visibility"} size="sm" />
@@ -317,7 +318,7 @@ function MFAStep({
             <button
               type="button"
               onClick={() => setMode("webauthn")}
-              className="w-full text-sm text-primary hover:underline"
+              className="w-full text-sm text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
             >
               Use security key instead
             </button>

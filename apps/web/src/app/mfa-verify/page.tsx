@@ -118,7 +118,7 @@ function MFAVerifyContent() {
       <div className="text-center pt-2">
         <button
           onClick={() => setMode(mode === "totp" ? "backup" : "totp")}
-          className="text-sm text-primary hover:underline"
+          className="text-sm text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
         >
           {mode === "totp" ? "Use backup code instead" : "Use authenticator code instead"}
         </button>
