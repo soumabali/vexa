@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatsCards from '@/components/admin/stats-cards';
 import LineChart from '@/components/admin/charts/line-chart';
@@ -114,6 +115,7 @@ export default function AdminDashboard() {
   ];
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -212,5 +214,6 @@ export default function AdminDashboard() {
         </Card>
       </div>
     </div>
+    </DashboardLayout>
   );
 }

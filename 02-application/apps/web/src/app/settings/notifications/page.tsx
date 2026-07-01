@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ export default function NotificationsSettingsPage() {
   };
 
   return (
+    <DashboardLayout>
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-on-surface">Notifications</h1>
@@ -236,5 +238,6 @@ export default function NotificationsSettingsPage() {
         <Button onClick={handleSave}>Save Changes</Button>
       </div>
     </div>
+    </DashboardLayout>
   );
 }

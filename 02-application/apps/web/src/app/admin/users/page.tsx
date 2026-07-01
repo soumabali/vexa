@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,6 +99,7 @@ export default function UserManagement() {
   ];
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">User Management</h1>
@@ -139,5 +141,6 @@ export default function UserManagement() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   );
 }

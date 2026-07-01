@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,6 +133,7 @@ export default function APIKeysPage() {
   };
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto py-8 px-4 max-w-5xl">
       <div className="mb-8">
         <h1 className="text-headline-lg text-on-surface mb-2">API Keys</h1>
@@ -388,5 +390,6 @@ export default function APIKeysPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }

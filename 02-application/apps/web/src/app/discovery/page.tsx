@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { DashboardLayout } from '@/components/layouts/DashboardLayout'
 import { useAsyncData } from '@/hooks/useAsyncData'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -201,6 +202,7 @@ export default function DiscoveryPage() {
   }, [historyData]);
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Network Discovery</h1>
@@ -487,5 +489,6 @@ export default function DiscoveryPage() {
         </Card>
       )}
     </div>
+    </DashboardLayout>
   )
 }
