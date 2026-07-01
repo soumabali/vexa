@@ -102,6 +102,7 @@ export function CredentialCard({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0"
+              aria-label={credential.isFavorite ? "Remove favorite" : "Add favorite"}
               onClick={(e) => {
                 e.stopPropagation();
                 onFavorite(credential.id);
@@ -118,6 +119,7 @@ export function CredentialCard({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0"
+              aria-label="Share"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -128,6 +130,7 @@ export function CredentialCard({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 hover:bg-error/10"
+              aria-label="Delete"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(credential.id);
@@ -210,6 +213,7 @@ export function CredentialCard({
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0"
+              aria-label={credential.isFavorite ? "Remove favorite" : "Add favorite"}
                       onClick={(e) => {
                         e.stopPropagation();
                         onFavorite(credential.id);
@@ -271,6 +275,7 @@ export function CredentialCard({
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 hover:bg-error/10"
+              aria-label="Delete"
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete(credential.id);
