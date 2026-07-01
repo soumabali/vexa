@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import DataTable from '@/components/admin/tables/data-table';
 import { useAsyncData } from '@/hooks/useAsyncData';
-import { Search, Download } from 'lucide-react';
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface AuditLog {
   id: string;
@@ -95,7 +95,7 @@ export default function AuditLogs() {
       key: 'details',
       header: 'Details',
       render: (log: AuditLog) => (
-        <span className="text-sm text-muted-foreground truncate max-w-[200px]">{log.details}</span>
+        <span className="text-sm text-on-surface-variant truncate max-w-[200px]">{log.details}</span>
       ),
     },
   ];
@@ -108,7 +108,7 @@ export default function AuditLogs() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Search className="h-4 w-4 text-muted-foreground" />
+              <MaterialIcon name="search" className="h-4 w-4 text-on-surface-variant" />
               <Input
                 placeholder="Search logs..."
                 value={search}
@@ -127,7 +127,7 @@ export default function AuditLogs() {
               </select>
             </div>
             <Button onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
+              <MaterialIcon name="download" className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
           </div>

@@ -2,15 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  Pencil,
-  Trash2,
-  Copy as CopyIcon,
-  Network,
-  Server,
-  Loader2,
-} from "lucide-react";
 import { hostsApi } from "@/lib/api/hosts";
 import type { HostDetailStats } from "@/lib/api/hosts";
 import { createTunnel } from "@/lib/api/tunnels";
@@ -35,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { toast } from "sonner";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 export default function HostDetailPage() {
   const params = useParams();
@@ -130,11 +122,11 @@ export default function HostDetailPage() {
     return (
       <div className="container mx-auto p-6 space-y-4">
         <Button variant="ghost" onClick={() => router.push("/hosts")}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <MaterialIcon name="arrow_back" className="h-4 w-4 mr-2" />
           Back to hosts
         </Button>
         <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
+          <CardContent className="p-6 text-center text-on-surface-variant">
             {error?.message ?? "Host not found"}
           </CardContent>
         </Card>
@@ -153,11 +145,11 @@ export default function HostDetailPage() {
             onClick={() => router.push("/hosts")}
             aria-label="Back to hosts"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <MaterialIcon name="arrow_back" className="h-4 w-4" />
           </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Server className="h-5 w-5 text-muted-foreground shrink-0" />
+              <MaterialIcon name="dns" className="h-5 w-5 text-on-surface-variant shrink-0" />
               <h1 className="text-2xl font-bold truncate">{host.name}</h1>
               <Badge variant={host.favorite ? "default" : "secondary"}>
                 {host.favorite ? "active" : "inactive"}
@@ -175,7 +167,7 @@ export default function HostDetailPage() {
               />
             </div>
             {host.description && (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm text-on-surface-variant">
                 {host.description}
               </p>
             )}
@@ -186,7 +178,7 @@ export default function HostDetailPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <ConnectionButton host={host} />
           <Button variant="outline" size="sm" onClick={handleCopyHost}>
-            <CopyIcon className="h-4 w-4 mr-1" />
+            <MaterialIcon name="content_copy" className="h-4 w-4 mr-1" />
             Copy
           </Button>
           <Button
@@ -194,7 +186,7 @@ export default function HostDetailPage() {
             size="sm"
             onClick={() => setShowTunnelDialog(true)}
           >
-            <Network className="h-4 w-4 mr-1" />
+            <MaterialIcon name="lan" className="h-4 w-4 mr-1" />
             Tunnel
           </Button>
           <Button
@@ -202,7 +194,7 @@ export default function HostDetailPage() {
             size="sm"
             onClick={() => setShowEditDialog(true)}
           >
-            <Pencil className="h-4 w-4 mr-1" />
+            <MaterialIcon name="edit" className="h-4 w-4 mr-1" />
             Edit
           </Button>
           <Button
@@ -210,7 +202,7 @@ export default function HostDetailPage() {
             size="sm"
             onClick={() => setShowDeleteConfirm(true)}
           >
-            <Trash2 className="h-4 w-4 mr-1" />
+            <MaterialIcon name="delete" className="h-4 w-4 mr-1" />
             Delete
           </Button>
         </div>
@@ -234,7 +226,7 @@ export default function HostDetailPage() {
           <CardHeader>
             <CardTitle className="text-lg">Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
+          <CardContent className="text-sm text-on-surface-variant">
             {stats?.last_connected_at ? (
               <p>
                 Last connected{" "}
@@ -294,7 +286,7 @@ export default function HostDetailPage() {
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isDeleting && <MaterialIcon name="progress_activity" className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </Button>
           </div>
@@ -338,7 +330,7 @@ export default function HostDetailPage() {
                 disabled={isCreatingTunnel || !tunnelName.trim()}
               >
                 {isCreatingTunnel && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <MaterialIcon name="progress_activity" className="h-4 w-4 mr-2 animate-spin" />
                 )}
                 Create
               </Button>

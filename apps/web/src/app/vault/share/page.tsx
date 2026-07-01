@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface Team {
   id: string;
@@ -201,7 +202,7 @@ export default function ShareManagementPage() {
                         <CardTitle>
                           {share.credential_name || "Credential"}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-on-surface-variant">
                           From: {share.sender_email || share.sender_id}
                         </p>
                       </div>
@@ -248,7 +249,7 @@ export default function ShareManagementPage() {
                 </Card>
               ))}
               {shares.length === 0 && (
-                <p className="text-muted-foreground">No shared credentials.</p>
+                <p className="text-on-surface-variant">No shared credentials.</p>
               )}
             </div>
           )}
@@ -267,7 +268,7 @@ export default function ShareManagementPage() {
                         <CardTitle>
                           {share.credential_name || "Credential"}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-on-surface-variant">
                           To: {share.recipient_email || share.recipient_id}
                         </p>
                       </div>
@@ -294,7 +295,7 @@ export default function ShareManagementPage() {
                 </Card>
               ))}
               {shares.length === 0 && (
-                <p className="text-muted-foreground">No shared credentials.</p>
+                <p className="text-on-surface-variant">No shared credentials.</p>
               )}
             </div>
           )}

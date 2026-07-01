@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/admin/tables/data-table';
 import { useAsyncData } from '@/hooks/useAsyncData';
-import { Power, Eye, PlayCircle } from 'lucide-react';
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface Session {
   id: string;
@@ -96,10 +96,10 @@ export default function SessionManagement() {
       render: (session: Session) => (
         <div className="flex gap-2">
           <Button variant="ghost" size="icon" onClick={() => handleViewDetails(session.id)}>
-            <Eye className="h-4 w-4" />
+            <MaterialIcon name="visibility" className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" onClick={() => handlePlayRecording(session.id)}>
-            <PlayCircle className="h-4 w-4" />
+            <MaterialIcon name="play_circle" className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
@@ -107,7 +107,7 @@ export default function SessionManagement() {
             className="text-red-500"
             onClick={() => handleKillSession(session.id)}
           >
-            <Power className="h-4 w-4" />
+            <MaterialIcon name="power" className="h-4 w-4" />
           </Button>
         </div>
       ),

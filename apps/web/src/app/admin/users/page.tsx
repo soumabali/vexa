@@ -20,9 +20,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import DataTable from '@/components/admin/tables/data-table';
 import { useAsyncData } from '@/hooks/useAsyncData';
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface User {
   id: string;
@@ -87,10 +87,10 @@ export default function UserManagement() {
       render: (user: User) => (
         <div className="flex gap-2">
           <Button variant="ghost" size="icon">
-            <Pencil className="h-4 w-4" />
+            <MaterialIcon name="edit" className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" className="text-red-500">
-            <Trash2 className="h-4 w-4" />
+            <MaterialIcon name="delete" className="h-4 w-4" />
           </Button>
         </div>
       ),
@@ -104,7 +104,7 @@ export default function UserManagement() {
         <Dialog>
           <DialogTrigger asChild>
             <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
+              <MaterialIcon name="person_add" className="h-4 w-4 mr-2" />
               Add User
             </Button>
           </DialogTrigger>
@@ -125,7 +125,7 @@ export default function UserManagement() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
-            <Search className="h-4 w-4 text-muted-foreground" />
+            <MaterialIcon name="search" className="h-4 w-4 text-on-surface-variant" />
             <Input
               placeholder="Search users..."
               value={search}

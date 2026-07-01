@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, Users, Server, Shield, Wifi, AlertTriangle, Clock } from 'lucide-react';
 import StatsCards from '@/components/admin/stats-cards';
 import LineChart from '@/components/admin/charts/line-chart';
 import BarChart from '@/components/admin/charts/bar-chart';
@@ -10,6 +9,7 @@ import PieChart from '@/components/admin/charts/pie-chart';
 import WorldMap from '@/components/admin/maps/world-map';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface DashboardStats {
   totalUsers: number;
@@ -103,14 +103,14 @@ export default function AdminDashboard() {
   }, []);
 
   const statItems = [
-    { title: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-500' },
-    { title: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-green-500' },
-    { title: 'Active Sessions', value: stats.activeSessions, icon: Wifi, color: 'text-purple-500' },
-    { title: 'Total Hosts', value: stats.totalHosts, icon: Server, color: 'text-orange-500' },
-    { title: 'Online Hosts', value: stats.onlineHosts, icon: Shield, color: 'text-teal-500' },
-    { title: 'Bandwidth (24h)', value: stats.totalBandwidth, icon: Clock, color: 'text-indigo-500' },
-    { title: 'Errors (24h)', value: stats.errorsLast24h, icon: AlertTriangle, color: 'text-red-500' },
-    { title: 'Avg Latency', value: stats.avgLatency, icon: Activity, color: 'text-cyan-500' },
+    { title: 'Total Users', value: stats.totalUsers, icon: "group", color: 'text-blue-500' },
+    { title: 'Active Users', value: stats.activeUsers, icon: "monitoring", color: 'text-green-500' },
+    { title: 'Active Sessions', value: stats.activeSessions, icon: "wifi", color: 'text-purple-500' },
+    { title: 'Total Hosts', value: stats.totalHosts, icon: "dns", color: 'text-orange-500' },
+    { title: 'Online Hosts', value: stats.onlineHosts, icon: "shield", color: 'text-teal-500' },
+    { title: 'Bandwidth (24h)', value: stats.totalBandwidth, icon: "schedule", color: 'text-indigo-500' },
+    { title: 'Errors (24h)', value: stats.errorsLast24h, icon: "warning", color: 'text-red-500' },
+    { title: 'Avg Latency', value: stats.avgLatency, icon: "monitoring", color: 'text-cyan-500' },
   ];
 
   return (
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-on-surface-variant">
             {wsConnected ? 'Live' : 'Disconnected'}
           </span>
         </div>
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
         <div className="space-y-2">
           {alerts.slice(0, 3).map((alert) => (
             <Alert key={alert.id} variant={alert.severity === 'critical' ? 'destructive' : 'default'}>
-              <AlertTriangle className="h-4 w-4" />
+              <MaterialIcon name="warning" className="h-4 w-4" />
               <AlertTitle>{alert.title}</AlertTitle>
               <AlertDescription>{alert.description}</AlertDescription>
             </Alert>
