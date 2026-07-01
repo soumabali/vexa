@@ -16,41 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import {
-  Folder,
-  File,
-  Upload,
-  Download,
-  RefreshCw,
-  Plus,
-  Settings,
-  Server,
-  Home,
-  ChevronRight,
-  HardDrive,
-  Cloud,
-  Trash2,
-  Copy,
-  Move,
-  Pencil,
-  Check,
-  X,
-  Loader2,
-  Wifi,
-  WifiOff,
-  AlertTriangle,
-  Search,
-  Star,
-  Clock,
-  FileCode,
-  FileText,
-  FileImage,
-  FileVideo,
-  FileAudio,
-  FileArchive,
-  FileX
-} from 'lucide-react';
-
+import { MaterialIcon } from "@/components/ui/material-icon";
 interface FileItem {
   name: string;
   path: string;
@@ -167,7 +133,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">File Manager</h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-on-surface-variant mt-1">
             Manage files across local and remote systems
           </p>
         </div>
@@ -176,11 +142,11 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
             variant="outline"
             onClick={() => setNewHostDialog(true)}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <MaterialIcon name="add" className="h-4 w-4 mr-2" />
             Add Host
           </Button>
           <Button variant="outline" onClick={refetchHosts}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <MaterialIcon name="refresh" className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
@@ -194,10 +160,10 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                <MaterialIcon name="progress_activity" className="h-4 w-4 animate-spin text-blue-500" />
                 <span className="font-medium">{transferProgress.file}</span>
               </div>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-on-surface-variant">
                 {transferProgress.speed} • ETA {transferProgress.eta}
               </span>
             </div>
@@ -214,11 +180,11 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="local" className="flex items-center gap-2">
-            <HardDrive className="h-4 w-4" />
+            <MaterialIcon name="storage" className="h-4 w-4" />
             Local
           </TabsTrigger>
           <TabsTrigger value="remote" className="flex items-center gap-2">
-            <Cloud className="h-4 w-4" />
+            <MaterialIcon name="cloud" className="h-4 w-4" />
             Remote
             {activeHost && (
               <Badge variant="secondary" className="ml-1">
@@ -227,7 +193,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
             )}
           </TabsTrigger>
           <TabsTrigger value="dual" className="flex items-center gap-2">
-            <Copy className="h-4 w-4" />
+            <MaterialIcon name="content_copy" className="h-4 w-4" />
             Dual Pane
           </TabsTrigger>
         </TabsList>
@@ -236,7 +202,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <HardDrive className="h-5 w-5" />
+                <MaterialIcon name="storage" className="h-5 w-5" />
                 Local Files
               </CardTitle>
               <CardDescription>
@@ -272,14 +238,14 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                   </div>
                 ) : hosts.length === 0 ? (
                   <div className="text-center py-8">
-                    <Server className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No hosts configured</p>
+                    <MaterialIcon name="dns" className="h-12 w-12 mx-auto text-on-surface-variant mb-4" />
+                    <p className="text-on-surface-variant">No hosts configured</p>
                     <Button
                       variant="outline"
                       className="mt-4"
                       onClick={() => setNewHostDialog(true)}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <MaterialIcon name="add" className="h-4 w-4 mr-2" />
                       Add Host
                     </Button>
                   </div>
@@ -288,18 +254,18 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                     {hosts.map((host) => (
                       <Card
                         key={host.host}
-                        className="cursor-pointer hover:bg-accent transition-colors"
+                        className="cursor-pointer hover:bg-primary-container transition-colors"
                         onClick={() => connectToHost(host)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Server className="h-5 w-5 text-primary" />
+                                <MaterialIcon name="dns" className="h-5 w-5 text-primary" />
                               </div>
                               <div>
                                 <p className="font-medium">{host.name}</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-on-surface-variant">
                                   {host.username}@{host.host}:{host.port}
                                 </p>
                               </div>
@@ -310,9 +276,9 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                               disabled={isConnecting}
                             >
                               {isConnecting ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <MaterialIcon name="progress_activity" className="h-4 w-4 animate-spin" />
                               ) : (
-                                <ChevronRight className="h-4 w-4" />
+                                <MaterialIcon name="chevron_right" className="h-4 w-4" />
                               )}
                             </Button>
                           </div>
@@ -328,7 +294,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <Cloud className="h-5 w-5" />
+                    <MaterialIcon name="cloud" className="h-5 w-5" />
                     {activeHost.name}
                   </CardTitle>
                   <CardDescription>
@@ -337,7 +303,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="flex items-center gap-1">
-                    <Wifi className="h-3 w-3 text-green-500" />
+                    <MaterialIcon name="wifi" className="h-3 w-3 text-green-500" />
                     Connected
                   </Badge>
                   <Button
@@ -345,7 +311,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                     size="sm"
                     onClick={() => setActiveHost(null)}
                   >
-                    <X className="h-4 w-4" />
+                    <MaterialIcon name="close" className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
@@ -365,7 +331,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Copy className="h-5 w-5" />
+                <MaterialIcon name="content_copy" className="h-5 w-5" />
                 Dual Pane Mode
               </CardTitle>
               <CardDescription>
@@ -376,7 +342,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
               <div className="grid grid-cols-2 gap-4">
                 <div className="border rounded-lg p-4">
                   <h3 className="font-medium mb-2 flex items-center gap-2">
-                    <HardDrive className="h-4 w-4" />
+                    <MaterialIcon name="storage" className="h-4 w-4" />
                     Source
                   </h3>
                   <FileManager
@@ -389,7 +355,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                 </div>
                 <div className="border rounded-lg p-4">
                   <h3 className="font-medium mb-2 flex items-center gap-2">
-                    <Cloud className="h-4 w-4" />
+                    <MaterialIcon name="cloud" className="h-4 w-4" />
                     Destination
                   </h3>
                   {activeHost ? (
@@ -401,7 +367,7 @@ export default function FileManagerPage({ initialHostId }: FileManagerPageProps)
                       onTransferComplete={handleTransferComplete}
                     />
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-on-surface-variant">
                       <p>Connect to a remote host first</p>
                     </div>
                   )}

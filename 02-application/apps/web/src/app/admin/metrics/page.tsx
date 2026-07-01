@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LineChart from '@/components/admin/charts/line-chart';
 import { useAsyncData } from '@/hooks/useAsyncData';
-import { Cpu, HardDrive, Network, MemoryStick } from 'lucide-react';
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface MetricData {
   timestamp: string;
@@ -73,25 +73,25 @@ export default function MetricsPage() {
     {
       title: 'CPU Usage',
       value: `${getLatestValue('cpu').toFixed(1)}%`,
-      icon: Cpu,
+      icon: "memory",
       color: 'text-blue-500',
     },
     {
       title: 'Memory Usage',
       value: `${getLatestValue('memory').toFixed(1)}%`,
-      icon: MemoryStick,
+      icon: "memory",
       color: 'text-green-500',
     },
     {
       title: 'Network I/O',
       value: `${getLatestValue('network').toFixed(1)} MB/s`,
-      icon: Network,
+      icon: "lan",
       color: 'text-purple-500',
     },
     {
       title: 'Disk I/O',
       value: `${getLatestValue('disk').toFixed(1)} MB/s`,
-      icon: HardDrive,
+      icon: "storage",
       color: 'text-orange-500',
     },
   ];
@@ -102,7 +102,7 @@ export default function MetricsPage() {
         <h1 className="text-3xl font-bold">System Metrics</h1>
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-on-surface-variant">
             {wsConnected ? 'Live' : 'Disconnected'}
           </span>
         </div>
@@ -114,10 +114,10 @@ export default function MetricsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
+                  <p className="text-sm font-medium text-on-surface-variant">{card.title}</p>
                   <p className="text-2xl font-bold">{card.value}</p>
                 </div>
-                <card.icon className={`h-8 w-8 ${card.color}`} />
+              <MaterialIcon name={card.icon} className={`h-8 w-8 ${card.color}`} />
               </div>
             </CardContent>
           </Card>
@@ -198,7 +198,7 @@ export default function MetricsPage() {
               >
                 <div className="space-y-1">
                   <p className="font-medium">{alert.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-on-surface-variant">
                     {alert.metric} {alert.operator} {alert.threshold}
                   </p>
                 </div>

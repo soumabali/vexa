@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DataTable from '@/components/admin/tables/data-table';
 import { useAsyncData } from '@/hooks/useAsyncData';
-import { Server, Activity, AlertTriangle } from 'lucide-react';
+import { MaterialIcon } from "@/components/ui/material-icon";
 
 interface Host {
   id: string;
@@ -72,9 +72,9 @@ export default function HostManagement() {
       header: 'Health',
       render: (host: Host) => (
         <div className="flex items-center gap-2">
-          {host.healthStatus === 'healthy' && <Activity className="h-4 w-4 text-green-500" />}
-          {host.healthStatus === 'warning' && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
-          {host.healthStatus === 'critical' && <AlertTriangle className="h-4 w-4 text-red-500" />}
+          {host.healthStatus === 'healthy' && <MaterialIcon name="monitoring" className="h-4 w-4 text-green-500" />}
+          {host.healthStatus === 'warning' && <MaterialIcon name="warning" className="h-4 w-4 text-yellow-500" />}
+          {host.healthStatus === 'critical' && <MaterialIcon name="warning" className="h-4 w-4 text-red-500" />}
           <span className="capitalize">{host.healthStatus}</span>
         </div>
       ),
@@ -86,7 +86,7 @@ export default function HostManagement() {
       header: 'Actions',
       render: (host: Host) => (
         <Button variant="ghost" size="sm" onClick={() => handleRunHealthCheck(host.id)}>
-          <Activity className="h-4 w-4 mr-2" />
+          <MaterialIcon name="monitoring" className="h-4 w-4 mr-2" />
           Health Check
         </Button>
       ),
@@ -94,13 +94,13 @@ export default function HostManagement() {
   ];
 
   const stats = [
-    { label: 'Total Hosts', value: hosts.length, icon: Server },
-    { label: 'Online', value: hosts.filter((h) => h.status === 'online').length, icon: Activity },
-    { label: 'Offline', value: hosts.filter((h) => h.status === 'offline').length, icon: AlertTriangle },
+    { label: 'Total Hosts', value: hosts.length, icon: "dns" },
+    { label: 'Online', value: hosts.filter((h) => h.status === 'online').length, icon: "monitoring" },
+    { label: 'Offline', value: hosts.filter((h) => h.status === 'offline').length, icon: "warning" },
     {
       label: 'Unreachable',
       value: hosts.filter((h) => h.status === 'unreachable').length,
-      icon: AlertTriangle,
+      icon: "warning",
     },
   ];
 
@@ -114,10 +114,10 @@ export default function HostManagement() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                  <p className="text-sm font-medium text-on-surface-variant">{stat.label}</p>
                   <p className="text-2xl font-bold">{stat.value}</p>
                 </div>
-                <stat.icon className="h-8 w-8 text-muted-foreground" />
+                <MaterialIcon name={stat.icon} className="h-8 w-8 text-on-surface-variant" />
               </div>
             </CardContent>
           </Card>
