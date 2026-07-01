@@ -209,11 +209,18 @@ export default function RecordingsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><div className="h-4 w-24 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-20 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-32 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-16 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-16 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-20 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-4 w-24 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                  <TableCell><div className="h-8 w-20 rounded-md bg-surface-container-low animate-pulse" /></TableCell>
+                </TableRow>
+              ))
             ) : recordings.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-gray-400">
