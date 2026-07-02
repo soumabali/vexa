@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MaterialIcon } from "@/components/ui/material-icon";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +27,25 @@ const navItems: NavItem[] = [
   { href: "/vault", label: "Key Management", icon: "vpn_key", key: "vault", primary: true },
 ];
 
+const settingsNavItems: { href: string; label: string; icon: string }[] = [
+  { href: "/settings/profile", label: "Profile", icon: "person" },
+  { href: "/settings/security", label: "Security", icon: "shield" },
+  { href: "/settings/sessions", label: "Active Sessions", icon: "devices" },
+  { href: "/settings/webauthn", label: "WebAuthn", icon: "fingerprint" },
+  { href: "/settings/api-keys", label: "API Keys", icon: "vpn_key" },
+  { href: "/settings/appearance", label: "Appearance", icon: "palette" },
+  { href: "/settings/notifications", label: "Notifications", icon: "notifications" },
+];
+
 export function Sidebar({ activeItem = "hosts", mobileOpen = false, onClose }: SidebarProps) {
+  const pathname = usePathname();
+  const inSettings = pathname?.startsWith("/settings") ?? false;
+
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-[260px] fixed left-0 top-16 bottom-0 bg-surface-container border-r border-outline-variant z-40">
-        <SidebarContent activeItem={activeItem} />
+        <SidebarContent activeItem={activeItem} inSettings={inSettings} />
       </aside>
 
       {/* Mobile drawer */}
@@ -58,7 +72,7 @@ export function Sidebar({ activeItem = "hosts", mobileOpen = false, onClose }: S
               </button>
             </div>
             <div onClick={onClose} className="flex-1 flex flex-col">
-              <SidebarContent activeItem={activeItem} />
+              <SidebarContent activeItem={activeItem} inSettings={inSettings} />
             </div>
           </aside>
         </div>
@@ -67,7 +81,14 @@ export function Sidebar({ activeItem = "hosts", mobileOpen = false, onClose }: S
   );
 }
 
-function SidebarContent({ activeItem }: { activeItem: NonNullable<SidebarProps["activeItem"]> }) {
+function SidebarContent({
+  activeItem,
+  inSettings,
+}: {
+  activeItem: NonNullable<SidebarProps["activeItem"]>;
+  inSettings: boolean;
+}) {
+  const pathname = usePathname();
   return (
     <>
       {/* User context */}
@@ -94,24 +115,43 @@ function SidebarContent({ activeItem }: { activeItem: NonNullable<SidebarProps["
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-        {navItems.map(({ href, label, icon, key, primary }) => {
-          const active = activeItem === key && primary === true;
-          return (
-            <Link
-              key={`${href}-${label}`}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-lg",
-                active
-                  ? "text-primary bg-secondary-container border-l-2 border-primary rounded-lg"
-                  : "text-on-surface-variant hover:bg-surface-variant rounded-lg",
-              )}
-            >
-              <MaterialIcon name={icon} size="sm" fill={active} />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
+        {inSettings
+          ? settingsNavItems.map(({ href, label, icon }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-lg",
+                    active
+                      ? "text-primary bg-secondary-container border-l-2 border-primary rounded-lg"
+                      : "text-on-surface-variant hover:bg-surface-variant rounded-lg",
+                  )}
+                >
+                  <MaterialIcon name={icon} size="sm" fill={active} />
+                  <span>{label}</span>
+                </Link>
+              );
+            })
+          : navItems.map(({ href, label, icon, key, primary }) => {
+              const active = activeItem === key && primary === true;
+              return (
+                <Link
+                  key={`${href}-${label}`}
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-lg",
+                    active
+                      ? "text-primary bg-secondary-container border-l-2 border-primary rounded-lg"
+                      : "text-on-surface-variant hover:bg-surface-variant rounded-lg",
+                  )}
+                >
+                  <MaterialIcon name={icon} size="sm" fill={active} />
+                  <span>{label}</span>
+                </Link>
+              );
+            })}
       </nav>
 
       {/* Footer */}
@@ -121,15 +161,17 @@ function SidebarContent({ activeItem }: { activeItem: NonNullable<SidebarProps["
           className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <MaterialIcon name="help" size="sm" />
-          <span>Help & Docs</span>
+          <span>Help Docs</span>
         </Link>
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <MaterialIcon name="settings" size="sm" />
-          <span>Settings</span>
-        </Link>
+        {!inSettings && (
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <MaterialIcon name="settings" size="sm" />
+            <span>Settings</span>
+          </Link>
+        )}
         <Link
           href="/login"
           className="flex items-center gap-3 px-3 py-2 text-error hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
