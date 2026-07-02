@@ -32,6 +32,12 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+// Mock DashboardLayout so page unit tests don't render the Sidebar (which
+// injects settings sub-nav links that duplicate page content).
+vi.mock('@/components/layouts/DashboardLayout', () => ({
+  DashboardLayout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // Mock the auth API surface used by security page
 vi.mock('@/lib/api/auth', () => ({
   authApi: {
