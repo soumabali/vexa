@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MaterialIcon } from "@/components/ui/material-icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -90,20 +96,41 @@ export function TopNav({ onMenuClick }: TopNavProps = {}) {
           >
             <MaterialIcon name="help_outline" size="md" />
           </button>
-          <button
-            type="button"
-            aria-label="Settings"
-            className="hidden sm:flex w-10 h-10 rounded-lg hover:bg-surface-container-highest items-center justify-center text-on-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <MaterialIcon name="settings" size="md" />
-          </button>
-          <button
-            type="button"
-            aria-label="Account"
-            className="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <MaterialIcon name="person" size="sm" className="text-on-secondary-container" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Account"
+                className="flex items-center gap-2 h-10 pl-1 pr-2 rounded-full hover:bg-surface-container-highest transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <span className="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant flex items-center justify-center">
+                  <MaterialIcon name="person" size="sm" className="text-on-secondary-container" />
+                </span>
+                <span className="hidden sm:inline text-sm font-medium text-on-surface">DU</span>
+                <MaterialIcon name="expand_more" size="sm" className="hidden sm:inline text-on-surface-variant" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href="/settings/profile" className="flex items-center gap-2 cursor-pointer">
+                  <MaterialIcon name="person" size="sm" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="flex items-center gap-2 cursor-pointer">
+                  <MaterialIcon name="settings" size="sm" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/login" className="flex items-center gap-2 cursor-pointer text-error">
+                  <MaterialIcon name="logout" size="sm" />
+                  <span>Log out</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
