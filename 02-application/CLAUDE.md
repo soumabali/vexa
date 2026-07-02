@@ -178,6 +178,23 @@ For any Bash command outside this allowlist, use `/home/ubuntu/projects/vexa/scr
 - Limit max-turns to task complexity (default 10–20).
 - When finished, respond with valid JSON according to `00-meta/claude-response-schema.json` and report a concise summary to Hermes/Ame.
 
+
+## UI Design System (LOCKED)
+
+> **WAJIB baca**: `infra/vexa UI Design System Lock.md` di Obsidian Vault
+> 
+> Design system Vexa sudah LOCKED. Semua fitur baru WAJIB mengikuti:
+> 1. Bungkus halaman dengan `<DashboardLayout>` (sidebar + topnav)
+> 2. Gunakan MD3 token classes (`bg-surface-container`, `text-on-surface`, etc.) — BUKAN raw hex
+> 3. Interactive elements: `aria-label` + `focus:ring-2 focus:ring-primary`
+> 4. Files yang TIDAK BOLEH diubah: `globals.css`, `tailwind.config.ts`, `DashboardLayout.tsx`, `Sidebar.tsx`, `TopNav.tsx`
+> 5. Card: `bg-surface-container rounded-xl border border-outline-variant`
+> 6. Button: `bg-primary text-on-primary rounded-lg` atau `bg-surface-container-high text-on-surface border border-outline-variant`
+> 7. Empty state: icon + heading + text + CTA button
+> 8. Loading state: `animate-pulse bg-surface-container-low`
+> 9. Responsive: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
+> 10. Material Icons: `aria-hidden="true"` untuk decorative
+
 ## Documentation
 
 - **Application repo docs** (this repo) contain contributor and deployment docs in `docs/`.
