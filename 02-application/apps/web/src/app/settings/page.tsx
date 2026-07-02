@@ -53,7 +53,7 @@ const settingsGroups: SettingsGroup[] = [
     ],
   },
   {
-    label: "System",
+    label: "Preferences",
     sections: [
       {
         title: "Appearance",
@@ -66,12 +66,6 @@ const settingsGroups: SettingsGroup[] = [
         description: "Configure alerts, channels, and event triggers.",
         icon: "notifications",
         href: "/settings/notifications",
-      },
-      {
-        title: "Sessions",
-        description: "View and manage active and past sessions.",
-        icon: "history",
-        href: "/settings/sessions",
       },
     ],
   },
@@ -90,8 +84,8 @@ export default function SettingsPage() {
 
         <div className="space-y-10">
           {settingsGroups.map((group) => (
-            <section key={group.label}>
-              <h2 className="text-label-md text-primary mb-3 uppercase tracking-[0.2em]">
+            <section key={group.label} className="first:mt-0 mt-8">
+              <h2 className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-3">
                 {group.label}
               </h2>
               <div className="space-y-4">

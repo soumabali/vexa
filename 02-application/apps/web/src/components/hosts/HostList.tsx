@@ -27,6 +27,7 @@ import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { ErrorDisplay } from "@/components/auth/ErrorDisplay";
 import { MaterialIcon } from "@/components/ui/material-icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const hostTypeIcons = {
   ssh: "server",
@@ -53,6 +54,14 @@ export function HostList() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [hostToDelete, setHostToDelete] = useState<HostResponse | null>(null);
   const [editingHost, setEditingHost] = useState<HostResponse | null>(null);
+  const [typeFilter, setTypeFilter] = useState<"all" | "ssh" | "rdp" | "vnc">("all");
+
+  const typeTabs: { key: "all" | "ssh" | "rdp" | "vnc"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "ssh", label: "SSH" },
+    { key: "rdp", label: "RDP" },
+    { key: "vnc", label: "VNC" },
+  ];
 
   const {
     data: hosts = [],
@@ -69,16 +78,17 @@ export function HostList() {
     refetchOnWindowFocus: false,
   });
 
-  const filteredHosts = search.trim()
-    ? hosts.filter((h) => {
-        const term = search.toLowerCase();
-        return (
-          h.name.toLowerCase().includes(term) ||
-          h.host.toLowerCase().includes(term) ||
-          h.hostType.toLowerCase().includes(term)
-        );
-      })
-    : hosts;
+  const filteredHosts = hosts.filter((h) => {
+    const matchesType = typeFilter === "all" || h.hostType === typeFilter;
+    if (!matchesType) return false;
+    if (!search.trim()) return true;
+    const term = search.toLowerCase();
+    return (
+      h.name.toLowerCase().includes(term) ||
+      h.host.toLowerCase().includes(term) ||
+      h.hostType.toLowerCase().includes(term)
+    );
+  });
 
   const handleDelete = async (host: HostResponse) => {
     try {
@@ -171,19 +181,24 @@ export function HostList() {
           />
         </div>
         <div className="flex gap-2 items-center">
-          <button
-            className="h-9 px-4 rounded-full text-label-md bg-secondary-container text-on-secondary-container"
-          >
-            All
-          </button>
-          {["ssh", "rdp", "vnc"].map((type) => (
-            <button
-              key={type}
-              className={`h-9 px-4 rounded-full text-label-md capitalize border border-outline-variant text-on-surface-variant hover:${hostTypeColors[type as keyof typeof hostTypeColors]}`}
-            >
-              {type.toUpperCase()}
-            </button>
-          ))}
+          {typeTabs.map((tab) => {
+            const active = typeFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setTypeFilter(tab.key)}
+                className={cn(
+                  "h-9 px-4 rounded-full text-label-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary",
+                  active
+                    ? "bg-secondary-container text-on-secondary-container"
+                    : "text-on-surface-variant hover:bg-surface-container-highest",
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
           <Button
             variant="outline"
             size="sm"
