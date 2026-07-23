@@ -315,27 +315,13 @@ jobs:
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.app }},push-by-digest=${{ github.event_name != 'pull_request' }}
+          
 
-      - name: Export digest
-        if: github.event_name != 'pull_request'
-        run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          echo "${digest}" > /tmp/digests/${{ matrix.app }}-${{ github.run_id }}.txt
-
-      - name: Upload digests
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: digests-${{ matrix.app }}
-          path: /tmp/digests/*.txt
-          if-no-files-found: error
 
   # ==========================================================================
   # Security Scanning (SAST + Container)
