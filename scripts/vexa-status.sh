@@ -35,8 +35,8 @@ echo ""
 
 # Production Health (opsional, bisa fail kalau network down)
 echo "── Production Health (best effort) ──────────────────────────────"
-WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://vexa.nexigo.my.id || echo "000")
-API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api-vexa.nexigo.my.id/health || echo "000")
+WEB_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" https://vexa.nexigo.my.id || echo "000")
+API_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" https://api-vexa.nexigo.my.id/health || echo "000")
 echo "Web (vexa.nexigo.my.id):      ${WEB_STATUS}"
 echo "API (api-vexa.nexigo.my.id):    ${API_STATUS}"
 echo ""
