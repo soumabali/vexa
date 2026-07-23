@@ -301,7 +301,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.app }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.app }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -320,7 +320,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.app }},push-by-digest=${{ github.event_name != 'pull_request' }}
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.app }},push-by-digest=${{ github.event_name != 'pull_request' }}
 
       - name: Export digest
         if: github.event_name != 'pull_request'
