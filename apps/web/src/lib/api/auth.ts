@@ -249,20 +249,20 @@ export const authApi = {
    */
   listWebAuthnDevices: () =>
     apiRequest<{
-      devices: {
+      credentials: {
         id: string;
         name: string;
         created_at: string;
         last_used: string | null;
         credential_id: string;
       }[];
-    }>("/api/v1/auth/webauthn/devices"),
+    }>("/api/v1/auth/webauthn/credentials"),
 
   /**
    * Remove a registered security key.
    */
   removeWebAuthnDevice: (deviceId: string) =>
-    apiRequest<{ message: string }>(`/auth/webauthn/devices/${deviceId}`, {
+    apiRequest<{ message: string }>(`/api/v1/auth/webauthn/credentials/${deviceId}`, {
       method: "DELETE",
     }),
 
@@ -281,8 +281,9 @@ export const authApi = {
     >("/api/v1/auth/sessions"),
 
   revokeSession: (sessionId: string) =>
-    apiRequest<{ message: string }>(`/auth/sessions/${sessionId}`, {
-      method: "DELETE",
+    apiRequest<{ message: string }>("/api/v1/auth/sessions/revoke", {
+      method: "POST",
+      body: JSON.stringify({ session_id: sessionId }),
     }),
 
   getLoginHistory: () =>

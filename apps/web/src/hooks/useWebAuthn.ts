@@ -197,7 +197,7 @@ export function useWebAuthn(): UseWebAuthnReturn {
 
   const listDevices = useCallback(async () => {
     const result = await authApi.listWebAuthnDevices();
-    return result.devices;
+    return result.credentials;
   }, []);
 
   const removeDevice = useCallback(async (deviceId: string) => {
