@@ -10,7 +10,7 @@ test.describe("Login Page", () => {
   test('renders login form', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.locator("input#password")).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in|signin|login/i })).toBeVisible();
   });
 
@@ -24,7 +24,7 @@ test.describe("Login Page", () => {
 
   test('shows error for invalid credentials', async ({ page }) => {
     await page.getByLabel(/email/i).fill('wrong@example.com');
-    await page.getByLabel(/password/i).fill('wrongpassword');
+    await page.locator("input#password").fill('wrongpassword');
     await page.getByRole('button', { name: /sign in|signin|login/i }).click();
 
     await expect(page.getByText(/invalid|error|failed/i).first()).toBeVisible({ timeout: 10000 });
@@ -32,7 +32,7 @@ test.describe("Login Page", () => {
 
   test('redirects to dashboard on successful login', async ({ page }) => {
     await page.getByLabel(/email/i).fill(testUser.email);
-    await page.getByLabel(/password/i).fill(testUser.password);
+    await page.locator("input#password").fill(testUser.password);
     await page.getByRole('button', { name: /sign in|signin|login/i }).click();
 
     await expect(page).toHaveURL(/\/hosts|\/dashboard|\/mfa/, { timeout: 10000 });

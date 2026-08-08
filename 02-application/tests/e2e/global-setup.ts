@@ -10,7 +10,7 @@ async function globalSetup(config: FullConfig) {
 
     await page.goto("/login");
     await page.getByLabel(/email/i).fill(testUser.email);
-    await page.getByLabel(/password/i).fill(testUser.password);
+    await page.locator("input#password").fill(testUser.password);
     await page.getByRole("button", { name: /sign in|signin|login/i }).click();
     await page.waitForURL(/\/hosts|\/dashboard|\/mfa/, { timeout: 10000 });
 
