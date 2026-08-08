@@ -309,8 +309,9 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=,suffix=,format=short
 
-      - name: Build image
+      - name: Build image (api)
         id: build
+        if: matrix.app == 'api'
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
@@ -318,6 +319,22 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build image (web)
+        id: build-web
+        if: matrix.app == 'web'
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || 'https://api-vexa.nexigo.my.id' }}
+            NEXT_PUBLIC_WS_URL=${{ vars.NEXT_PUBLIC_WS_URL || 'wss://api-vexa.nexigo.my.id' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
