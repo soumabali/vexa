@@ -13,7 +13,7 @@ import testUser from "../fixtures/test-user.json";
 async function loginWithCredentials(page: Page): Promise<string> {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(testUser.email);
-  await page.getByLabel(/password/i).fill(testUser.password);
+  await page.locator("input#password").fill(testUser.password);
   await page.getByRole("button", { name: /sign in|signin|login/i }).click();
 
   // Wait for either MFA step or hosts redirect
@@ -124,7 +124,7 @@ test.describe("MFA TOTP end-to-end", () => {
     await logout(page);
     await page.goto("/login");
     await page.getByLabel(/email/i).fill(testUser.email);
-    await page.getByLabel(/password/i).fill(testUser.password);
+    await page.locator("input#password").fill(testUser.password);
     await page.getByRole("button", { name: /sign in|signin|login/i }).click();
 
     // 10. MFA step appears
@@ -166,7 +166,7 @@ test.describe("MFA TOTP end-to-end", () => {
     await logout(page);
     await page.goto("/login");
     await page.getByLabel(/email/i).fill(testUser.email);
-    await page.getByLabel(/password/i).fill(testUser.password);
+    await page.locator("input#password").fill(testUser.password);
     await page.getByRole("button", { name: /sign in|signin|login/i }).click();
 
     // 3. MFA step must be visible

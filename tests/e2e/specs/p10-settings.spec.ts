@@ -4,7 +4,7 @@ import testUser from "../fixtures/test-user.json";
 async function login(page: Page) {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(testUser.email);
-  await page.getByLabel(/password/i).fill(testUser.password);
+  await page.locator("input#password").fill(testUser.password);
   await page.getByRole("button", { name: /signin|sign in|login/i }).click();
   await page.waitForURL(/\/hosts|\/dashboard|\/mfa/, { timeout: 10000 });
 }
@@ -42,7 +42,7 @@ test.describe("P10 Settings Polish - Active Sessions", () => {
 
   test("API endpoint GET /auth/sessions returns expected shape", async ({ request }) => {
     // Login via API to get token
-    const loginRes = await request.post("/api/v1/auth/login", {
+    const loginRes = await request.post((process.env.API_BASE_URL || "") + "/api/v1/auth/login", {
       data: { email: testUser.email, password: testUser.password },
     });
     expect(loginRes.ok()).toBeTruthy();
@@ -51,7 +51,7 @@ test.describe("P10 Settings Polish - Active Sessions", () => {
     if (!accessToken) {
       test.skip(true, "No access_token in login response (MFA required?)");
     }
-    const sessionsRes = await request.get("/api/v1/auth/sessions", {
+    const sessionsRes = await request.get((process.env.API_BASE_URL || "") + "/api/v1/auth/sessions", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     expect(sessionsRes.ok()).toBeTruthy();
