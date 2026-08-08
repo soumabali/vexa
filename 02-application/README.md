@@ -98,24 +98,20 @@ npm run dev
 
 For the full contributor setup — including required tools, pre-commit hooks, and lint commands — see [`docs/dev/getting-started.md`](docs/dev/getting-started.md).
 
+## Security
+
+For vulnerability disclosure, see [`SECURITY.md`](SECURITY.md).
+
 ## Contributing
 
-Contributions are welcome. Please follow the steps below to keep the project consistent and secure.
-
-1. Fork the repository and create a branch: `feature/<short-description>`.
-2. Run the automated setup: `./scripts/setup-hooks.sh`.
-3. Follow the development guide at [`docs/dev/getting-started.md`](docs/dev/getting-started.md).
-4. Make sure the verification gates pass locally: `make verify`.
-5. Open a pull request against `main` with a clear description and test notes.
-
-By contributing, you agree to keep credentials and secrets out of the codebase and to follow the security-focused workflow described in the contributor docs.
+We welcome contributions! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full developer guide — setup, branching, pre-commit hooks, verification gates, and PR process.
 
 ## License
 
-[MIT](LICENSE) — © vexa contributors.
+[MIT](LICENSE) — © 2025-2026 vexa contributors.
 
 ## Support & Community
 
 - **Bug reports & feature requests:** open a [GitHub issue](https://github.com/soumabali/vexa/issues).
 - **Discussions & questions:** use [GitHub Discussions](https://github.com/soumabali/vexa/discussions).
-- **Security issues:** please see [`SECURITY.md`](SECURITY.md) for responsible disclosure.
+- **Security:** email `sudharmika@gmail.com` — see [`SECURITY.md`](SECURITY.md).
