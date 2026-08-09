@@ -27,7 +27,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Semgrep Token
+        id: semgrep-token
+        run: |
+          if [ -z "${{ secrets.SEMGREP_APP_TOKEN }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::SEMGREP_APP_TOKEN not configured — skipping Semgrep SAST"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Semgrep
+        if: steps.semgrep-token.outputs.skip != 'true'
         uses: semgrep/semgrep-action@v1
         with:
           config: >-
@@ -46,7 +57,7 @@ jobs:
 
       - name: Upload Semgrep SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && steps.semgrep-token.outputs.skip != 'true'
         with:
           sarif_file: semgrep-results.sarif
           category: semgrep
@@ -150,10 +161,21 @@ jobs:
         if: matrix.language == 'rust'
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Check Rust project
+        if: matrix.language == 'rust'
+        id: rust-check
+        run: |
+          if [ ! -d "packages/ssh-core/src" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::packages/ssh-core has no src/ — skipping Rust CodeQL"
+          fi
+
       - name: Autobuild
+        if: steps.rust-check.outputs.skip != 'true'
         uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
+        if: always() && steps.rust-check.outputs.skip != 'true'
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
