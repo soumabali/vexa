@@ -415,3 +415,24 @@ jobs:
           go-licenses check ./... --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause 2>/dev/null || true
         continue-on-error: true
 
+  # ==========================================================================
+  # Rust (ssh-core)
+  # ==========================================================================
+  rust-ssh-core:
+    name: Rust (ssh-core)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build ssh-core
+        run: cd packages/ssh-core && cargo build
+
+      - name: Test ssh-core
+        run: cd packages/ssh-core && cargo test
+
+      - name: Clippy
+        run: cd packages/ssh-core && cargo clippy -- -D warnings
+
