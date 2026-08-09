@@ -28,20 +28,22 @@ For production self-hosting, TLS, backups, and environment hardening, see [`docs
 
 ## Screenshots
 
-<!-- add screenshots later -->
+<!-- Coming in v1.1 -->
 
 ## Features
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Host management | Ready | SSH hosts, labels, inventory |
-| Credential vault | Ready | AES-GCM encrypted master vault |
+| Host management | Ready | SSH hosts, labels, inventory, activity log |
+| Credential vault | Ready | AES-GCM encrypted master vault, team sharing |
 | SSH terminal | Ready | xterm.js via WebSocket, host selector, multi-tab |
 | SFTP file manager | Ready | Upload, download, navigate remote files |
-| WireGuard tunnels | Ready | Per-user tunnels, enable/disable/rotate keys |
-| WebAuthn / passkeys | Ready | FIDO2 security-key support |
+| WireGuard tunnels | Ready | Per-user tunnels, enable/disable/rotate keys, live stats |
+| WebAuthn / passkeys | Ready | FIDO2 security-key support, rename/delete |
+| TOTP MFA | Ready | QR setup, backup codes, regenerate support |
 | Audit logging | Ready | All critical actions logged |
-| TOTP MFA | Beta | Backend scaffold exists; QR setup flow in progress |
+| Session management | Ready | Active sessions list, remote revocation |
+| Production hardening | Ready | Log rotation, auto backups, health checks, monitoring |
 | Desktop app | Roadmap | Tauri scaffolding present |
 | Mobile app | Roadmap | Flutter scaffolding present |
 | Public SDK / CLI | Roadmap | Planned for future release |
@@ -71,15 +73,13 @@ The web app talks to the API over HTTP/WebSocket. The API stores data in Postgre
 
 ## Security Highlights
 
-- Argon2id password hashing
-- AES-GCM credential encryption with an unlockable master vault
-- JWT access tokens + refresh tokens
-- WebAuthn / passkey support (FIDO2)
-- Rate limiting and brute-force protection
-- Comprehensive audit logging
-- CORS enforced via `ALLOWED_ORIGINS`
-- TLS support in production (see `Caddyfile` and `docker-compose.prod.yml`)
-- Pre-commit hooks scan for secrets, SAST issues, and unsafe code patterns
+- **Authentication:** Argon2id password hashing + TOTP two-factor + WebAuthn/FIDO2 passkeys
+- **Sessions:** JWT access tokens + refresh tokens, active session management with remote revocation
+- **Encryption:** AES-256-GCM credential encryption at rest with unlockable master vault
+- **Network:** Rate limiting, brute-force protection, CORS origin enforcement
+- **Deployment:** TLS support in production (see `Caddyfile` and `docker-compose.prod.yml`)
+- **Audit:** Comprehensive logging for all critical actions
+- **Pipeline:** Pre-commit SAST, secret scanning, and dependency scanning
 
 ## Development
 
