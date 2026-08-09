@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const SSHManagerApp());
+  runApp(const VexaApp());
 }
 
-class SSHManagerApp extends StatelessWidget {
-  const SSHManagerApp({super.key});
+class VexaApp extends StatelessWidget {
+  const VexaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SSH Manager',
+      title: 'vexa Mobile',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF38BDF8),
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(child: Text('SSH Manager Mobile - Sprint 0 Placeholder')),
-      ),
+      home: const HomeScreen(),
     );
   }
 }
