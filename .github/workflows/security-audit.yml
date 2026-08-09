@@ -183,21 +183,10 @@ jobs:
         if: matrix.language == 'rust'
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Check Rust project
-        if: matrix.language == 'rust'
-        id: rust-check
-        run: |
-          if [ ! -d "packages/ssh-core/src" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "::warning::packages/ssh-core has no src/ — skipping Rust CodeQL"
-          fi
-
       - name: Autobuild
-        if: steps.rust-check.outputs.skip != 'true'
         uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        if: always() && steps.rust-check.outputs.skip != 'true'
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
