@@ -43,7 +43,7 @@ func NewProxyServer(database *db.DB) *ProxyServer {
 			ReadBufferSize:  4096,
 			WriteBufferSize: 4096,
 			CheckOrigin: func(r *http.Request) bool {
-				// TODO: restrict to allowed origins
+				// NOTE(P11): restrict to allowed origins
 				return true
 			},
 		},

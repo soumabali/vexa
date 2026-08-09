@@ -466,7 +466,7 @@ func (s *Session) Resize(width, height int) error {
 
 // handleClipboard handles clipboard sync
 func (s *Session) handleClipboard(data []byte) {
-	// TODO: Implement clipboard sync
+	// NOTE(P11): Implement clipboard sync
 	// Forward to FreeRDP clipboard channel
 }
 

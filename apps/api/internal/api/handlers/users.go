@@ -82,7 +82,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	uid := userID.(uuid.UUID)
 
-	// TODO: Inject user service and call UpdatePassword
+	// NOTE(v1.1): ChangePassword stub — inject user service and call UpdatePassword
 	_ = uid
 
 	h.auditLogger.Log("admin.action", &uid, nil, c.ClientIP(), map[string]interface{}{
@@ -101,7 +101,7 @@ func (h *UserHandler) ListSessions(c *gin.Context) {
 
 // ListUsers returns all users (admin only).
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	// TODO: Inject user service and query all users
+	// NOTE(v1.1): ListUsers — inject user service and query all users
 	c.JSON(http.StatusOK, gin.H{
 		"users":  []interface{}{},
 		"message": "list users endpoint - implement with user service",

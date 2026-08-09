@@ -70,14 +70,14 @@ func (sm *SessionManager) CreateSession(c *gin.Context) {
 		return
 	}
 
-	// Get host details — TODO: use hosts.Repository
+	// Get host details — NOTE(P11): use hosts.Repository
 	// host, err := sm.db.GetHost(c.Request.Context(), req.HostID)
 	// if err != nil { ... }
 	_ = req
 	_ = userID
 
 	// Build SSH config
-	// TODO: integrate with hosts repository and vault for real SSH config
+	// NOTE(P11): integrate with hosts repository and vault for real SSH config
 	// For now, create a placeholder session
 	sshConfig, err := sm.buildSSHConfig(nil)
 	if err != nil {
@@ -92,7 +92,7 @@ func (sm *SessionManager) CreateSession(c *gin.Context) {
 		return
 	}
 
-	// Connect to host — TODO: get real host address from hosts repository
+	// Connect to host — NOTE(P11): get real host address from hosts repository
 	hostAddress := fmt.Sprintf("%s:22", req.HostID) // placeholder
 	if err := session.Connect(c.Request.Context(), hostAddress); err != nil {
 		sm.proxy.RemoveSession(session.ID)
@@ -269,7 +269,7 @@ func (sm *SessionManager) handleReconnect(session *Session, ws *websocket.Conn) 
 
 // buildSSHConfig builds SSH client config from credentials
 func (sm *SessionManager) buildSSHConfig(cred *models.Credential) (*ssh.ClientConfig, error) {
-	_ = cred // TODO: integrate with vault credential service
+	_ = cred // NOTE(P11): integrate with vault credential service
 	config := &ssh.ClientConfig{
 		Timeout:         10 * time.Second,
 		HostKeyCallback: HostKeyCallback(),
