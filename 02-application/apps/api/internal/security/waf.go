@@ -1,6 +1,7 @@
 package security
 
 import (
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -69,9 +70,12 @@ func WAFMiddleware(rules []WAFRule) func(http.Handler) http.Handler {
 }
 
 func logBlockedRequest(rule string, r *http.Request) {
-	// TODO: integrate with structured logging (e.g., slog, zap).
-	_ = rule
-	_ = r
+	slog.Warn("WAF blocked request",
+		"rule", rule,
+		"method", r.Method,
+		"path", r.URL.Path,
+		"remote_addr", r.RemoteAddr,
+	)
 }
 
 // BlockUserAgent blocks requests from User-Agents matching the given patterns.
