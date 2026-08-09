@@ -41,15 +41,28 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Check Snyk Token
+        id: snyk-token
+        run: |
+          if [ -z "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::SNYK_TOKEN not configured — skipping Snyk SCA"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Snyk
+        if: steps.snyk-token.outputs.skip != 'true'
         run: npm install -g snyk
 
       - name: Snyk Auth
+        if: steps.snyk-token.outputs.skip != 'true'
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Test - Go
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           cd apps/api
           snyk test --file=go.mod --sarif-file-output=snyk-go.sarif --severity-threshold=high || true
@@ -57,6 +70,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Test - Node.js
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           cd apps/web
           snyk test --file=package-lock.json --sarif-file-output=snyk-node.sarif --severity-threshold=high || true
@@ -64,6 +78,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Test - Rust
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           cd packages/ssh-core
           snyk test --file=Cargo.toml --sarif-file-output=snyk-rust.sarif --severity-threshold=high || true
@@ -71,6 +86,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Code Analysis
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=high || true
         env:
@@ -78,28 +94,28 @@ jobs:
 
       - name: Upload Snyk SARIF (Go)
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('apps/api/snyk-go.sarif') != ''
+        if: always() && steps.snyk-token.outputs.skip != 'true' && hashFiles('apps/api/snyk-go.sarif') != ''
         with:
           sarif_file: apps/api/snyk-go.sarif
           category: snyk-go
 
       - name: Upload Snyk SARIF (Node)
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('apps/web/snyk-node.sarif') != ''
+        if: always() && steps.snyk-token.outputs.skip != 'true' && hashFiles('apps/web/snyk-node.sarif') != ''
         with:
           sarif_file: apps/web/snyk-node.sarif
           category: snyk-node
 
       - name: Upload Snyk SARIF (Rust)
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('packages/ssh-core/snyk-rust.sarif') != ''
+        if: always() && steps.snyk-token.outputs.skip != 'true' && hashFiles('packages/ssh-core/snyk-rust.sarif') != ''
         with:
           sarif_file: packages/ssh-core/snyk-rust.sarif
           category: snyk-rust
 
       - name: Upload Snyk Code SARIF
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('snyk-code.sarif') != ''
+        if: always() && steps.snyk-token.outputs.skip != 'true' && hashFiles('snyk-code.sarif') != ''
         with:
           sarif_file: snyk-code.sarif
           category: snyk-code
