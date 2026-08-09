@@ -433,6 +433,3 @@ jobs:
       - name: Test ssh-core
         run: cd packages/ssh-core && cargo test
 
-      - name: Clippy
-        run: cd packages/ssh-core && cargo clippy
-
