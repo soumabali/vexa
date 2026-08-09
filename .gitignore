@@ -30,6 +30,9 @@ logs/
 *.swo
 .DS_Store
 
+# Playwright artifacts (auth state = session tokens)
+02-application/tests/e2e/playwright/
+
 # Backup data (host-side only)
 backups/
 /backups
