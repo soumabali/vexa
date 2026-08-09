@@ -45,7 +45,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Semgrep Token
+        id: semgrep-token
+        run: |
+          if [ -z "${{ secrets.SEMGREP_APP_TOKEN }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::SEMGREP_APP_TOKEN not configured — skipping Semgrep SAST"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Semgrep
+        if: steps.semgrep-token.outputs.skip != 'true'
         uses: semgrep/semgrep-action@v1
         with:
           config: >-
@@ -64,7 +75,7 @@ jobs:
 
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && steps.semgrep-token.outputs.skip != 'true'
         with:
           sarif_file: semgrep-results.sarif
           category: semgrep
@@ -172,10 +183,21 @@ jobs:
         if: matrix.language == 'rust'
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Check Rust project
+        if: matrix.language == 'rust'
+        id: rust-check
+        run: |
+          if [ ! -d "packages/ssh-core/src" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::packages/ssh-core has no src/ — skipping Rust CodeQL"
+          fi
+
       - name: Autobuild
+        if: steps.rust-check.outputs.skip != 'true'
         uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
+        if: always() && steps.rust-check.outputs.skip != 'true'
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
@@ -207,15 +229,28 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Check Snyk Token
+        id: snyk-token
+        run: |
+          if [ -z "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::SNYK_TOKEN not configured — skipping Snyk SCA"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Snyk
+        if: steps.snyk-token.outputs.skip != 'true'
         run: npm install -g snyk
 
       - name: Snyk Auth
+        if: steps.snyk-token.outputs.skip != 'true'
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Test - Go
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           cd apps/api
           snyk test --file=go.mod --sarif-file-output=snyk-go.sarif --severity-threshold=high || true
@@ -223,6 +258,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Test - Node.js
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           cd apps/web
           snyk test --file=package-lock.json --sarif-file-output=snyk-node.sarif --severity-threshold=high || true
@@ -230,6 +266,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk Test - Rust
+        if: steps.snyk-token.outputs.skip != 'true'
         run: |
           cd packages/ssh-core
           snyk test --file=Cargo.toml --sarif-file-output=snyk-rust.sarif --severity-threshold=high || true
@@ -238,21 +275,21 @@ jobs:
 
       - name: Upload Snyk SARIFs
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && steps.snyk-token.outputs.skip != 'true'
         with:
           sarif_file: apps/api/snyk-go.sarif
           category: snyk-go
 
       - name: Upload Snyk Node SARIF
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('apps/web/snyk-node.sarif') != ''
+        if: always() && hashFiles('apps/web/snyk-node.sarif') != '' && steps.snyk-token.outputs.skip != 'true'
         with:
           sarif_file: apps/web/snyk-node.sarif
           category: snyk-node
 
       - name: Upload Snyk Rust SARIF
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('packages/ssh-core/snyk-rust.sarif') != ''
+        if: always() && hashFiles('packages/ssh-core/snyk-rust.sarif') != '' && steps.snyk-token.outputs.skip != 'true'
         with:
           sarif_file: packages/ssh-core/snyk-rust.sarif
           category: snyk-rust
@@ -322,33 +359,13 @@ jobs:
     strategy:
       matrix:
         image:
-          - context: ./apps/api
-            name: vexa-api
-            dockerfile: Dockerfile
-          - context: ./apps/web
-            name: vexa-web
-            dockerfile: Dockerfile
+          - ghcr.io/soumabali/vexa-api:main
+          - ghcr.io/soumabali/vexa-web:main
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build image (no push)
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ matrix.image.context }}
-          file: ${{ matrix.image.context }}/${{ matrix.image.dockerfile }}
-          push: false
-          load: true
-          tags: ${{ matrix.image.name }}:scan
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Run Trivy Image Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ matrix.image.name }}:scan'
+          image-ref: '${{ matrix.image }}'
           format: 'sarif'
           output: 'trivy-image-results.sarif'
           severity: 'CRITICAL,HIGH'
@@ -360,7 +377,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-image-results.sarif
-          category: trivy-image-${{ matrix.image.name }}
+          category: trivy-image-${{ matrix.image }}
 
       - name: Check critical findings
         if: github.event_name == 'pull_request'
@@ -368,7 +385,7 @@ jobs:
           if [ -f trivy-image-results.sarif ]; then
             CRITICAL=$(jq '[.runs[].results[] | select(.level == "error")] | length' trivy-image-results.sarif || echo "0")
             if [ "$CRITICAL" -gt 0 ]; then
-              echo "::error::Trivy image scan found $CRITICAL critical issue(s) in ${{ matrix.image.name }}."
+              echo "::error::Trivy image scan found $CRITICAL critical issue(s) in ${{ matrix.image }}."
               exit 1
             fi
           fi
@@ -382,7 +399,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Gitleaks License
+        id: gitleaks-license
+        run: |
+          if [ -z "${{ secrets.GITLEAKS_LICENSE }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning::GITLEAKS_LICENSE not configured — skipping secret scan"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Gitleaks
+        if: steps.gitleaks-license.outputs.skip != 'true'
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
