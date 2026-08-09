@@ -454,13 +454,15 @@ jobs:
           echo "| Gitleaks | ${{ needs.gitleaks.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
+          # Count failures via explicit checks (eval breaks with hyphenated matrix job names)
           FAILED=0
-          for job in semgrep gosec codeql snyk trivy-fs trivy-image gitleaks; do
-            RESULT=$(eval echo "\${needs.${job}.result}")
-            if [ "$RESULT" == "failure" ]; then
-              FAILED=$((FAILED + 1))
-            fi
-          done
+          if [ "${{ needs.semgrep.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
+          if [ "${{ needs.gosec.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
+          if [ "${{ needs.codeql.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
+          if [ "${{ needs.snyk.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
+          if [ "${{ needs.trivy-fs.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
+          if [ "${{ needs.trivy-image.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
+          if [ "${{ needs.gitleaks.result }}" = "failure" ]; then FAILED=$((FAILED + 1)); fi
 
           echo "## Overall Result" >> $GITHUB_STEP_SUMMARY
           if [ "$FAILED" -eq 0 ]; then
