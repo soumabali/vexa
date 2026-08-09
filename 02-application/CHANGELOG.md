@@ -104,4 +104,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 [1.0.1]: https://github.com/soumabali/vexa/releases/tag/v1.0.1
+
+## [1.1.0] — 2026-08-09
+
+### Added
+
+- **Desktop:** Tauri v2 app wired to ssh-core with 6 FFI commands (get_app_version, ssh_connect, ssh_disconnect, generate_key, encrypt_aes, decrypt_aes)
+- **Desktop:** Minimal branded webview frontend (HTML/CSS/JS) with Tauri IPC integration
+- **Mobile:** Flutter app with Material Design 3 dark theme (vexa-branded, sky blue primary)
+- **CI:** New Rust job — `cargo build`, `cargo test`, `cargo clippy` for ssh-core
+- **CI:** CodeQL Rust analysis re-enabled (was skipped when ssh-core was scaffolding-only)
+
+### Changed
+
+- **ssh-core:** Version bumped 0.1.0 → 1.0.0
+- **Mobile:** Version bumped 0.1.0 → 1.0.0 in pubspec.yaml
+
 [1.0.0]: https://github.com/soumabali/vexa/releases/tag/v1.0.0
