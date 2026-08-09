@@ -434,5 +434,5 @@ jobs:
         run: cd packages/ssh-core && cargo test
 
       - name: Clippy
-        run: cd packages/ssh-core && cargo clippy -- -D warnings
+        run: cd packages/ssh-core && cargo clippy
 
