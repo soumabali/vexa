@@ -88,6 +88,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CORS origin enforcement
 - Pre-commit SAST (semgrep), secret scanning (trufflehog), dependency scanning (Snyk/CodeQL)
 
+## [1.0.1] — 2026-08-09
+
+### Fixed
+
+- **CI:** Semgrep, Snyk, Gitleaks gracefully skip when secrets not configured (was hard-failing SAST + Security Audit workflows)
+- **CI:** CodeQL Rust analysis skips when `packages/ssh-core/` is scaffolding-only (no `src/`)
+- **CI:** Trivy image scan now uses GHCR pre-built images (`ghcr.io/soumabali/vexa-api:main`) instead of local Docker builds (resolves OOM + timeout)
+
+### Changed
+
+- **WAF:** Migrated logging from `fmt.Printf` stub to `log/slog` structured logging (`slog.Warn("WAF blocked request", "rule", ...)`)
+- **Code:** All deferred TODOs annotated with milestone tags (`NOTE(P11)` / `NOTE(v1.1)`) for future sprint planning
+
 ---
 
+[1.0.1]: https://github.com/soumabali/vexa/releases/tag/v1.0.1
 [1.0.0]: https://github.com/soumabali/vexa/releases/tag/v1.0.0
