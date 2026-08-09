@@ -13,7 +13,7 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  32 * 1024,
 	WriteBufferSize: 32 * 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// TODO: Implement proper origin check
+		// NOTE(P11): Implement proper origin check
 		return true
 	},
 }

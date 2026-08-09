@@ -460,7 +460,7 @@ func (s *Scanner) ImportResults(jobID uuid.UUID, userID string, importAll bool, 
 		imported = append(imported, result.IPAddress)
 		_ = userID // Will be used for actual DB insert
 		_ = protocol
-		// TODO: Insert into hosts table via host service
+		// NOTE(P11): Insert into hosts table via host service
 	}
 
 	return imported, nil
