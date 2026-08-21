@@ -201,10 +201,30 @@ export const authApi = {
 
   // ─── MFA / 2FA ────────────────────────────────────────────────────────────────
 
-  setup2FA: () =>
-    apiRequest<{ secret: string; qrCode: string; uri: string; backupCodes: string[] }>("/api/v1/auth/mfa/setup", {
+  setup2FA: async (): Promise<{
+    secret: string;
+    qrCode: string;
+    uri: string;
+    backupCodes: string[];
+  }> => {
+    // Backend returns snake_case (qr_code, backup_codes); normalize to camelCase.
+    const raw = await apiRequest<{
+      secret: string;
+      qr_code?: string;
+      qrCode?: string;
+      uri: string;
+      backup_codes?: string[];
+      backupCodes?: string[];
+    }>("/api/v1/auth/mfa/setup", {
       method: "POST",
-    }),
+    });
+    return {
+      secret: raw.secret,
+      qrCode: raw.qrCode ?? raw.qr_code ?? "",
+      uri: raw.uri,
+      backupCodes: raw.backupCodes ?? raw.backup_codes ?? [],
+    };
+  },
 
   verify2FASetup: (totp_code: string) =>
     apiRequest<{ message: string }>("/api/v1/auth/mfa/enable", {
@@ -282,17 +302,30 @@ export const authApi = {
 
   // ─── Sessions ────────────────────────────────────────────────────────────────
 
-  listSessions: () =>
-    apiRequest<
-      {
+  listSessions: async (): Promise<
+    {
+      session_id: string;
+      ip_address: string;
+      user_agent: string;
+      created_at: string;
+      last_active_at: string;
+      is_current: boolean;
+    }[]
+  > => {
+    // Backend returns { sessions: [...] }; unwrap before returning.
+    const raw = await apiRequest<{
+      sessions?: {
         session_id: string;
         ip_address: string;
         user_agent: string;
         created_at: string;
         last_active_at: string;
         is_current: boolean;
-      }[]
-    >("/api/v1/auth/sessions"),
+      }[];
+      active_sessions?: number;
+    }>("/api/v1/auth/sessions");
+    return raw.sessions ?? [];
+  },
 
   revokeSession: (sessionId: string) =>
     apiRequest<{ message: string }>("/api/v1/auth/sessions/revoke", {
