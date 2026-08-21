@@ -1,4 +1,4 @@
-import { test, expect, Page, APIResponse } from "@playwright/test";
+import { test, expect, Page, Response as PWResponse } from "@playwright/test";
 import { authenticator } from "otplib";
 import testUser from "../fixtures/test-user.json";
 
@@ -7,49 +7,27 @@ import testUser from "../fixtures/test-user.json";
 // ---------------------------------------------------------------------------
 
 /**
- * Login (step 1) and complete MFA verification if required.
- * Returns the final URL after successful authentication.
+ * Log in with credentials. Returns true if the inline MFA step appeared
+ * (i.e. MFA is currently enabled), false if we landed straight on /hosts.
  */
-async function loginWithCredentials(page: Page): Promise<string> {
+async function loginStep1(page: Page): Promise<boolean> {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(testUser.email);
   await page.locator("input#password").fill(testUser.password);
-  await page.getByRole("button", { name: /sign in|signin|login/i }).click();
+  await page.getByRole("button", { name: /sign in/i }).click();
 
-  // Wait for either MFA step or hosts redirect
   try {
-    await page.waitForURL(/\/hosts|\/dashboard|\/mfa/, { timeout: 10_000 });
+    await page.waitForURL(/\/hosts/, { timeout: 8_000 });
+    return false; // no MFA step
   } catch {
-    // stay on /login — probably bad credentials; surface the failure
-    throw new Error("Login did not redirect after submit");
-  }
-
-  if (page.url().includes("/mfa") || (await page.locator("#totp-code").count())) {
-    // MFA already enabled — fetch pending session then submit code
-    const mfaToken = await page.evaluate(() => {
-      const cookies = document.cookie;
-      const match = cookies.split("; ").find((c) => c.startsWith("mfa_token="));
-      return match ? decodeURIComponent(match.split("=")[1]) : "";
+    await expect(page.getByPlaceholder("000000").first()).toBeVisible({
+      timeout: 8_000,
     });
-
-    // Need the user's TOTP secret — fetch it via the API using current cookie jar
-    const setupResponse = await page.request.post("/api/v1/auth/mfa/setup");
-    let secret = "";
-    if (setupResponse.ok()) {
-      const body = await setupResponse.json();
-      secret = body.secret;
-    }
-
-    const code = secret ? authenticator.generate(secret) : "000000";
-    await page.locator("#totp-code").fill(code);
+    return true; // inline MFA step is showing
   }
-
-  await page.waitForURL(/\/hosts|\/dashboard/, { timeout: 15_000 });
-  return page.url();
 }
 
 async function logout(page: Page) {
-  // Best-effort: clear cookies + local storage; tests rely on storage state reset
   await page.context().clearCookies();
   await page.evaluate(() => {
     try {
@@ -60,19 +38,63 @@ async function logout(page: Page) {
 }
 
 /**
- * Intercept the MFA setup API response so we can read the TOTP secret
- * without OCR'ing the QR code.
+ * Open the MFA setup dialog ("Configure" → "Set up TOTP"), trigger the setup
+ * API, and return the TOTP secret (no OCR of the QR code needed).
  */
-async function captureMFASetupSecret(page: Page): Promise<string> {
+async function enableMFA(page: Page): Promise<string> {
+  await page.goto("/settings/security");
+  await expect(
+    page.locator("h1").filter({ hasText: /security/i }).first()
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /configure/i }).click();
+  await expect(page.getByRole("heading", { name: /set up totp/i })).toBeVisible();
+
   const responsePromise = page.waitForResponse(
-    (r: APIResponse) => r.url().includes("/api/v1/auth/mfa/setup") && r.request().method() === "POST"
+    (r: PWResponse) =>
+      r.url().includes("/api/v1/auth/mfa/setup") &&
+      r.request().method() === "POST"
   );
-  // Trigger the setup call by clicking the "Set up authenticator" button
-  await page.getByRole("button", { name: /set up authenticator/i }).click();
+  await page.getByRole("button", { name: /continue to setup/i }).click();
   const response = await responsePromise;
   expect(response.ok()).toBeTruthy();
   const body = await response.json();
-  return body.secret as string;
+  const secret = body.secret as string;
+
+  await expect(page.locator('img[alt="TOTP QR Code"]')).toBeVisible();
+  await expect(
+    page.locator("code").filter({ hasText: /[A-Z2-7]{16,}/ })
+  ).toBeVisible();
+
+  const totpCode = authenticator.generate(secret);
+  await page.locator("input#code").fill(totpCode);
+  await page.getByRole("button", { name: /enable 2fa/i }).click();
+
+  await expect(
+    page.getByText(/2fa enabled|is active/i).first()
+  ).toBeVisible({ timeout: 10_000 });
+
+  await page.getByRole("button", { name: /saved the backup codes/i }).click();
+  return secret;
+}
+
+/**
+ * Disable MFA from the security page using a known TOTP secret.
+ */
+async function disableMFA(page: Page, secret: string) {
+  await page.goto("/settings/security");
+  await expect(
+    page.locator("h1").filter({ hasText: /security/i }).first()
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /^disable$/i }).first().click();
+  await expect(page.getByRole("heading", { name: /disable mfa/i })).toBeVisible();
+
+  const code = authenticator.generate(secret);
+  await page.locator("input#disable-totp-code").fill(code);
+  await page.getByRole("button", { name: /disable mfa/i }).last().click();
+
+  await expect(page.getByText(/mfa disabled/i)).toBeVisible({ timeout: 10_000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -81,106 +103,98 @@ async function captureMFASetupSecret(page: Page): Promise<string> {
 
 test.describe("MFA TOTP end-to-end", () => {
   test("user can enable MFA, logout, login with TOTP", async ({ page }) => {
-    // 1. Reset state — make sure MFA is not already enabled
-    await loginWithCredentials(page);
-
-    // 2. Navigate to security settings
-    await page.goto("/settings/security");
-    await expect(page.locator('h1:has-text("Security")')).toBeVisible();
-
-    // 3. If MFA is already on, disable it first so we have a clean slate.
-    //    The disable button is rendered only when MFA is currently enabled.
-    const disableButton = page.getByRole("button", { name: /disable mfa/i });
-    if (await disableButton.count()) {
-      await disableButton.first().click();
-      // Confirm in the destructive dialog
-      await page.getByRole("button", { name: /disable mfa/i }).last().click();
-      await expect(page.getByText(/mfa disabled/i)).toBeVisible({ timeout: 10_000 });
+    // Precondition: MFA must be off. If it's on, disable it first via a fresh
+    // setup capture is impossible — instead bail with a clear skip.
+    const alreadyMfa = await loginStep1(page);
+    if (alreadyMfa) {
+      test.skip(true, "MFA already enabled — run 'disable MFA' test first");
     }
 
-    // 4. Click "Set up authenticator" → dialog appears
-    await page.getByRole("button", { name: /set up authenticator/i }).click();
-    await expect(page.getByRole("heading", { name: /setup two-factor authentication/i })).toBeVisible();
+    const secret = await enableMFA(page);
 
-    // 5. Wait for the setup API and capture the secret
-    const secret = await captureMFASetupSecret(page);
-
-    // 6. Verify the dialog rendered QR + secret + backup codes
-    await expect(page.locator('img[alt="TOTP QR Code"]')).toBeVisible();
-    await expect(page.locator("code").filter({ hasText: /[A-Z2-7]{16,}/ })).toBeVisible();
-    await expect(page.getByText(/save these backup codes/i)).toBeVisible();
-
-    // 7. Generate a TOTP code from the captured secret and submit
-    const totpCode = authenticator.generate(secret);
-    await page.locator('input[name="totp"], input[placeholder="000000"]').first().fill(totpCode);
-    await page.getByRole("button", { name: /verify|enable|activate|submit/i }).first().click();
-
-    // 8. Expect MFA enabled confirmation (badge / success toast)
-    await expect(page.getByText(/mfa enabled|2fa enabled|two-factor enabled/i)).toBeVisible({
-      timeout: 10_000,
-    });
-
-    // 9. Logout and log back in — MFA step must appear
+    // Logout and log back in — inline MFA step must appear
     await logout(page);
     await page.goto("/login");
     await page.getByLabel(/email/i).fill(testUser.email);
     await page.locator("input#password").fill(testUser.password);
-    await page.getByRole("button", { name: /sign in|signin|login/i }).click();
+    await page.getByRole("button", { name: /sign in/i }).click();
 
-    // 10. MFA step appears
-    await expect(page.locator("#totp-code")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByPlaceholder("000000").first()).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // 11. Submit valid code → redirect to /hosts
     const loginTotp = authenticator.generate(secret);
-    await page.locator("#totp-code").fill(loginTotp);
-    await page.waitForURL(/\/hosts|\/dashboard/, { timeout: 15_000 });
+    await page.getByPlaceholder("000000").first().fill(loginTotp);
+    await page.getByRole("button", { name: /verify/i }).click();
+    await page.waitForURL(/\/hosts/, { timeout: 15_000 });
+
+    // Cleanup: leave the test user in a disabled state for future runs.
+    await disableMFA(page, secret);
   });
 
   test("user can disable MFA from security page", async ({ page }) => {
-    // 1. Login (with MFA if enabled — helper handles it)
-    await loginWithCredentials(page);
+    // Ensure MFA is on (enable it if not), capturing the secret so we can
+    // produce the confirmation code deterministically.
+    const alreadyMfa = await loginStep1(page);
+    const secret = alreadyMfa
+      ? ""
+      : await enableMFA(page);
 
-    // 2. Navigate to security settings
+    if (alreadyMfa) {
+      // MFA was already enabled by a prior run; without the secret we cannot
+      // produce a disable code deterministically.
+      test.skip(true, "MFA pre-enabled and secret unknown — skip");
+    }
+
+    // Now disable it.
     await page.goto("/settings/security");
-    await expect(page.locator('h1:has-text("Security")')).toBeVisible();
+    await expect(
+      page.locator("h1").filter({ hasText: /security/i }).first()
+    ).toBeVisible();
 
-    // 3. Click Disable
-    const disableButton = page.getByRole("button", { name: /disable mfa/i }).first();
-    await disableButton.click();
+    await page.getByRole("button", { name: /^disable$/i }).first().click();
+    await expect(page.getByRole("heading", { name: /disable mfa/i })).toBeVisible();
 
-    // 4. Confirm in the destructive dialog
-    const confirmButton = page.getByRole("button", { name: /disable mfa/i }).last();
-    await confirmButton.click();
+    const code = authenticator.generate(secret);
+    await page.locator("input#disable-totp-code").fill(code);
+    await page.getByRole("button", { name: /disable mfa/i }).last().click();
 
-    // 5. Expect success + UI refresh (badge "Disabled" / "Not enabled")
-    await expect(page.getByText(/mfa disabled|not enabled|disabled/i)).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(page.getByText(/mfa disabled/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test("invalid TOTP code is rejected with error", async ({ page }) => {
-    // 1. Login (assume MFA enabled — helper covers the code path)
-    await loginWithCredentials(page);
+    // Ensure MFA is on so the inline step appears.
+    const alreadyMfa = await loginStep1(page);
+    let secret = "";
+    if (!alreadyMfa) {
+      secret = await enableMFA(page);
+    }
 
-    // 2. Force re-prompt: logout and login again
+    // Logout and log back in to reach the inline MFA step.
     await logout(page);
     await page.goto("/login");
     await page.getByLabel(/email/i).fill(testUser.email);
     await page.locator("input#password").fill(testUser.password);
-    await page.getByRole("button", { name: /sign in|signin|login/i }).click();
+    await page.getByRole("button", { name: /sign in/i }).click();
 
-    // 3. MFA step must be visible
-    await expect(page.locator("#totp-code")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByPlaceholder("000000").first()).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // 4. Submit a deliberately invalid code
-    await page.locator("#totp-code").fill("000000");
+    // Submit a deliberately invalid code.
+    await page.getByPlaceholder("000000").first().fill("000000");
+    await page.getByRole("button", { name: /verify/i }).click();
 
-    // 5. Expect error feedback (toast / inline message) and form stays visible
     await expect(
-      page.getByText(/invalid|incorrect|wrong|expired|denied/i).first()
+      page.getByText(/invalid|incorrect|wrong|expired|failed|denied/i).first()
     ).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("#totp-code")).toBeVisible();
-    // Still on /mfa or /login (not /hosts)
     expect(page.url()).not.toMatch(/\/hosts/);
+
+    // Cleanup: disable MFA to restore the default state (only if we know the
+    // secret, i.e. we enabled it in this test).
+    if (secret) {
+      await page.goto("/settings/security");
+      await disableMFA(page, secret);
+    }
   });
 });

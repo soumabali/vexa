@@ -2,14 +2,28 @@ import { z } from "zod";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
+// Get the access token from localStorage (same convention as hosts.ts / webauthn.ts).
+function getAuthToken(): string | null {
+  if (typeof window !== "undefined") {
+    return (
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      null
+    );
+  }
+  return null;
+}
+
 // Shared request helper
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const token = getAuthToken();
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     credentials: "include",
