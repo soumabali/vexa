@@ -34,7 +34,9 @@ async function apiRequest<T>(
     const error = await response.json().catch(() => ({
       message: "An error occurred",
     }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    // Backend returns errors under either `error` or `message` keys.
+    const msg = error.error || error.message || error.details;
+    throw new Error(msg || `HTTP error! status: ${response.status}`);
   }
 
   return response.json();

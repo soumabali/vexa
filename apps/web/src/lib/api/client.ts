@@ -45,7 +45,15 @@ async function apiRequest<T = unknown>(
   });
 
   if (!res.ok) {
-    throw new ApiError(res);
+    // Backend returns errors under either `error` or `message` keys.
+    let message: string | undefined;
+    try {
+      const body = await res.json();
+      message = body?.error || body?.message || body?.details;
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new ApiError(res, message);
   }
 
   if (res.status === 204) {
