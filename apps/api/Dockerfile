@@ -102,6 +102,8 @@ RUN mkdir -p /app/logs /etc/wireguard /var/lib/vexa/secrets && \
 # Copy binary and entrypoint
 COPY --from=builder --chown=vexa:vexa /app/server /app/server
 COPY --from=builder --chown=vexa:vexa /app/entrypoint.sh /app/entrypoint.sh
+# Copy DB migrations for auto-migrate on startup
+COPY --from=builder --chown=vexa:vexa /app/internal/db/migrations /app/internal/db/migrations
 RUN chmod +x /app/entrypoint.sh
 
 USER root

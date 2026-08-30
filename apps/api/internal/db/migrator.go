@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/lib/pq"
 )
 
 // Migrator handles database schema migrations.
@@ -18,6 +20,7 @@ type Migrator struct {
 // Migration represents a single migration.
 type Migration struct {
 	Version     string
+	Name        string
 	Description string
 	SQL         string
 	RollbackSQL string
@@ -42,11 +45,11 @@ func (m *Migrator) RunAll() error {
 	}
 
 	for _, migration := range migrations {
-		if !applied[migration.Version] && !migration.Applied {
+		if !applied[migration.Name] && !migration.Applied {
 			if err := m.runMigration(&migration); err != nil {
-				return fmt.Errorf("failed to apply migration %s: %w", migration.Version, err)
+				return fmt.Errorf("failed to apply migration %s: %w", migration.Name, err)
 			}
-			fmt.Printf("Applied migration: %s - %s\n", migration.Version, migration.Description)
+			fmt.Printf("Applied migration: %s - %s\n", migration.Name, migration.Description)
 		}
 	}
 
@@ -135,7 +138,7 @@ func (m *Migrator) Status() ([]Migration, error) {
 	}
 
 	for i := range migrations {
-		migrations[i].Applied = applied[migrations[i].Version]
+		migrations[i].Applied = applied[migrations[i].Name]
 	}
 
 	sort.Slice(migrations, func(i, j int) bool {
@@ -234,6 +237,7 @@ func (m *Migrator) discoverMigrations() ([]Migration, error) {
 
 		migration := Migration{
 			Version: version,
+			Name:    strings.TrimSuffix(entry.Name(), ".sql"),
 			SQL:     string(sqlBytes),
 		}
 
@@ -299,25 +303,46 @@ func (m *Migrator) runMigration(migration *Migration) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		}
-	}()
 
 	_, err = tx.Exec(migration.SQL)
 	if err != nil {
+		// The SQL failed. If it's only because objects already exist (fresh
+		// DB where docker-entrypoint-initdb.d already applied this migration,
+		// or a prior partial run), treat it as a no-op: roll back the aborted
+		// tx and record the migration outside it.
+		if isAlreadyExists(err) {
+			if rerr := tx.Rollback(); rerr != nil {
+				return fmt.Errorf("failed to rollback after benign error: %w", rerr)
+			}
+			_, rerr := m.db.Exec(
+				"INSERT INTO schema_migrations (version, description) VALUES ($1, $2) ON CONFLICT (version) DO NOTHING",
+				migration.Name, migration.Description,
+			)
+			if rerr != nil {
+				return fmt.Errorf("failed to record migration %s: %w", migration.Name, rerr)
+			}
+			return nil
+		}
+		_ = tx.Rollback()
 		return fmt.Errorf("failed to execute migration SQL: %w", err)
 	}
 
-	// Remove any existing record for this version (idempotent)
+	// Record the migration as applied. This is self-contained (does not rely
+	// on the SQL file carrying its own INSERT), so every migration is tracked
+	// even when its .sql has no schema_migrations statement.
 	_, err = tx.Exec(
-		"DELETE FROM schema_migrations WHERE version = $1",
-		migration.Version,
+		"INSERT INTO schema_migrations (version, description) VALUES ($1, $2) ON CONFLICT (version) DO NOTHING",
+		migration.Name, migration.Description,
 	)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("failed to record migration %s: %w", migration.Name, err)
+	}
 
-	err = tx.Commit()
-	return err
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *Migrator) rollbackMigration(version string) error {
@@ -384,4 +409,23 @@ func (m *Migrator) EnsureSchemaMigrations() error {
 func RunPostgresInitScript(db *sql.DB, sqlContent string) error {
 	_, err := db.Exec(sqlContent)
 	return err
+}
+
+// isAlreadyExists reports whether err is a PostgreSQL "already exists" error
+// (SQLSTATE 42P07 / 42710) or the SQLite equivalent. Used by runMigration to
+// treat re-applied idempotent DDL as a no-op rather than a fatal error.
+func isAlreadyExists(err error) bool {
+	if err == nil {
+		return false
+	}
+	if pqErr, ok := err.(*pq.Error); ok {
+		switch pqErr.Code {
+		case "42P07", "42710": // duplicate_table, duplicate_object
+			return true
+		}
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "already exists") ||
+		strings.Contains(msg, "duplicate table") ||
+		strings.Contains(msg, "duplicate object")
 }

@@ -138,7 +138,14 @@ services:
     container_name: vexa-backup
     environment:
       - DATABASE_URL=postgres://${DB_USER}:***@postgres:5432/${DB_NAME:-vexa}?sslmode=disable
-      - RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-vexa}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-vexa}
+      - BACKUP_DIR=/backups/vexa/db
+      - LOG_DIR=/backups/vexa/logs
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
     volumes:
       - /backups:/backups
       - wg_config:/etc/wireguard:ro

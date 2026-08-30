@@ -26,6 +26,24 @@ func main() {
 	}
 	defer database.Close()
 
+	// Auto-apply pending migrations on startup (unless explicitly disabled).
+	// Migrations use IF NOT EXISTS / ON CONFLICT DO NOTHING, so this is
+	// idempotent and safe to run on every boot.
+	if os.Getenv("AUTO_MIGRATE") != "false" {
+		migrationsDir := os.Getenv("MIGRATIONS_DIR")
+		if migrationsDir == "" {
+			migrationsDir = "/app/internal/db/migrations"
+		}
+		if _, err := os.Stat(migrationsDir); err == nil {
+			migrator := db.NewMigrator(database, migrationsDir)
+			if err := migrator.EnsureSchemaMigrations(); err != nil {
+				log.Printf("Warning: failed to init schema_migrations table: %v", err)
+			} else if err := migrator.RunAll(); err != nil {
+				log.Printf("Warning: failed to apply migrations: %v", err)
+			}
+		}
+	}
+
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: cfg.RedisAddr,
 	})

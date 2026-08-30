@@ -1,17 +1,9 @@
-# vexa PostgreSQL backup crontab (P4 #2)
-# Install:
-#   sudo apt-get install cron
-#   sudo cp backup.crontab /etc/cron.d/vexa-backup
-#   sudo chmod 644 /etc/cron.d/vexa-backup
-#   sudo systemctl restart cron
+# vexa PostgreSQL backup crontab — BusyBox crond format (Alpine container)
+# Copied into /etc/crontabs/root by Dockerfile.backup.
+# No user column (BusyBox crond runs as root inside the container).
 #
-# Or for user-level:
-#   crontab scripts/backup.crontab
-#
-# Logs: <repo>/logs/backup.log
+# Daily — 02:00 UTC, keep last 7 days (RETENTION_DAYS is set via compose env)
+0 2 * * * /app/backup.sh daily
 
-# Daily — 03:00, keep last 14 days
-0 3 * * *   ubuntu  /home/ubuntu/projects/vexa/02-application/scripts/backup.sh daily  >> /home/ubuntu/projects/vexa/02-application/logs/backup.cron.log 2>&1
-
-# Weekly — Sunday 04:00, keep last 8 weeks
-0 4 * * 0   ubuntu  /home/ubuntu/projects/vexa/02-application/scripts/backup.sh weekly >> /home/ubuntu/projects/vexa/02-application/logs/backup.cron.log 2>&1
+# Weekly — Sunday 03:00 UTC, keep last 8 weeks
+0 3 * * 0 /app/backup.sh weekly
