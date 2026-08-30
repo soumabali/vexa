@@ -7,10 +7,14 @@ import { defineConfig, devices } from '@playwright/test';
 //   npx playwright test --config=playwright.prod.config.ts
 export default defineConfig({
   testDir: './specs',
-  fullyParallel: true,
+  // Specs mutate shared state (the e2e-test user's MFA flag, host list). The
+  // auth.spec enables/disables MFA mid-run and must not overlap login.spec or
+  // host-crud.spec, so run files sequentially (workers: 1). Tests within a
+  // file that declare serial mode already order themselves.
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: 2,
+  workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   timeout: 45000,
   expect: {
