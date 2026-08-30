@@ -38,6 +38,10 @@ async function deleteAllHosts(token: string) {
 }
 
 test.describe("Host CRUD Operations", () => {
+  // These tests mutate shared host state against the same test user, so run
+  // them serially to avoid create/delete races under fullyParallel.
+  test.describe.configure({ mode: "serial" });
+
   test.beforeEach(async ({ page, context }) => {
     // Clean up previous test hosts via API
     const token = await apiLogin();
